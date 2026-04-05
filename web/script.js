@@ -119,9 +119,8 @@ function handleCANFrame(id, data) {
 }
 
 function createDynamicCard(id) {
-    // 1. Sprawdź czy mamy definicję w słowniku (na razie pusta)
-    // const def = canDictionary[id] || { name: `MODUŁ ${id}`, zone: 'nieznane' };
-    const def = { name: `NIEZNANY ${id}`, zone: 'nieznane' };
+    // 1. Sprawdź czy mamy definicję w słowniku
+    const def = canDictionary[id] || { name: `NIEZNANY ${id}`, zone: 'nieznane' };
 
     // 2. Znajdź odpowiedni kontener (szufladę)
     const gridId = `grid-${def.zone}`;
@@ -131,6 +130,12 @@ function createDynamicCard(id) {
     const card = document.createElement('div');
     card.className = 'card';
     card.id = `c-${id}`;
+    
+    // Jeśli ramka jest znana, dajemy jej zieloną obwódkę statusu
+    if (canDictionary[id]) {
+        card.classList.add('status-active');
+    }
+
     card.innerHTML = `
         <div class="id-label">0x${id}</div>
         <h2>${def.name}</h2>
@@ -139,7 +144,7 @@ function createDynamicCard(id) {
             </div>
     `;
 
-    // 4. Dodaj kliknięcie (Słownik)
+    // 4. Dodaj kliknięcie (Słownik - Modal)
     card.addEventListener('click', () => openModal(id));
 
     // 5. Wstaw do DOM

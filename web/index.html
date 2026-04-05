@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOLF MASTER v50.0 - Smart UI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="header">
+        <h1>GOLF PLUS ULTIMATE v50.0</h1>
+        <div id="sim-clock">--:--:--</div>
+    </div>
+
+    <div class="sim-box">
+        <span id="sim-info">LIVE: OCZEKIWANIE NA DANE CAN...</span>
+    </div>
+
+    <div id="dashboard-container">
+        
+        <div class="zone-container" id="zone-naped">
+            <div class="section-label">⚙️ NAPĘD I ZASILANIE</div>
+            <div class="layout-grid" id="grid-naped"></div>
+        </div>
+
+        <div class="zone-container" id="zone-komfort">
+            <div class="section-label">🛋️ KOMFORT I NADWOZIE</div>
+            <div class="layout-grid" id="grid-komfort"></div>
+        </div>
+
+        <div class="zone-container" id="zone-media">
+            <div class="section-label">🖥️ MULTIMEDIA I INFO</div>
+            <div class="layout-grid" id="grid-media"></div>
+        </div>
+
+        <div class="zone-container" id="zone-system">
+            <div class="section-label">🩺 SYSTEM I DIAGNOSTYKA</div>
+            <div class="layout-grid" id="grid-system"></div>
+        </div>
+
+        <div class="zone-container" id="zone-nieznane">
+            <div class="section-label">🗄️ NIEZNANE I DEBUG</div>
+            <div class="layout-grid" id="grid-nieznane"></div>
+        </div>
+
+    </div>
+
+    <div id="diag-panel">
+        
+        <div class="diag-split">
+            <div class="diag-section" id="error-log">
+                <div class="section-label">⚠️ REJESTR BŁĘDÓW</div>
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>KOD</th>
+                                <th>ŹRÓDŁO</th>
+                                <th>OPIS</th>
+                                <th>ILOŚĆ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="error-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="diag-section" id="terminal">
+                <div class="section-label">📟 TERMINAL CAN (LIVE)</div>
+                <div id="term-stream">
+                    </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="relay-grid">
+        <div id="r-acc" class="relay">D7: ACC</div>
+        <div id="r-ill" class="relay">D8: ILL</div>
+        <div id="r-back" class="relay">D9: BACK</div>
+    </div>
+
+    <div id="info-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modal-title">INFO</h2>
+            <div id="modal-body">Ładowanie danych...</div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -3,17 +3,17 @@
    ========================================= */
 
 :root {
-    --bg-main: #0a0a0c;         /* Bardzo ciemne tło */
-    --card-bg: #16161d;         /* Tło kafelka */
+    --bg-main: #0a0a0c;
+    --card-bg: #16161d;
     --accent: #00a8ff;          /* VW Blue */
     --accent-dark: #007bb5;     
     --text-main: #e0e0e0;       
     --text-dim: #666;        
-    --green: #2ecc71;           /* Terminal / OK */
-    --red: #ff4757;             /* Błędy / Aktywne */
-    --orange: #ffa502;          /* Klemme P */
+    --green: #2ecc71;
+    --red: #ff4757;
+    --orange: #ffa502;
     --border: #222;
-    --term-bg: #050505;         /* Tło konsoli */
+    --term-bg: #050505;
 }
 
 /* --- RESET I BAZA --- */
@@ -28,10 +28,10 @@ body {
     background-color: var(--bg-main);
     color: var(--text-main);
     padding: 15px;
-    padding-bottom: 150px; /* Zapas na panel diag i przekaźniki */
+    padding-bottom: 150px; 
 }
 
-/* --- NAGŁÓWEK --- */
+/* --- NAGŁÓWEK I STATUS --- */
 .header {
     display: flex;
     justify-content: space-between;
@@ -41,11 +41,7 @@ body {
     margin-bottom: 15px;
 }
 
-h1 {
-    font-size: 1.2em;
-    color: var(--accent);
-    letter-spacing: 1px;
-}
+h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
 
 #sim-clock {
     font-size: 1.4em;
@@ -53,7 +49,6 @@ h1 {
     font-family: 'Courier New', Courier, monospace;
 }
 
-/* --- STATUS --- */
 .sim-box {
     background: #1a1a24;
     padding: 8px;
@@ -64,10 +59,8 @@ h1 {
     font-size: 0.9em;
 }
 
-/* --- SZUFLADY I SEKCJE --- */
-.zone-container {
-    margin-bottom: 30px;
-}
+/* --- UKŁAD SIATKI (GRID) --- */
+.zone-container { margin-bottom: 30px; }
 
 .section-label {
     font-size: 0.85em;
@@ -89,11 +82,12 @@ h1 {
 
 .layout-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 12px;
+    align-items: stretch;
 }
 
-/* --- KAFELEK (DYNAMICZNY) --- */
+/* --- KAFELEK DANYCH --- */
 .card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -139,7 +133,7 @@ h1 {
     color: var(--text-dim);
 }
 
-/* --- SYSTEM INDYKATORÓW V2 (WHITE TEXT EDITION) --- */
+/* --- INDYKATORY (LAMPKI STATUSU) --- */
 .grid {
     display: flex;
     flex-wrap: wrap;
@@ -147,95 +141,48 @@ h1 {
     margin-top: 10px;
 }
 
-/* --- SYSTEM INDYKATORÓW V3 (DEEP COLORS) --- */
 .ind {
-    /* Wymuszamy identyczny rozmiar i biały kolor - ignoruje to co w JS */
     font-size: 11px !important;
     color: #ffffff !important;
     font-weight: 700 !important;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    
     padding: 8px 4px;
     border-radius: 4px;
     text-align: center;
     flex: 1;
     min-width: 48%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
 }
 
-/* GŁĘBOKIE, CIEMNE KOLORY TŁA */
-.ind.active        { background: #005bb5 !important; } /* Głęboki granatowy */
-.ind.active-green  { background: #126e36 !important; } /* Ciemna butelkowa zieleń */
-.ind.active-error  { background: #821c1c !important; } /* Ciemna czerwień / bordowy */
-.ind.active-orange { background: #965a00 !important; } /* Ciemny bursztyn */
-.ind.active-blue   { background: #005bb5 !important; } 
-.ind.active-lock   { background: #4834d4 !important; } /* Ciemny fiolet */
+.ind.active        { background: #0a3d62 !important; }
+.ind.active-green  { background: #0e3d1f !important; }
+.ind.active-error  { background: #4a0e0e !important; }
+.ind.active-orange { background: #5e3a00 !important; }
+.ind.active-blue   { background: #0a3d62 !important; }
+.ind.active-lock   { background: #322387 !important; }
+.ind.full-width    { min-width: 100%; }
 
-.ind.full-width { min-width: 100%; }
-
-/* Klasa ukrywająca surowe dane */
-.hidden-val { display: none !important; }
-
-@keyframes blink {
-    0% { opacity: 1; }
-    50% { opacity: 0.4; }
-    100% { opacity: 1; }
-}
-
-/* --- PANEL DIAGNOSTYCZNY (NOWOŚĆ) --- */
+/* --- PANEL DIAGNOSTYCZNY --- */
 #diag-panel {
     margin-top: 40px;
     border-top: 2px solid #222;
     padding-top: 20px;
-    background: #08080a;
 }
 
-.diag-split {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-}
+.diag-split { display: flex; gap: 20px; flex-wrap: wrap; }
+.diag-section { flex: 1; min-width: 300px; background: #111; border-radius: 5px; padding: 10px; }
 
-.diag-section {
-    flex: 1;
-    min-width: 300px;
-    background: #111;
-    border-radius: 5px;
-    padding: 10px;
-}
+.table-scroll { max-height: 200px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
+th { text-align: left; color: var(--text-dim); padding: 8px; border-bottom: 1px solid #222; }
+td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
 
-/* Rejestr Błędów */
-.table-scroll {
-    max-height: 200px;
-    overflow-y: auto;
-}
+.err-row-js { color: #f1c40f; }
+.err-row-py { color: #3498db; }
+.err-row-hw { color: var(--red); }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.8em;
-}
-
-th {
-    text-align: left;
-    color: var(--text-dim);
-    padding: 8px;
-    border-bottom: 1px solid #222;
-}
-
-td {
-    padding: 8px;
-    border-bottom: 1px solid #1a1a1a;
-}
-
-.err-row-js { color: #f1c40f; }      /* Błędy JS na żółto */
-.err-row-py { color: #3498db; }      /* Błędy Python na niebiesko */
-.err-row-hw { color: var(--red); }   /* Błędy Hardware na czerwono */
-
-/* Terminal */
 #term-stream {
     background: var(--term-bg);
     color: var(--green);
@@ -244,11 +191,10 @@ td {
     height: 200px;
     overflow-y: auto;
     padding: 10px;
-    border: 1px solid #111;
     line-height: 1.4;
 }
 
-/* --- FIZYCZNE PRZEKAŹNIKI --- */
+/* --- PANEL DOLNY (PRZEKAŹNIKI) --- */
 .relay-grid {
     position: fixed;
     bottom: 0;
@@ -269,40 +215,98 @@ td {
     font-size: 0.9em;
 }
 
-.relay.active {
-    background: var(--red);
-    color: #fff;
-    border-top-color: #ff7675;
-}
+.relay.active { background: var(--red); color: #fff; border-top-color: #ff7675; }
 
-/* --- MODAL --- */
+/* --- OKNO MODALNE (SZCZEGÓŁY) --- */
 .modal {
     display: none;
     position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.9);
     z-index: 2000;
-    align-items: center;
-    justify-content: center;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.85);
 }
 
-.modal.show { display: flex; }
+.modal.show { display: block; }
 
 .modal-content {
-    background: #1a1a24;
-    width: 90%;
-    max-width: 500px;
-    padding: 30px;
-    border-radius: 8px;
+    background-color: #121217;
+    margin: 5% auto;
+    padding: 25px;
     border: 1px solid var(--accent);
+    width: 90%;          /* Zwiększamy szerokość na mobile */
+    max-width: 1000px;   /* Zwiększamy szerokość na desktop, by zmieścić 2 kolumny */
+    border-radius: 8px;
+    max-height: 85vh; 
+    overflow-y: auto;
     position: relative;
+}
+
+/* Nowy kontener na dwie kolumny tabel */
+.modal-grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dwie równe kolumny */
+    gap: 30px;                      /* Odstęp między tabelami */
+    align-items: start;
+}
+
+/* Responsywność: Na telefonach wracamy do jednej kolumny */
+@media (max-width: 850px) {
+    .modal-grid-container {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
 }
 
 .close-btn {
     position: absolute;
     top: 10px;
     right: 15px;
-    font-size: 1.5em;
+    font-size: 1.8em;
     cursor: pointer;
     color: var(--text-dim);
+}
+
+.close-btn:hover { color: #fff; }
+
+/* Tabela wewnątrz modala */
+.m-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.m-table th {
+    text-align: left;
+    font-size: 15px;
+    color: var(--text-dim);
+    border-bottom: 2px solid var(--accent);
+    padding: 10px;
+    text-transform: uppercase;
+}
+
+.m-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #1a1a24;
+}
+
+.m-label { display: block; color: #fff; font-weight: bold; font-size: 15px; }
+.m-id { display: block; color: #444; font-size: 10px; font-family: monospace; }
+.m-value {
+    text-align: right;
+    font-weight: bold;
+    color: var(--accent);
+    font-size: 15px;
+    font-family: monospace;
+}
+
+/* --- ANIMACJE I UTILS --- */
+.hidden-val { display: none !important; }
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
 }

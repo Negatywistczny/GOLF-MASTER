@@ -21,7 +21,6 @@ const canDictionary = {
     "0x42B": { name: "SLEEP / WAKE (mNM_Gateway)", zone: "system" },
     "0x470": { name: "DRZWI / ŚWIATŁA (mBSG_Kombi)", zone: "komfort" },
     "0x527": { name: "TEMP. ZEWN. (mGW_Kombi)", zone: "media" },
-    "0x551": { name: "UKŁ. KIEROWNICZY", zone: "naped" },
     "0x555": { name: "TURBO / OLEJ (mMotor7)", zone: "naped" },
     "0x557": { name: "BŁĘDY MODUŁÓW (mKD_Error)", zone: "system" },
     "0x571": { name: "ZASILANIE / AKU (mBSG_2)", zone: "naped" },
@@ -35,6 +34,15 @@ const canDictionary = {
     "0x655": { name: "LISTA MODUŁÓW (mVerbauliste)", zone: "system" },
     "0x65D": { name: "CZAS / PRZEBIEG (mDiagnose_1)", zone: "media" },
     "0x65F": { name: "VIN POJAZDU (mFzg_Ident)", zone: "system" }
+};
+
+//SŁOWNIK METADANYCH
+const signalMeta = {
+    // Stacyjka 0x2C3 (mZAS_Status)
+    "ZAS_Kl_S": { label: "S-Kontakt (Kluczyk w stacyjce)", states: { 0: "Wyjęty", 1: "WŁOŻONY" } },
+    "ZAS_Kl_15": { label: "Zapłon (Zacisk 15)", states: { 0: "OFF", 1: "ON" } },
+    "ZAS_Kl_50": { label: "Rozrusznik (Zacisk 50)", states: { 0: "OFF", 1: "START" } },
+    "ZAS_Kl_P": { label: "P-Kontakt (Park)", states: { 0: "OFF", 1: "ON" } },
 };
 
 // Pamięć kafelków: { "0x470": DOMElement }
@@ -215,40 +223,67 @@ function setupModal() {
 
 function openModal(id) {
     const modal = document.getElementById('info-modal');
-    const def = canDictionary[id] || { name: `NIEZNANY ${id}` };
+    const cleanId = id.replace('0x', '');
+    const def = canDictionary["0x" + cleanId] || { name: `RAMKA ${id}` };
+    const data = frameDataCache["0x" + cleanId] || frameDataCache[id];
+
+    document.getElementById('modal-title').textContent = `[0x${cleanId}] ${def.name}`;
+    const body = document.getElementById('modal-body');
     
-    document.getElementById('modal-title').textContent = `[${id}] ${def.name}`;
-    
-    let bodyHtml = ``;
-    
-    // Sprawdzamy, czy mamy pełne dane w pamięci cache
-    if (frameDataCache[id]) {
-        bodyHtml += `<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+    if (!data) {
+        body.innerHTML = `<p style="text-align:center; padding:20px; color:var(--text-dim);">Oczekiwanie na dane...</p>`;
+        modal.classList.add('show');
+        return;
+    }
+
+    // 1. Przygotowujemy dane
+    const entries = Object.entries(data);
+    const midIndex = Math.ceil(entries.length / 2);
+    const leftData = entries.slice(0, midIndex);
+    const rightData = entries.slice(midIndex);
+
+    // 2. Funkcja pomocnicza do budowania tabeli
+    const buildTableHtml = (dataChunk) => {
+        let tableHtml = `<table class="m-table">
             <thead>
-                <tr style="border-bottom: 2px solid var(--accent); color: var(--accent);">
-                    <th style="text-align: left; padding: 5px;">Sygnał</th>
-                    <th style="text-align: right; padding: 5px;">Wartość</th>
+                <tr>
+                    <th>PARAMETR</th>
+                    <th style="text-align:right">WARTOŚĆ</th>
                 </tr>
             </thead>
             <tbody>`;
-            
-        // Pętla tworząca wiersze w tabeli dla każdego zdekodowanego bitu
-        for (const [key, value] of Object.entries(frameDataCache[id])) {
-            bodyHtml += `
-                <tr style="border-bottom: 1px solid #333;">
-                    <td style="padding: 5px; color: var(--text-dim);">${key}</td>
-                    <td style="text-align: right; padding: 5px; font-weight: bold;">${value}</td>
-                </tr>`;
+        
+        for (const [key, value] of dataChunk) {
+            const meta = signalMeta[key] || { label: key, unit: "" };
+            let displayVal = "";
+
+            if (meta.states && meta.states[value] !== undefined) {
+                displayVal = meta.states[value];
+            } else {
+                const num = (typeof value === 'number' && !Number.isInteger(value)) ? value.toFixed(2) : value;
+                displayVal = `${num}${meta.unit || ""}`;
+            }
+
+            tableHtml += `<tr>
+                <td>
+                    <span class="m-label">${meta.label}</span>
+                    <span class="m-id">${key}</span>
+                </td>
+                <td class="m-value">${displayVal}</td>
+            </tr>`;
         }
-        bodyHtml += `</tbody></table>`;
-    } else {
-        bodyHtml = `
-            <p>Brak szczegółowych danych do wyświetlenia.</p>
-            <p>Status: Ramka nie została jeszcze w pełni zdekodowana (Tryb podglądu).</p>
-        `;
-    }
-    
-    document.getElementById('modal-body').innerHTML = bodyHtml;
+        tableHtml += `</tbody></table>`;
+        return tableHtml;
+    };
+
+    // 3. Wstrzykujemy strukturę grida z dwiema tabelami
+    body.innerHTML = `
+        <div class="modal-grid-container">
+            <div class="modal-col">${buildTableHtml(leftData)}</div>
+            <div class="modal-col">${buildTableHtml(rightData)}</div>
+        </div>
+    `;
+
     modal.classList.add('show');
 }
 
@@ -1986,15 +2021,15 @@ function decodeKombiK1Data(id, hexData, cardElement) {
     let html = ``;
 
     // --- Poziom Paliwa i Rezerwa ---
-    // Zgodnie z dokumentacją: 127 = Błąd czujnika [cite: 107]
+    // Zgodnie z dokumentacją: 127 = Błąd czujnika
     if (fullData.KO1_Tankinhalt >= 127) {
         html += `<div class="ind active-error full-width">POZIOM PALIWA: BŁĄD PŁYWAKA</div>`;
     } else {
         let fuelColor = "var(--green)";
-        if (fullData.KO1_Tankwarnlampe === 1 || fullData.KO1_Tankwarnung === 1) { // Zapalona rezerwa [cite: 95, 108]
+        if (fullData.KO1_Tankwarnlampe === 1 || fullData.KO1_Tankwarnung === 1) { // Zapalona rezerwa
             fuelColor = "var(--orange)";
         }
-        if (fullData.KO1_Tankstop === 1) { // Rozpoznano tankowanie [cite: 93]
+        if (fullData.KO1_Tankstop === 1) { // Rozpoznano tankowanie
              html += `<div class="ind active-blue full-width">TANKOWANIE...</div>`;
         }
         
@@ -2002,10 +2037,10 @@ function decodeKombiK1Data(id, hexData, cardElement) {
     }
 
     // --- Czas Postoju (Standzeit) ---
-    if (fullData.KO1_Standzeit_Fehler === 1) { // Błąd resetu czasu po odpięciu klemy [cite: 104]
+    if (fullData.KO1_Standzeit_Fehler === 1) { // Błąd resetu czasu po odpięciu klemy
          html += `<div class="ind active-error full-width">CZAS POSTOJU: BŁĄD ZASILANIA (KL. 30)</div>`;
     } else {
-        // Przeliczamy sekundy na format HH:MM:SS [cite: 103]
+        // Przeliczamy sekundy na format HH:MM:SS
         let h = Math.floor(fullData.KO1_Standzeit / 3600);
         let m = Math.floor((fullData.KO1_Standzeit % 3600) / 60);
         let s = fullData.KO1_Standzeit % 60;
@@ -2016,8 +2051,8 @@ function decodeKombiK1Data(id, hexData, cardElement) {
 
     // --- Ostrzeżenia na desce ---
     let alerts = [];
-    if (fullData.KO1_Handbremse === 1) alerts.push("HAMULEC RĘCZNY"); // [cite: 100]
-    if (fullData.KO1_WaschWasser === 1) alerts.push("PŁYN SPRYSK."); // [cite: 96]
+    if (fullData.KO1_Handbremse === 1) alerts.push("HAMULEC RĘCZNY"); //
+    if (fullData.KO1_WaschWasser === 1) alerts.push("PŁYN SPRYSK."); //
     
     if (alerts.length > 0) {
         html += `<div class="ind active-error full-width">KONTROLKI: ${alerts.join(', ')}</div>`;
@@ -2025,7 +2060,7 @@ function decodeKombiK1Data(id, hexData, cardElement) {
     }
 
     // --- Podświetlenie Wnętrza / Zegarów ---
-    // 127 = błąd [cite: 117]
+    // 127 = błąd
     if (fullData.KO1_Bel_Displ < 127) {
          html += `<div class="ind active" style="opacity: 0.6;">ŚCIEMNIACZ ZEGARÓW: ${fullData.KO1_Bel_Displ}%</div>`;
     }
@@ -2256,13 +2291,13 @@ function decodeSysteminfo1Data(id, hexData, cardElement) {
 function decodeGateway3Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (7 sygnałów)
     const fullData = {
-        "GW3_Laendervariante": extractCANSignal(hexData, 0, 6),       // [cite: 187]
-        "GW3_Alt_3_Kombi": extractCANSignal(hexData, 6, 1),           // [cite: 188]
-        "GW3_Land_Sprach_empf": extractCANSignal(hexData, 7, 1),      // [cite: 190]
-        "GW3_Sprachvariante": extractCANSignal(hexData, 8, 8),        // [cite: 191]
-        "GW3_Motortyp": extractCANSignal(hexData, 16, 6),             // [cite: 193]
-        "GW3_Alt_5_Motor": extractCANSignal(hexData, 22, 1),          // [cite: 195]
-        "GW3_Motortyp_empf": extractCANSignal(hexData, 23, 1)         // [cite: 197]
+        "GW3_Laendervariante": extractCANSignal(hexData, 0, 6),
+        "GW3_Alt_3_Kombi": extractCANSignal(hexData, 6, 1),
+        "GW3_Land_Sprach_empf": extractCANSignal(hexData, 7, 1),
+        "GW3_Sprachvariante": extractCANSignal(hexData, 8, 8),
+        "GW3_Motortyp": extractCANSignal(hexData, 16, 6),
+        "GW3_Alt_5_Motor": extractCANSignal(hexData, 22, 1),
+        "GW3_Motortyp_empf": extractCANSignal(hexData, 23, 1)
     };
 
     // Zapisz do pamięci dla okna Modal
@@ -2281,40 +2316,40 @@ function decodeGateway3Data(id, hexData, cardElement) {
     let html = ``;
 
     // --- Region i Język ---
-    // Sprawdzamy czy dane nie są wartościami początkowymi (Initwert) [cite: 190]
+    // Sprawdzamy czy dane nie są wartościami początkowymi (Initwert)
     if (fullData.GW3_Land_Sprach_empf === 1) {
         let country = "NIEZNANY";
         switch (fullData.GW3_Laendervariante) {
-            case 0: country = "NIEMCY"; break;          // [cite: 188]
-            case 1: country = "EUROPA"; break;          // [cite: 188]
-            case 2: country = "USA"; break;             // [cite: 188]
-            case 3: country = "KANADA"; break;          // [cite: 188]
-            case 4: country = "WIELKA BRYTANIA"; break; // [cite: 188]
-            case 5: country = "JAPONIA"; break;         // [cite: 187]
-            case 6: country = "ARABIA SAUDYJSKA"; break;// [cite: 187]
-            case 7: country = "AUSTRALIA"; break;       // [cite: 188]
+            case 0: country = "NIEMCY"; break;
+            case 1: country = "EUROPA"; break;
+            case 2: country = "USA"; break;
+            case 3: country = "KANADA"; break;
+            case 4: country = "WIELKA BRYTANIA"; break; 
+            case 5: country = "JAPONIA"; break;
+            case 6: country = "ARABIA SAUDYJSKA"; break;
+            case 7: country = "AUSTRALIA"; break;
         }
 
         let lang = "NIEZNANY";
         switch (fullData.GW3_Sprachvariante) {
-            case 0: lang = "BRAK"; break;               // [cite: 192]
-            case 1: lang = "NIEMIECKI"; break;          // [cite: 192]
-            case 2: lang = "ANGIELSKI"; break;          // [cite: 193]
-            case 3: lang = "FRANCUSKI"; break;          // [cite: 193]
-            case 4: lang = "WŁOSKI"; break;             // [cite: 192]
-            case 5: lang = "HISZPAŃSKI"; break;         // [cite: 192]
-            case 6: lang = "PORTUGALSKI"; break;        // [cite: 192]
-            case 8: lang = "CZESKI"; break;             // [cite: 193]
-            case 9: lang = "CHIŃSKI"; break;            // [cite: 192]
-            case 10: lang = "US-ANGIELSKI"; break;      // [cite: 192]
-            case 11: lang = "HOLENDERSKI"; break;       // [cite: 192]
-            case 12: lang = "JAPOŃSKI"; break;          // [cite: 193]
-            case 13: lang = "ROSYJSKI"; break;          // [cite: 193]
-            case 14: lang = "KOREAŃSKI"; break;         // [cite: 193]
-            case 15: lang = "FRANCO-KANADYJSKI"; break; // [cite: 193]
-            case 16: lang = "SZWEDZKI"; break;          // [cite: 193]
-            case 17: lang = "POLSKI"; break;            // [cite: 193]
-            case 18: lang = "TURECKI"; break;           // [cite: 193]
+            case 0: lang = "BRAK"; break; 
+            case 1: lang = "NIEMIECKI"; break;
+            case 2: lang = "ANGIELSKI"; break;
+            case 3: lang = "FRANCUSKI"; break;
+            case 4: lang = "WŁOSKI"; break;
+            case 5: lang = "HISZPAŃSKI"; break;
+            case 6: lang = "PORTUGALSKI"; break;
+            case 8: lang = "CZESKI"; break;
+            case 9: lang = "CHIŃSKI"; break;
+            case 10: lang = "US-ANGIELSKI"; break;
+            case 11: lang = "HOLENDERSKI"; break;
+            case 12: lang = "JAPOŃSKI"; break;
+            case 13: lang = "ROSYJSKI"; break;
+            case 14: lang = "KOREAŃSKI"; break;
+            case 15: lang = "FRANCO-KANADYJSKI"; break;
+            case 16: lang = "SZWEDZKI"; break;
+            case 17: lang = "POLSKI"; break;
+            case 18: lang = "TURECKI"; break; 
         }
         
         html += `<div class="ind active-blue full-width">REGION: ${country} | JĘZYK: ${lang}</div>`;
@@ -2325,10 +2360,10 @@ function decodeGateway3Data(id, hexData, cardElement) {
     }
 
     // --- Typ Silnika ---
-    if (fullData.GW3_Motortyp_empf === 1) { // [cite: 197]
+    if (fullData.GW3_Motortyp_empf === 1) { //
         // Bity 0-3 określają liczbę cylindrów (np. 4 dla R4, 6 dla V6) 
         let cyl = fullData.GW3_Motortyp & 0x0F; 
-        // Bit 4 odpowiada za obecność turbosprężarki (Turbo_M) [cite: 194]
+        // Bit 4 odpowiada za obecność turbosprężarki (Turbo_M)
         let isTurbo = (fullData.GW3_Motortyp & 0x10) ? " (TURBO)" : ""; 
         
         let cylStr = cyl > 0 ? `${cyl} CYL.` : "NIEZNANY";
@@ -2337,8 +2372,8 @@ function decodeGateway3Data(id, hexData, cardElement) {
     }
 
     // --- Flagi Opóźnień (Timeout) ---
-    // Gateway informuje czy paczki z licznika (>100ms) i silnika się nie spóźniają [cite: 188, 195]
-    if (fullData.GW3_Alt_3_Kombi === 1 || fullData.GW3_Alt_5_Motor === 1) { // [cite: 188, 196]
+    // Gateway informuje czy paczki z licznika (>100ms) i silnika się nie spóźniają 
+    if (fullData.GW3_Alt_3_Kombi === 1 || fullData.GW3_Alt_5_Motor === 1) {
         html += `<div class="ind active-error full-width">OPÓŹNIENIE MAGISTRALI (TIMEOUT)!</div>`;
     }
 

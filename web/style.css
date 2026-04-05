@@ -158,11 +158,21 @@ h1 {
     min-width: 45%;
 }
 
+/* Warianty kolorystyczne dla lampek */
 .ind.active { background: var(--accent); color: #fff; }
 .ind.active-green { background: var(--green); color: #fff; }
 .ind.active-error { background: var(--red); color: #fff; }
 .ind.active-lock { background: var(--orange); color: #fff; }
+.ind.active-blue { background: #0984e3; color: #fff; } /* NIEBIESKI */
+.ind.active-orange { background: #e67e22; color: #fff; } /* POMARAŃCZOWY */
+.ind.active-red { background: #c0392b; color: #fff; } /* CIEMNY CZERWONY (np. Webasto) */
+
 .ind.full-width { min-width: 100%; }
+
+/* Klasa ukrywająca surowe wartości HEX na zdekodowanych kafelkach */
+.hidden-val {
+    display: none !important;
+}
 
 /* --- PANEL DIAGNOSTYCZNY (NOWOŚĆ) --- */
 #diag-panel {

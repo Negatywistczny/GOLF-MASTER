@@ -1,0 +1,287 @@
+/* =========================================
+   GOLF MASTER v50.0 - SMART UI STYLES
+   ========================================= */
+
+:root {
+    --bg-main: #0a0a0c;         /* Bardzo ciemne tło */
+    --card-bg: #16161d;         /* Tło kafelka */
+    --accent: #00a8ff;          /* VW Blue */
+    --accent-dark: #007bb5;     
+    --text-main: #e0e0e0;       
+    --text-dim: #666;        
+    --green: #2ecc71;           /* Terminal / OK */
+    --red: #ff4757;             /* Błędy / Aktywne */
+    --orange: #ffa502;          /* Klemme P */
+    --border: #222;
+    --term-bg: #050505;         /* Tło konsoli */
+}
+
+/* --- RESET I BAZA --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    padding: 15px;
+    padding-bottom: 150px; /* Zapas na panel diag i przekaźniki */
+}
+
+/* --- NAGŁÓWEK --- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+h1 {
+    font-size: 1.2em;
+    color: var(--accent);
+    letter-spacing: 1px;
+}
+
+#sim-clock {
+    font-size: 1.4em;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* --- STATUS --- */
+.sim-box {
+    background: #1a1a24;
+    padding: 8px;
+    border-radius: 4px;
+    text-align: center;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--green);
+    font-size: 0.9em;
+}
+
+/* --- SZUFLADY I SEKCJE --- */
+.zone-container {
+    margin-bottom: 30px;
+}
+
+.section-label {
+    font-size: 0.85em;
+    font-weight: bold;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-label::after {
+    content: "";
+    flex-grow: 1;
+    height: 1px;
+    background: #222;
+}
+
+.layout-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+/* --- KAFELEK (DYNAMICZNY) --- */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 15px;
+    position: relative;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.card:hover {
+    border-color: var(--accent);
+    background: #1c1c24;
+}
+
+.card h2 {
+    font-size: 0.8em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.id-label {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    font-size: 0.6em;
+    color: #444;
+    font-family: monospace;
+}
+
+.val {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--accent);
+    font-family: monospace;
+}
+
+.val[data-unit]::after {
+    content: attr(data-unit);
+    font-size: 0.4em;
+    margin-left: 4px;
+    color: var(--text-dim);
+}
+
+/* --- LAMPKI --- */
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 10px;
+}
+
+.ind {
+    background: #0d0d12;
+    color: #333;
+    padding: 5px;
+    font-size: 0.7em;
+    border-radius: 3px;
+    text-align: center;
+    flex: 1;
+    min-width: 45%;
+}
+
+.ind.active { background: var(--accent); color: #fff; }
+.ind.active-green { background: var(--green); color: #fff; }
+.ind.active-error { background: var(--red); color: #fff; }
+.ind.active-lock { background: var(--orange); color: #fff; }
+.ind.full-width { min-width: 100%; }
+
+/* --- PANEL DIAGNOSTYCZNY (NOWOŚĆ) --- */
+#diag-panel {
+    margin-top: 40px;
+    border-top: 2px solid #222;
+    padding-top: 20px;
+    background: #08080a;
+}
+
+.diag-split {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.diag-section {
+    flex: 1;
+    min-width: 300px;
+    background: #111;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+/* Rejestr Błędów */
+.table-scroll {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8em;
+}
+
+th {
+    text-align: left;
+    color: var(--text-dim);
+    padding: 8px;
+    border-bottom: 1px solid #222;
+}
+
+td {
+    padding: 8px;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.err-row-js { color: #f1c40f; }      /* Błędy JS na żółto */
+.err-row-py { color: #3498db; }      /* Błędy Python na niebiesko */
+.err-row-hw { color: var(--red); }   /* Błędy Hardware na czerwono */
+
+/* Terminal */
+#term-stream {
+    background: var(--term-bg);
+    color: var(--green);
+    font-family: 'Consolas', monospace;
+    font-size: 0.75em;
+    height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #111;
+    line-height: 1.4;
+}
+
+/* --- FIZYCZNE PRZEKAŹNIKI --- */
+.relay-grid {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    background: #000;
+    z-index: 1000;
+}
+
+.relay {
+    flex: 1;
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    color: #444;
+    border-top: 2px solid #222;
+    font-size: 0.9em;
+}
+
+.relay.active {
+    background: var(--red);
+    color: #fff;
+    border-top-color: #ff7675;
+}
+
+/* --- MODAL --- */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show { display: flex; }
+
+.modal-content {
+    background: #1a1a24;
+    width: 90%;
+    max-width: 500px;
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: var(--text-dim);
+}

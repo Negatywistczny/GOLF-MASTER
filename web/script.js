@@ -109,13 +109,8 @@ function handleCANFrame(id, data) {
         activeCards[id] = card;
     }
 
-    // AKTUALIZACJA DANYCH
-    // Na razie wszystko traktujemy jako RAW DATA
-    const valElement = card.querySelector('.val');
-    if (valElement) {
-        valElement.textContent = data;
-        valElement.classList.add('raw-data'); // Możemy ostylować surowe dane inaczej
-    }
+    // Zamiast wklejać surowe dane na ekran, wysyłamy ramkę do Routera:
+    decodeSpecificFrame(id, data, card);
 }
 
 function createDynamicCard(id) {
@@ -220,10 +215,430 @@ function setupModal() {
 
 function openModal(id) {
     const modal = document.getElementById('info-modal');
-    document.getElementById('modal-title').textContent = `SZCZEGÓŁY RAMKI 0x${id}`;
-    document.getElementById('modal-body').innerHTML = `
-        <p>To jest automatycznie wygenerowany podgląd dla ramki <strong>0x${id}</strong>.</p>
-        <p>Status: Nieprzypisana do kategorii (DEBUG MODE).</p>
-    `;
+    const def = canDictionary[id] || { name: `NIEZNANY ${id}` };
+    
+    document.getElementById('modal-title').textContent = `[0x${id}] ${def.name}`;
+    
+    let bodyHtml = ``;
+    
+    // Sprawdzamy, czy mamy pełne dane w pamięci cache
+    if (frameDataCache[id]) {
+        bodyHtml += `<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--accent); color: var(--accent);">
+                    <th style="text-align: left; padding: 5px;">Sygnał</th>
+                    <th style="text-align: right; padding: 5px;">Wartość</th>
+                </tr>
+            </thead>
+            <tbody>`;
+            
+        // Pętla tworząca wiersze w tabeli dla każdego zdekodowanego bitu
+        for (const [key, value] of Object.entries(frameDataCache[id])) {
+            bodyHtml += `
+                <tr style="border-bottom: 1px solid #333;">
+                    <td style="padding: 5px; color: var(--text-dim);">${key}</td>
+                    <td style="text-align: right; padding: 5px; font-weight: bold;">${value}</td>
+                </tr>`;
+        }
+        bodyHtml += `</tbody></table>`;
+    } else {
+        bodyHtml = `
+            <p>Brak szczegółowych danych do wyświetlenia.</p>
+            <p>Status: Ramka nie została jeszcze w pełni zdekodowana (Tryb podglądu).</p>
+        `;
+    }
+    
+    document.getElementById('modal-body').innerHTML = bodyHtml;
     modal.classList.add('show');
+}
+
+// =========================================
+// GOLF MASTER - SILNIK DEKODUJĄCY CAN
+// =========================================
+
+/**
+ * Główna funkcja wyciągająca sygnał z ramki CAN (Format Intel / Little-Endian)
+ */
+function extractCANSignal(hexString, startBit, length, multiplier = 1, offset = 0, isSigned = false) {
+    // 1. Zamiana "01 02 0A" na tablicę liczb [1, 2, 10]
+    const bytes = hexString.trim().split(' ').map(x => BigInt('0x' + x));
+    
+    // 2. Budowanie jednej liczby 64-bitowej (Format Intel)
+    let dataBigInt = 0n;
+    for (let i = 0; i < bytes.length; i++) {
+        dataBigInt |= (bytes[i] << BigInt(i * 8));
+    }
+
+    // 3. Wycinanie odpowiednich bitów za pomocą maski
+    const mask = (1n << BigInt(length)) - 1n;
+    let rawValue = Number((dataBigInt >> BigInt(startBit)) & mask);
+
+    // 4. Obsługa liczb ujemnych (Uzupełnienie do dwóch)
+    if (isSigned) {
+        const signBit = 1 << (length - 1);
+        if (rawValue & signBit) {
+            rawValue -= (1 << length);
+        }
+    }
+
+    // 5. Aplikacja matematyki
+    return (rawValue * multiplier) + offset;
+}
+
+// --- ROUTER RAMEK ---
+function decodeSpecificFrame(id, hexData, cardElement) {
+    const valElement = cardElement.querySelector('.val');
+    
+    // Zawsze domyślnie pokazujemy surowe dane, chyba że kafelek ma atrybut 'data-decoded'
+    if (valElement && !valElement.hasAttribute('data-decoded')) {
+        valElement.textContent = hexData;
+        valElement.style.fontSize = "1.2em"; 
+    }
+
+    // --- MIEJSCE NA TWOJE DEKODERY ---
+    switch(id) {
+        case "151": decodeAirbagData(hexData, cardElement); break;
+        case "291": decodeZKEData(hexData, cardElement); break;
+        case "2C1": decodeManetkiData(hexData, cardElement); break;
+        case "2C3": decodeZASData(hexData, cardElement); break;
+    }
+}
+
+// =========================================
+// DEKODERY POSZCZEGÓLNYCH RAMEK
+// =========================================
+
+// Dekoder dla 0x151 (mAirbag_1)
+function decodeAirbagData(hexData, cardElement) {
+    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
+    const fullData = {
+        "AB1_FrontCrash": extractCANSignal(hexData, 0, 1),
+        "AB1_HeckCrash": extractCANSignal(hexData, 1, 1),
+        "AB1_Crash_FT": extractCANSignal(hexData, 2, 1),
+        "AB1_Crash_BT": extractCANSignal(hexData, 3, 1),
+        "AB1_Rollover": extractCANSignal(hexData, 4, 1),
+        "AB1_CrashStaerke": extractCANSignal(hexData, 5, 3),
+        "AB1_AirbagLampe_ein": extractCANSignal(hexData, 8, 1),
+        "AB1_Airbag_deaktiviert": extractCANSignal(hexData, 9, 1),
+        "AB1_Beif_Airbag_deaktiviert": extractCANSignal(hexData, 10, 1),
+        "AB1_Systemfehler": extractCANSignal(hexData, 11, 1),
+        "AB1_Fa_Gurt": extractCANSignal(hexData, 12, 2),
+        "AB1_Bf_Gurt": extractCANSignal(hexData, 14, 2),
+        "AB1_Diagnose": extractCANSignal(hexData, 16, 1),
+        "AB1_Stellglied": extractCANSignal(hexData, 17, 1),
+        "AB1_BF_Anschnall": extractCANSignal(hexData, 18, 1),
+        "AB1_KD_Fehler": extractCANSignal(hexData, 19, 1),
+        "AB1_MessageZaehler": extractCANSignal(hexData, 20, 4),
+        "AB1_Pruefsumme": extractCANSignal(hexData, 24, 8)
+    };
+
+    // Zapisz do pamięci dla naszego okna Modal (Skaner Szczegółowy)
+    frameDataCache["151"] = fullData;
+
+    // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
+    const valElement = cardElement.querySelector('.val');
+    if (valElement) {
+        valElement.setAttribute('data-decoded', 'true');
+        valElement.classList.add('hidden-val');
+    }
+
+    const gridContainer = cardElement.querySelector('.grid');
+    if (!gridContainer) return;
+
+    let html = ``;
+
+    // Pasy kierowcy (Z dokumentacji: 3 = zapięte, 2 = odpięte)
+    if (fullData.AB1_Fa_Gurt === 3) {
+        html += `<div class="ind active-green">PAS KIEROWCY</div>`;
+    } else if (fullData.AB1_Fa_Gurt === 2) {
+        html += `<div class="ind active-error">PAS KIEROWCY</div>`;
+    } else {
+        html += `<div class="ind">PAS KIEROWCY (B/D)</div>`;
+    }
+
+    // Pasy pasażera (Z dokumentacji: 3 = zapięte, 2 = odpięte)
+    if (fullData.AB1_Bf_Gurt === 3) {
+        html += `<div class="ind active-green">PAS PASAŻERA</div>`;
+    } else if (fullData.AB1_Bf_Gurt === 2) {
+        html += `<div class="ind active-error">PAS PASAŻERA</div>`;
+    } else {
+        html += `<div class="ind">PAS PASAŻERA (B/D)</div>`;
+    }
+
+    // Status systemu Airbag (uwzględniamy błąd systemu, lampkę i usterki serwisowe)
+    if (fullData.AB1_AirbagLampe_ein === 1 || fullData.AB1_Systemfehler === 1 || fullData.AB1_KD_Fehler === 1) {
+        html += `<div class="ind active-error full-width">BŁĄD SYSTEMU AIRBAG</div>`;
+        cardElement.style.borderColor = "var(--red)";
+    } else {
+        html += `<div class="ind active-green full-width">SYSTEM AIRBAG OK</div>`;
+        cardElement.style.borderColor = "var(--green)";
+    }
+
+    // Alarm zderzeniowy (jeśli jakakolwiek siła zderzenia jest > 0)
+    if (fullData.AB1_CrashStaerke > 0 || fullData.AB1_FrontCrash === 1 || fullData.AB1_Rollover === 1) {
+        html += `<div class="ind active-error full-width" style="animation: blink 0.5s infinite;">WYPADEK / CRASH DETECTED!</div>`;
+    }
+
+    gridContainer.innerHTML = html;
+}
+
+// Dekoder dla 0x291 (mZKE_1 - Zamek Centralny i Komfort)
+function decodeZKEData(hexData, cardElement) {
+    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
+    const fullData = {
+        "ZK1_Funkschl_Nr": extractCANSignal(hexData, 0, 3),
+        "ZK1_433_MHz": extractCANSignal(hexData, 3, 1),
+        "ZK1_Taste_HDF": extractCANSignal(hexData, 4, 1),
+        "ZK1_Taste_Panik": extractCANSignal(hexData, 5, 1),
+        "ZK1_Taste_Auf": extractCANSignal(hexData, 6, 1),
+        "ZK1_Taste_Zu": extractCANSignal(hexData, 7, 1),
+        "ZK1_FT_verriegeln": extractCANSignal(hexData, 8, 1),
+        "ZK1_FT_entriegeln": extractCANSignal(hexData, 9, 1),
+        "ZK1_BT_verriegeln": extractCANSignal(hexData, 10, 1),
+        "ZK1_BT_entriegeln": extractCANSignal(hexData, 11, 1),
+        "ZK1_HL_verriegeln": extractCANSignal(hexData, 12, 1),
+        "ZK1_HL_entriegeln": extractCANSignal(hexData, 13, 1),
+        "ZK1_HR_verriegeln": extractCANSignal(hexData, 14, 1),
+        "ZK1_HR_entriegeln": extractCANSignal(hexData, 15, 1),
+        "ZK1_Zent_safen": extractCANSignal(hexData, 16, 1),
+        "ZK1_Zent_entsafen": extractCANSignal(hexData, 17, 1),
+        "ZK1_HD_verriegeln": extractCANSignal(hexData, 18, 1),
+        "ZK1_HD_entriegeln": extractCANSignal(hexData, 19, 1),
+        "ZK1_HD_oeffnen": extractCANSignal(hexData, 20, 1),
+        "ZK1_HD_schliessen": extractCANSignal(hexData, 21, 1),
+        "ZK1_LED_Steuerung": extractCANSignal(hexData, 22, 1),
+        "ZK1_LED_Uebernahme": extractCANSignal(hexData, 23, 1),
+        "ZK1_Dongle_Nr": extractCANSignal(hexData, 24, 3),
+        "ZK1_Dongle_Freq": extractCANSignal(hexData, 27, 2),
+        "ZK1_Verdeck_auf": extractCANSignal(hexData, 29, 1),
+        "ZK1_Verdeck_zu": extractCANSignal(hexData, 30, 1),
+        "ZK1_LeaveHome_aktiv": extractCANSignal(hexData, 31, 1),
+        "ZK1_HL_Tuer_offen": extractCANSignal(hexData, 36, 1),
+        "ZK1_HR_Tuer_offen": extractCANSignal(hexData, 37, 1),
+        "ZK1_SL_Anf": extractCANSignal(hexData, 38, 1),
+        "ZK1_SR_Anf": extractCANSignal(hexData, 39, 1)
+    };
+
+    // Zapisz do pamięci dla okna Modal (Skaner Szczegółowy)
+    frameDataCache["291"] = fullData;
+
+    // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
+    const valElement = cardElement.querySelector('.val');
+    if (valElement) {
+        valElement.setAttribute('data-decoded', 'true');
+        valElement.classList.add('hidden-val');
+    }
+
+    const gridContainer = cardElement.querySelector('.grid');
+    if (!gridContainer) return;
+
+    let html = ``;
+
+    // --- Akcje Pilota (z uwzględnieniem przycisku Panic, jeśli auto z USA) ---
+    if (fullData.ZK1_Taste_Auf === 1) {
+        html += `<div class="ind active-green full-width">PILOT: OTWÓRZ (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
+        cardElement.style.borderColor = "var(--green)";
+    } else if (fullData.ZK1_Taste_Zu === 1) {
+        html += `<div class="ind active-error full-width">PILOT: ZAMKNIJ (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
+        cardElement.style.borderColor = "var(--red)";
+    } else if (fullData.ZK1_Taste_HDF === 1) {
+        html += `<div class="ind active-lock full-width">PILOT: BAGAŻNIK (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
+        cardElement.style.borderColor = "var(--orange)";
+    } else if (fullData.ZK1_Taste_Panik === 1) {
+        html += `<div class="ind active-error full-width" style="animation: blink 0.5s infinite;">PILOT: PANIC!</div>`;
+        cardElement.style.borderColor = "var(--red)";
+    } else {
+        html += `<div class="ind full-width">PILOT: BRAK AKCJI</div>`;
+        cardElement.style.borderColor = "var(--border-color)"; 
+    }
+
+    // --- Status Leaving Home ---
+    if (fullData.ZK1_LeaveHome_aktiv === 1) {
+        html += `<div class="ind active">LEAVING HOME</div>`;
+    } else {
+        html += `<div class="ind">LEAVING HOME</div>`;
+    }
+
+    // --- Status Drzwi / Ryglowania ---
+    if (fullData.ZK1_HL_Tuer_offen === 1 || fullData.ZK1_HR_Tuer_offen === 1) {
+        let side = "";
+        if (fullData.ZK1_HL_Tuer_offen) side += "L ";
+        if (fullData.ZK1_HR_Tuer_offen) side += "P ";
+        html += `<div class="ind active-error">DRZWI TYŁ OTWARTE: ${side}</div>`;
+    } else {
+        // Jeśli tył jest zamknięty, sprawdźmy chociaż ogólny status zaryglowania (SAFE)
+        let rygiel = (fullData.ZK1_Zent_safen === 1) ? "ZARYGLOWANE (SAFE)" : "ZAMKNIĘTE";
+        html += `<div class="ind">${rygiel}</div>`;
+    }
+
+    gridContainer.innerHTML = html;
+}
+
+// Dekoder dla 0x2C1 (mLSM_1 - Manetki i Kolumna Kierownicy)
+function decodeManetkiData(hexData, cardElement) {
+    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (39 sygnałów!)
+    const fullData = {
+        "LS1_Blk_links": extractCANSignal(hexData, 0, 1),
+        "LS1_Blk_rechts": extractCANSignal(hexData, 1, 1),
+        "LS1_Lichthupe": extractCANSignal(hexData, 2, 1),
+        "LS1_Fernlicht": extractCANSignal(hexData, 3, 1),
+        "LS1_Parklicht_links": extractCANSignal(hexData, 5, 1),
+        "LS1_Parklicht_rechts": extractCANSignal(hexData, 6, 1),
+        "LS1_Signalhorn": extractCANSignal(hexData, 7, 1),
+        "LS1_Tipwischen": extractCANSignal(hexData, 8, 1),
+        "LS1_Intervall": extractCANSignal(hexData, 9, 1),
+        "LS1_WischenStufe_1": extractCANSignal(hexData, 10, 1),
+        "LS1_WischenStufe_2": extractCANSignal(hexData, 11, 1),
+        "LS1_Frontwaschen": extractCANSignal(hexData, 12, 1),
+        "LS1_Bew_Frontwaschen": extractCANSignal(hexData, 13, 1),
+        "LS1_Heckintervall": extractCANSignal(hexData, 14, 1),
+        "LS1_Heckwaschen": extractCANSignal(hexData, 15, 1),
+        "LS1_Intervallstufen": extractCANSignal(hexData, 16, 4), // Czułość czujnika deszczu (4 bity!)
+        "LS1_BC_Down_Cursor": extractCANSignal(hexData, 20, 1),
+        "LS1_BC_Up_Cursor": extractCANSignal(hexData, 21, 1),
+        "LS1_BC_Reset": extractCANSignal(hexData, 22, 1),
+        "LS1_KD_Fehler": extractCANSignal(hexData, 23, 1),
+        "LS1_LSY_oben": extractCANSignal(hexData, 24, 1),
+        "LS1_LSY_unten": extractCANSignal(hexData, 25, 1),
+        "LS1_LSZ_vor": extractCANSignal(hexData, 26, 1),
+        "LS1_LSZ_zurueck": extractCANSignal(hexData, 27, 1),
+        "LS1_ELV_enable": extractCANSignal(hexData, 28, 1),
+        "LS1_def_ELV_Enable": extractCANSignal(hexData, 29, 1),
+        "LS1_Easy_Entry_LS": extractCANSignal(hexData, 30, 1),
+        "LS1_LHeizung_aktiv": extractCANSignal(hexData, 31, 1),
+        "LS1_Winterstellung": extractCANSignal(hexData, 32, 1),
+        "LS1_MFL_vorhanden": extractCANSignal(hexData, 33, 1),
+        "LS1_MFA_vorhanden": extractCANSignal(hexData, 34, 1),
+        "LS1_MFA_Tasten": extractCANSignal(hexData, 35, 1),
+        "LS1_def_P_Verriegelt": extractCANSignal(hexData, 36, 1),
+        "LS1_MFL_Typ": extractCANSignal(hexData, 37, 1),
+        "LS1_Servicestellung": extractCANSignal(hexData, 38, 1),
+        "LS1_P_verriegelt": extractCANSignal(hexData, 39, 1),
+        "LS1_FAS_Taster": extractCANSignal(hexData, 40, 1),
+        "LS1_Fehler_FAS_Taster": extractCANSignal(hexData, 41, 1),
+        "LS1_Fehler_Vibration": extractCANSignal(hexData, 42, 1)
+    };
+
+    // Zapisz do pamięci dla okna Modal
+    frameDataCache["2C1"] = fullData;
+
+    // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
+    const valElement = cardElement.querySelector('.val');
+    if (valElement) {
+        valElement.setAttribute('data-decoded', 'true');
+        valElement.classList.add('hidden-val');
+    }
+
+    const gridContainer = cardElement.querySelector('.grid');
+    if (!gridContainer) return;
+
+    let html = ``;
+
+    // --- Kierunkowskazy ---
+    if (fullData.LS1_Blk_links === 1) {
+        html += `<div class="ind active-green" style="animation: blink 0.5s infinite;">&#8592; KIERUNEK LEWY</div>`;
+        cardElement.style.borderColor = "var(--green)";
+    } else if (fullData.LS1_Blk_rechts === 1) {
+        html += `<div class="ind active-green" style="animation: blink 0.5s infinite;">KIERUNEK PRAWY &#8594;</div>`;
+        cardElement.style.borderColor = "var(--green)";
+    } else {
+        html += `<div class="ind">KIERUNKI WYŁ.</div>`;
+        cardElement.style.borderColor = "var(--border-color)";
+    }
+
+    // --- Klakson ---
+    if (fullData.LS1_Signalhorn === 1) {
+        html += `<div class="ind active-error">KLAKSON!</div>`;
+    } else {
+        html += `<div class="ind">KLAKSON</div>`;
+    }
+
+    // --- Światła Długie / Blinda (Lichthupe) ---
+    if (fullData.LS1_Fernlicht === 1 || fullData.LS1_Lichthupe === 1) {
+        let txt = fullData.LS1_Lichthupe === 1 ? "MIGNIĘCIE" : "DŁUGIE";
+        html += `<div class="ind active-lock">ŚWIATŁA: ${txt}</div>`;
+    }
+
+    // --- Wycieraczki / Spryskiwacze ---
+    let wipeStatus = "WYŁĄCZONE";
+    let isWiping = false;
+
+    if (fullData.LS1_Frontwaschen === 1 || fullData.LS1_Heckwaschen === 1) {
+        wipeStatus = fullData.LS1_Frontwaschen === 1 ? "MYCIE PRZÓD" : "MYCIE TYŁ";
+        isWiping = true;
+    } else if (fullData.LS1_WischenStufe_2 === 1) {
+        wipeStatus = "SZYBKIE (BIEG 2)";
+        isWiping = true;
+    } else if (fullData.LS1_WischenStufe_1 === 1) {
+        wipeStatus = "WOLNE (BIEG 1)";
+        isWiping = true;
+    } else if (fullData.LS1_Intervall === 1) {
+        // Tu przydaje się nasz 4-bitowy sygnał od czułości!
+        wipeStatus = `AUTO (Czułość: ${fullData.LS1_Intervallstufen})`;
+        isWiping = true;
+    } else if (fullData.LS1_Tipwischen === 1) {
+        wipeStatus = "POJEDYNCZE PRZETARCIE";
+        isWiping = true;
+    }
+
+    if (isWiping) {
+        html += `<div class="ind active full-width">WYCIERACZKI: ${wipeStatus}</div>`;
+    } else {
+        html += `<div class="ind full-width">WYCIERACZKI: OFF</div>`;
+    }
+
+    gridContainer.innerHTML = html;
+}
+
+// Dekoder dla 0x2C3 (mZAS_Status - Status stacyjki / Zaciski)
+function decodeZASData(hexData, cardElement) {
+    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
+    // Ramka stacyjki (Klemmen) w PQ35 opiera się na podstawowych bitach zacisków.
+    const fullData = {
+        "ZAS_Kl_S": extractCANSignal(hexData, 0, 1),   // Zacisk S (Kluczyk w stacyjce)
+        "ZAS_Kl_15": extractCANSignal(hexData, 1, 1),  // Zacisk 15 (Zapłon ON)
+        "ZAS_Kl_75": extractCANSignal(hexData, 2, 1),  // Zacisk 75 (Akcesoria / X-Kontakt)
+        "ZAS_Kl_50": extractCANSignal(hexData, 3, 1),  // Zacisk 50 (Rozrusznik kręci)
+        "ZAS_Kl_P": extractCANSignal(hexData, 4, 1),   // Zacisk P (Światła postojowe/parkingowe stacyjki)
+        "ZAS_Fehler": extractCANSignal(hexData, 5, 1)  // Flaga błędu kostki stacyjki
+    };
+
+    // Zapisz do pamięci dla okna Modal
+    frameDataCache["2C3"] = fullData;
+
+    // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
+    const valElement = cardElement.querySelector('.val');
+    if (valElement) {
+        valElement.setAttribute('data-decoded', 'true');
+        valElement.classList.add('hidden-val');
+    }
+
+    const gridContainer = cardElement.querySelector('.grid');
+    if (!gridContainer) return;
+
+    let html = ``;
+
+    // --- Wizualizacja Głównego Stanu Stacyjki ---
+    // Logika priorytetów: Rozrusznik -> Zapłon -> Akcesoria -> Kluczyk -> Brak
+    if (fullData.ZAS_Fehler === 1) {
+        html += `<div class="ind active-error full-width">BŁĄD KOSTKI STACYJKI!</div>`;
+        cardElement.style.borderColor = "var(--red)";
+    } else if (fullData.ZAS_Kl_50 === 1) {
+        html += `<div class="ind active-lock full-width" style="animation: blink 0.2s infinite;">ROZRUSZNIK (KL. 50)</div>`;
+        cardElement.style.borderColor = "var(--orange)";
+    } else if (fullData.ZAS_Kl_15 === 1) {
+        html += `<div class="ind active-green full-width">ZAPŁON WŁĄCZONY (KL. 15)</div>`;
+        cardElement.style.borderColor = "var(--green)";
+    } else if (fullData.ZAS_Kl_75 === 1) {
+        html += `<div class="ind active full-width">AKCESORIA (KL. 75)</div>`;
+        cardElement.style.borderColor = "var(--accent)";
+    } else if (fullData.ZAS_Kl_S === 1) {
+        html += `<div class="ind active full-width" style="opacity: 0.8;">KLUCZYK W STACYJCE (KL. S)</div>`;
+        cardElement.style.borderColor = "var(--accent)";
+    } else {
+        html += `<div class="ind full-width">BRAK KLUCZYKA</div>`;
+        cardElement.style.borderColor = "var(--border-color)";
+    }
+
+    gridContainer.innerHTML = html;
 }

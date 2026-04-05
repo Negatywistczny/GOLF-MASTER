@@ -6,6 +6,37 @@
 const WS_URL = "ws://localhost:8765";
 let socket = null;
 
+// Słownik znanych ramek CAN (PQ35)
+const canDictionary = {
+    "151": { name: "AIRBAG (mAirbag_1)", zone: "system" },
+    "291": { name: "ZAMEK / KOMFORT (mZKE_1)", zone: "komfort" },
+    "2C1": { name: "MANETKI (mLSM_1)", zone: "komfort" },
+    "2C3": { name: "STACYJKA (mZAS_Status)", zone: "naped" },
+    "351": { name: "GATEWAY (mGateway_1)", zone: "system" },
+    "359": { name: "HAMULCE / BIEGI (mGW_Bremse)", zone: "naped" },
+    "35B": { name: "SILNIK (mGW_Motor)", zone: "naped" },
+    "3C3": { name: "KĄT SKRĘTU (mLenkwinkel)", zone: "naped" },
+    "3E1": { name: "CLIMATRONIC 1 (mClima_1)", zone: "komfort" },
+    "3E3": { name: "CLIMATRONIC 2 (mClima_2)", zone: "komfort" },
+    "42B": { name: "SLEEP / WAKE (mNM_Gateway)", zone: "system" },
+    "470": { name: "DRZWI / ŚWIATŁA (mBSG_Kombi)", zone: "komfort" },
+    "527": { name: "TEMP. ZEWN. (mGW_Kombi)", zone: "media" },
+    "551": { name: "UKŁ. KIEROWNICZY", zone: "naped" },
+    "555": { name: "TURBO / OLEJ (mMotor7)", zone: "naped" },
+    "557": { name: "BŁĘDY MODUŁÓW (mKD_Error)", zone: "system" },
+    "571": { name: "ZASILANIE / AKU (mBSG_2)", zone: "naped" },
+    "575": { name: "STATUS ŚWIATEŁ (mBSG_3)", zone: "komfort" },
+    "60E": { name: "JEDNOSTKI (mEinheiten)", zone: "media" },
+    "621": { name: "PALIWO / RĘCZNY (mKombi_K1)", zone: "naped" },
+    "62F": { name: "WYŚWIETLACZ MFA (mDisplay_1)", zone: "media" },
+    "635": { name: "ŚCIEMNIANIE DESKI (mDimmung)", zone: "komfort" },
+    "651": { name: "FLAGI SYSTEMU (mSysteminfo)", zone: "system" },
+    "653": { name: "REGION / JĘZYK (mGateway_3)", zone: "media" },
+    "655": { name: "LISTA MODUŁÓW (mVerbauliste)", zone: "system" },
+    "65D": { name: "CZAS / PRZEBIEG (mDiagnose_1)", zone: "media" },
+    "65F": { name: "VIN POJAZDU (mFzg_Ident)", zone: "system" }
+};
+
 // Pamięć kafelków: { "0x470": DOMElement }
 const activeCards = {};
 // Rejestr błędów: { "PY:SERIAL_LOST": { count: 5, row: DOMElement } }
@@ -23,7 +54,7 @@ function connectWebSocket() {
     socket = new WebSocket(WS_URL);
 
     socket.onopen = () => {
-        updateStatus("POŁĄCZONO Z KURIEREM (PY)", "var(--green)");
+        updateStatus("POŁĄCZONO Z PYTHONEM", "var(--green)");
         logTerminal("SYS:JS:WS_CONNECTED");
     };
 

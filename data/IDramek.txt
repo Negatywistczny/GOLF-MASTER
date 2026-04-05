@@ -1,0 +1,53 @@
+0x151 (337) -> mAirbag_1 (Dane ze sterownika poduszek powietrznych)
+
+0x291 (657) -> mZKE_1 (Zentrale Komfortelektronik - Moduł centralnego zamka i komfortu)
+
+0x2C1 (705) -> mLSM_1 (Lenkstockschaltermodul - Moduł przełączników pod kolumną kierownicy)
+
+0x2C3 (707) -> mZAS_Status (Zündanlassschalter - Status stacyjki / Klemme)
+
+0x351 (849) -> mGateway_1 (Podstawowa ramka statusowa Gatewaya)
+
+0x359 (857) -> mGW_Bremse_Getriebe (Dane z Gatewaya o układzie hamulcowym i skrzyni biegów)
+
+0x35B (859) -> mGW_Motor (Telemetria silnika: RPM, temp., sprzęgło)
+
+0x3C3 (963) -> mLenkwinkel_1 (Kąt skrętu kierownicy)
+
+0x3E1 (993) -> mClima_1 (Główna ramka klimatyzacji/Climatronic)
+
+0x3E3 (995) -> mClima_2 (Dodatkowe parametry klimatyzacji: nasłonecznienie, temp. wnętrza)
+
+0x42B (1067) -> mNM_Gateway_I (Network Management - Zarządzanie usypianiem/budzeniem magistrali Infotainment)
+
+0x470 (1136) -> mBSG_Kombi (Interakcje z nadwoziem i UI radia: drzwi, wsteczny, oświetlenie)
+
+0x527 (1319) -> mGW_Kombi (Dane z Gatewaya do liczników, m.in. temp. zewnętrzna)
+
+0x551 (1361) -> [Ramka specyficzna, często powiązana ze statusem układu kierowniczego lub napędu]
+
+0x555 (1365) -> mMotor7 (Dodatkowa ramka silnika: ciśnienie doładowania, temp. oleju)
+
+0x557 (1367) -> mKD_Error (Flagi błędów komunikacji z poszczególnymi modułami)
+
+0x571 (1393) -> mBSG_2 (Moduł Centralnej Elektryki: zarządzanie zasilaniem, napięcie akumulatora)
+
+0x575 (1397) -> mBSG_3 (Moduł Centralnej Elektryki: rozszerzone statusy oświetlenia i stacyjki)
+
+0x60E (1550) -> mEinheiten (Formaty jednostek wyświetlacza, np. C/F, km/mi)
+
+0x621 (1569) -> mKombi_K1 (Dane z licznika, m.in. poziom paliwa w litrach i kontrolka ręcznego)
+
+0x62F (1583) -> mDisplay_1 (Żądania i kontrola wyświetlacza MFA/FIS)
+
+0x635 (1589) -> mDimmung (Wartość ściemniacza deski rozdzielczej / Klemme 58d)
+
+0x651 (1617) -> mSysteminfo_1 (Globalne flagi systemowe)
+
+0x653 (1619) -> mGateway_3 (Wersja językowa i kodowanie regionu Gatewaya)
+
+0x655 (1621) -> mVerbauliste_2 (Lista instalacyjna Gatewaya - zdekodowane moduły w aucie)
+
+0x65D (1629) -> mDiagnose_1 (Globalny czas/zegar oraz główny przebieg pojazdu)
+
+0x65F (1631) -> mFzg_Ident (Numer VIN pojazdu przesłany w częściach)

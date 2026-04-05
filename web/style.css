@@ -139,39 +139,50 @@ h1 {
     color: var(--text-dim);
 }
 
-/* --- LAMPKI --- */
+/* --- SYSTEM INDYKATORÓW V2 (WHITE TEXT EDITION) --- */
 .grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 6px;
     margin-top: 10px;
 }
 
+/* --- SYSTEM INDYKATORÓW V3 (DEEP COLORS) --- */
 .ind {
-    background: #0d0d12;
-    color: #333;
-    padding: 5px;
-    font-size: 0.7em;
-    border-radius: 3px;
+    /* Wymuszamy identyczny rozmiar i biały kolor - ignoruje to co w JS */
+    font-size: 11px !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    
+    padding: 8px 4px;
+    border-radius: 4px;
     text-align: center;
     flex: 1;
-    min-width: 45%;
+    min-width: 48%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
 }
 
-/* Warianty kolorystyczne dla lampek */
-.ind.active { background: var(--accent); color: #fff; }
-.ind.active-green { background: var(--green); color: #fff; }
-.ind.active-error { background: var(--red); color: #fff; }
-.ind.active-lock { background: var(--orange); color: #fff; }
-.ind.active-blue { background: #0984e3; color: #fff; } /* NIEBIESKI */
-.ind.active-orange { background: #e67e22; color: #fff; } /* POMARAŃCZOWY */
-.ind.active-red { background: #c0392b; color: #fff; } /* CIEMNY CZERWONY (np. Webasto) */
+/* GŁĘBOKIE, CIEMNE KOLORY TŁA */
+.ind.active        { background: #005bb5 !important; } /* Głęboki granatowy */
+.ind.active-green  { background: #126e36 !important; } /* Ciemna butelkowa zieleń */
+.ind.active-error  { background: #821c1c !important; } /* Ciemna czerwień / bordowy */
+.ind.active-orange { background: #965a00 !important; } /* Ciemny bursztyn */
+.ind.active-blue   { background: #005bb5 !important; } 
+.ind.active-lock   { background: #4834d4 !important; } /* Ciemny fiolet */
 
 .ind.full-width { min-width: 100%; }
 
-/* Klasa ukrywająca surowe wartości HEX na zdekodowanych kafelkach */
-.hidden-val {
-    display: none !important;
+/* Klasa ukrywająca surowe dane */
+.hidden-val { display: none !important; }
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
 }
 
 /* --- PANEL DIAGNOSTYCZNY (NOWOŚĆ) --- */

@@ -8,33 +8,33 @@ let socket = null;
 
 // Słownik znanych ramek CAN (PQ35)
 const canDictionary = {
-    "151": { name: "AIRBAG (mAirbag_1)", zone: "system" },
-    "291": { name: "ZAMEK / KOMFORT (mZKE_1)", zone: "komfort" },
-    "2C1": { name: "MANETKI (mLSM_1)", zone: "komfort" },
-    "2C3": { name: "STACYJKA (mZAS_Status)", zone: "naped" },
-    "351": { name: "GATEWAY (mGateway_1)", zone: "system" },
-    "359": { name: "HAMULCE / BIEGI (mGW_Bremse)", zone: "naped" },
-    "35B": { name: "SILNIK (mGW_Motor)", zone: "naped" },
-    "3C3": { name: "KĄT SKRĘTU (mLenkwinkel)", zone: "naped" },
-    "3E1": { name: "CLIMATRONIC 1 (mClima_1)", zone: "komfort" },
-    "3E3": { name: "CLIMATRONIC 2 (mClima_2)", zone: "komfort" },
-    "42B": { name: "SLEEP / WAKE (mNM_Gateway)", zone: "system" },
-    "470": { name: "DRZWI / ŚWIATŁA (mBSG_Kombi)", zone: "komfort" },
-    "527": { name: "TEMP. ZEWN. (mGW_Kombi)", zone: "media" },
-    "551": { name: "UKŁ. KIEROWNICZY", zone: "naped" },
-    "555": { name: "TURBO / OLEJ (mMotor7)", zone: "naped" },
-    "557": { name: "BŁĘDY MODUŁÓW (mKD_Error)", zone: "system" },
-    "571": { name: "ZASILANIE / AKU (mBSG_2)", zone: "naped" },
-    "575": { name: "STATUS ŚWIATEŁ (mBSG_3)", zone: "komfort" },
-    "60E": { name: "JEDNOSTKI (mEinheiten)", zone: "media" },
-    "621": { name: "PALIWO / RĘCZNY (mKombi_K1)", zone: "naped" },
-    "62F": { name: "WYŚWIETLACZ MFA (mDisplay_1)", zone: "media" },
-    "635": { name: "ŚCIEMNIANIE DESKI (mDimmung)", zone: "komfort" },
-    "651": { name: "FLAGI SYSTEMU (mSysteminfo)", zone: "system" },
-    "653": { name: "REGION / JĘZYK (mGateway_3)", zone: "media" },
-    "655": { name: "LISTA MODUŁÓW (mVerbauliste)", zone: "system" },
-    "65D": { name: "CZAS / PRZEBIEG (mDiagnose_1)", zone: "media" },
-    "65F": { name: "VIN POJAZDU (mFzg_Ident)", zone: "system" }
+    "0x151": { name: "AIRBAG (mAirbag_1)", zone: "system" },
+    "0x291": { name: "ZAMEK / KOMFORT (mZKE_1)", zone: "komfort" },
+    "0x2C1": { name: "MANETKI (mLSM_1)", zone: "komfort" },
+    "0x2C3": { name: "STACYJKA (mZAS_Status)", zone: "naped" },
+    "0x351": { name: "GATEWAY (mGateway_1)", zone: "system" },
+    "0x359": { name: "HAMULCE / BIEGI (mGW_Bremse)", zone: "naped" },
+    "0x35B": { name: "SILNIK (mGW_Motor)", zone: "naped" },
+    "0x3C3": { name: "KĄT SKRĘTU (mLenkwinkel)", zone: "naped" },
+    "0x3E1": { name: "CLIMATRONIC 1 (mClima_1)", zone: "komfort" },
+    "0x3E3": { name: "CLIMATRONIC 2 (mClima_2)", zone: "komfort" },
+    "0x42B": { name: "SLEEP / WAKE (mNM_Gateway)", zone: "system" },
+    "0x470": { name: "DRZWI / ŚWIATŁA (mBSG_Kombi)", zone: "komfort" },
+    "0x527": { name: "TEMP. ZEWN. (mGW_Kombi)", zone: "media" },
+    "0x551": { name: "UKŁ. KIEROWNICZY", zone: "naped" },
+    "0x555": { name: "TURBO / OLEJ (mMotor7)", zone: "naped" },
+    "0x557": { name: "BŁĘDY MODUŁÓW (mKD_Error)", zone: "system" },
+    "0x571": { name: "ZASILANIE / AKU (mBSG_2)", zone: "naped" },
+    "0x575": { name: "STATUS ŚWIATEŁ (mBSG_3)", zone: "komfort" },
+    "0x60E": { name: "JEDNOSTKI (mEinheiten)", zone: "media" },
+    "0x621": { name: "PALIWO / RĘCZNY (mKombi_K1)", zone: "naped" },
+    "0x62F": { name: "WYŚWIETLACZ MFA (mDisplay_1)", zone: "media" },
+    "0x635": { name: "ŚCIEMNIANIE DESKI (mDimmung)", zone: "komfort" },
+    "0x651": { name: "FLAGI SYSTEMU (mSysteminfo)", zone: "system" },
+    "0x653": { name: "REGION / JĘZYK (mGateway_3)", zone: "media" },
+    "0x655": { name: "LISTA MODUŁÓW (mVerbauliste)", zone: "system" },
+    "0x65D": { name: "CZAS / PRZEBIEG (mDiagnose_1)", zone: "media" },
+    "0x65F": { name: "VIN POJAZDU (mFzg_Ident)", zone: "system" }
 };
 
 // Pamięć kafelków: { "0x470": DOMElement }
@@ -97,7 +97,7 @@ function parseIncomingData(raw) {
     // 4. Obsługa Ramek CAN (ID:DATA1 DATA2...)
     if (raw.includes(":")) {
         const [idHex, dataHex] = raw.split(":");
-        handleCANFrame(idHex.toUpperCase(), dataHex);
+        handleCANFrame(idHex, dataHex);
     }
 }
 
@@ -134,11 +134,9 @@ function createDynamicCard(id) {
     }
 
     card.innerHTML = `
-        <div class="id-label">0x${id}</div>
-        <h2>${def.name}</h2>
-        <span class="val">-- -- --</span>
-        <div class="grid">
-            </div>
+    <div class="id-label">${id}</div> <h2>${def.name}</h2>
+    <span class="val">-- -- --</span>
+    <div class="grid"></div>
     `;
 
     // 4. Dodaj kliknięcie (Słownik - Modal)
@@ -219,7 +217,7 @@ function openModal(id) {
     const modal = document.getElementById('info-modal');
     const def = canDictionary[id] || { name: `NIEZNANY ${id}` };
     
-    document.getElementById('modal-title').textContent = `[0x${id}] ${def.name}`;
+    document.getElementById('modal-title').textContent = `[${id}] ${def.name}`;
     
     let bodyHtml = ``;
     
@@ -299,32 +297,32 @@ function decodeSpecificFrame(id, hexData, cardElement) {
 
     // --- MIEJSCE NA TWOJE DEKODERY ---
     switch(id) {
-        case "151": decodeAirbagData(hexData, cardElement); break;
-        case "291": decodeZKEData(hexData, cardElement); break;
-        case "2C1": decodeManetkiData(hexData, cardElement); break;
-        case "2C3": decodeZASData(hexData, cardElement); break;
-        case "351": decodeGateway1Data(hexData, cardElement); break;
-        case "359": decodeBremseGetriebeData(hexData, cardElement); break;
-        case "35B": decodeMotorData(hexData, cardElement); break;
-        case "3C3": decodeLenkwinkelData(hexData, cardElement); break;
-        case "3E1": decodeClima1Data(hexData, cardElement); break;
-        case "3E3": decodeClima2Data(hexData, cardElement); break;
-        case "42B": decodeNMGatewayIData(hexData, cardElement); break;
-        case "470": decodeBSGKombiData(hexData, cardElement); break;
-        case "527": decodeGWKombiData(hexData, cardElement); break;
-        case "555": decodeMotor7Data(hexData, cardElement); break;
-        case "557": decodeKDErrorData(hexData, cardElement); break;
-        case "571": decodeBSG2Data(hexData, cardElement); break;
-        case "575": decodeBSG3Data(hexData, cardElement); break;
-        case "60E": decodeEinheitenData(hexData, cardElement); break;
-        case "621": decodeKombiK1Data(hexData, cardElement); break;
-        case "62F": decodeDisplay1Data(hexData, cardElement); break;
-        case "635": decodeDimmungData(hexData, cardElement); break;
-        case "651": decodeSysteminfo1Data(hexData, cardElement); break;
-        case "653": decodeGateway3Data(hexData, cardElement); break;
-        case "655": decodeSollverbauData(hexData, cardElement); break;
-        case "65D": decodeDiagnose1Data(hexData, cardElement); break;
-        case "65F": decodeFzgIdentData(hexData, cardElement); break;
+        case "0x151": decodeAirbagData(id, hexData, cardElement); break;
+        case "0x291": decodeZKEData(id, hexData, cardElement); break;
+        case "0x2C1": decodeManetkiData(id, hexData, cardElement); break;
+        case "0x2C3": decodeZASData(id, hexData, cardElement); break;
+        case "0x351": decodeGateway1Data(id, hexData, cardElement); break;
+        case "0x359": decodeBremseGetriebeData(id, hexData, cardElement); break;
+        case "0x35B": decodeMotorData(id, hexData, cardElement); break;
+        case "0x3C3": decodeLenkwinkelData(id, hexData, cardElement); break;
+        case "0x3E1": decodeClima1Data(id, hexData, cardElement); break;
+        case "0x3E3": decodeClima2Data(id, hexData, cardElement); break;
+        case "0x42B": decodeNMGatewayIData(id, hexData, cardElement); break;
+        case "0x470": decodeBSGKombiData(id, hexData, cardElement); break;
+        case "0x527": decodeGWKombiData(id, hexData, cardElement); break;
+        case "0x555": decodeMotor7Data(id, hexData, cardElement); break;
+        case "0x557": decodeKDErrorData(id, hexData, cardElement); break;
+        case "0x571": decodeBSG2Data(id, hexData, cardElement); break;
+        case "0x575": decodeBSG3Data(id, hexData, cardElement); break;
+        case "0x60E": decodeEinheitenData(id, hexData, cardElement); break;
+        case "0x621": decodeKombiK1Data(id, hexData, cardElement); break;
+        case "0x62F": decodeDisplay1Data(id, hexData, cardElement); break;
+        case "0x635": decodeDimmungData(id, hexData, cardElement); break;
+        case "0x651": decodeSysteminfo1Data(id, hexData, cardElement); break;
+        case "0x653": decodeGateway3Data(id, hexData, cardElement); break;
+        case "0x655": decodeSollverbauData(id, hexData, cardElement); break;
+        case "0x65D": decodeDiagnose1Data(id, hexData, cardElement); break;
+        case "0x65F": decodeFzgIdentData(id, hexData, cardElement); break;
     }
 }
 
@@ -333,7 +331,7 @@ function decodeSpecificFrame(id, hexData, cardElement) {
 // =========================================
 
 // Dekoder dla 0x151 (mAirbag_1)
-function decodeAirbagData(hexData, cardElement) {
+function decodeAirbagData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
     const fullData = {
         "AB1_FrontCrash": extractCANSignal(hexData, 0, 1),
@@ -357,7 +355,7 @@ function decodeAirbagData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla naszego okna Modal (Skaner Szczegółowy)
-    frameDataCache["151"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -407,7 +405,7 @@ function decodeAirbagData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x291 (mZKE_1 - Zamek Centralny i Komfort)
-function decodeZKEData(hexData, cardElement) {
+function decodeZKEData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
     const fullData = {
         "ZK1_Funkschl_Nr": extractCANSignal(hexData, 0, 3),
@@ -444,7 +442,7 @@ function decodeZKEData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal (Skaner Szczegółowy)
-    frameDataCache["291"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -499,7 +497,7 @@ function decodeZKEData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x2C1 (mLSM_1 - Manetki i Kolumna Kierownicy)
-function decodeManetkiData(hexData, cardElement) {
+function decodeManetkiData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (39 sygnałów!)
     const fullData = {
         "LS1_Blk_links": extractCANSignal(hexData, 0, 1),
@@ -544,7 +542,7 @@ function decodeManetkiData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["2C1"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -615,7 +613,7 @@ function decodeManetkiData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x2C3 (mZAS_Status - Status stacyjki / Zaciski)
-function decodeZASData(hexData, cardElement) {
+function decodeZASData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
     // Ramka stacyjki (Klemmen) w PQ35 opiera się na podstawowych bitach zacisków.
     const fullData = {
@@ -628,7 +626,7 @@ function decodeZASData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["2C3"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -668,7 +666,7 @@ function decodeZASData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x351 (mGateway_1 - Podstawowa ramka statusowa Gatewaya)
-function decodeGateway1Data(hexData, cardElement) {
+function decodeGateway1Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
     const fullData = {
         "GW1_FhzgGeschw_alt": extractCANSignal(hexData, 0, 1),
@@ -679,7 +677,7 @@ function decodeGateway1Data(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["351"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -721,7 +719,7 @@ function decodeGateway1Data(hexData, cardElement) {
 }
 
 // Dekoder dla 0x359 (mGW_Bremse_Getriebe - Hamulce i Skrzynia Biegów)
-function decodeBremseGetriebeData(hexData, cardElement) {
+function decodeBremseGetriebeData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (29 sygnałów)
     const fullData = {
         "GWB_Alt_FzgGeschw": extractCANSignal(hexData, 0, 1),
@@ -756,7 +754,7 @@ function decodeBremseGetriebeData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["359"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -817,7 +815,7 @@ function decodeBremseGetriebeData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x35B (mGW_Motor - Telemetria silnika)
-function decodeMotorData(hexData, cardElement) {
+function decodeMotorData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (25 sygnałów)
     const fullData = {
         "GWM_Alt_1_Motor": extractCANSignal(hexData, 0, 1),
@@ -848,7 +846,7 @@ function decodeMotorData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["35B"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -922,7 +920,7 @@ function decodeMotorData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x3C3 (mLenkwinkel_1 - Kąt skrętu kierownicy)
-function decodeLenkwinkelData(hexData, cardElement) {
+function decodeLenkwinkelData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (11 sygnałów)
     const fullData = {
         "LW1_Lenkradwinkel": extractCANSignal(hexData, 0, 15, 0.04375, 0),       // Kąt (wartość bezwzględna)
@@ -939,7 +937,7 @@ function decodeLenkwinkelData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["3C3"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -996,7 +994,7 @@ function decodeLenkwinkelData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x3E1 (mClima_1 - Główna ramka klimatyzacji)
-function decodeClima1Data(hexData, cardElement) {
+function decodeClima1Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (20 sygnałów)
     const fullData = {
         "CL1_Drehzahlanhebung": extractCANSignal(hexData, 0, 1),
@@ -1022,7 +1020,7 @@ function decodeClima1Data(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["3E1"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -1093,7 +1091,7 @@ function decodeClima1Data(hexData, cardElement) {
 }
 
 // Dekoder dla 0x3E3 (mClima_2 - Dodatkowe parametry klimatyzacji)
-function decodeClima2Data(hexData, cardElement) {
+function decodeClima2Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (12 sygnałów)
     const fullData = {
         "CL2_Sonne_links": extractCANSignal(hexData, 0, 8, 4, 0),            // Czujnik nasłonecznienia lewy (W/m^2)
@@ -1111,7 +1109,7 @@ function decodeClima2Data(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["3E3"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -1169,7 +1167,7 @@ function decodeClima2Data(hexData, cardElement) {
 }
 
 // Dekoder dla 0x42B (mNM_Gateway_I - Zarządzanie usypianiem/budzeniem)
-function decodeNMGatewayIData(hexData, cardElement) {
+function decodeNMGatewayIData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (19 sygnałów)
     const fullData = {
         "NMGW_I_Receiver": extractCANSignal(hexData, 0, 8),
@@ -1194,7 +1192,7 @@ function decodeNMGatewayIData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["42B"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -1245,7 +1243,7 @@ function decodeNMGatewayIData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x470 (mBSG_Kombi - Interakcje z nadwoziem i oświetleniem)
-function decodeBSGKombiData(hexData, cardElement) {
+function decodeBSGKombiData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (44 sygnały!)
     const fullData = {
         "BSK_Blk_links": extractCANSignal(hexData, 0, 1),
@@ -1295,7 +1293,7 @@ function decodeBSGKombiData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["470"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -1375,7 +1373,7 @@ function decodeBSGKombiData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x527 (mGW_Kombi - Dane z Gatewaya do liczników)
-function decodeGWKombiData(hexData, cardElement) {
+function decodeGWKombiData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (14 sygnałów)
     const fullData = {
         "GWK_Alt_3_Kombi": extractCANSignal(hexData, 0, 1),
@@ -1395,7 +1393,7 @@ function decodeGWKombiData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["527"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -1456,7 +1454,7 @@ function decodeGWKombiData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x555 (mMotor7 - Dodatkowa ramka silnika)
-function decodeMotor7Data(hexData, cardElement) {
+function decodeMotor7Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (22 sygnały)
     const fullData = {
         "MO7_LL_Status": extractCANSignal(hexData, 0, 1),
@@ -1484,7 +1482,7 @@ function decodeMotor7Data(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["555"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -1550,7 +1548,7 @@ function decodeMotor7Data(hexData, cardElement) {
 }
 
 // Dekoder dla 0x557 (mKD_Error - Flagi błędów modułów)
-function decodeKDErrorData(hexData, cardElement) {
+function decodeKDErrorData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (62 moduły!)
     const fullData = {
         "EKD_Motor_A": extractCANSignal(hexData, 0, 1),
@@ -1618,7 +1616,7 @@ function decodeKDErrorData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["557"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -1668,7 +1666,7 @@ function decodeKDErrorData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x571 (mBSG_2 - Zarządzanie zasilaniem i akumulator)
-function decodeBSG2Data(hexData, cardElement) {
+function decodeBSG2Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (30 sygnałów)
     const fullData = {
         "BS2_U_BATT": extractCANSignal(hexData, 0, 8, 0.05, 5),
@@ -1704,7 +1702,7 @@ function decodeBSG2Data(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["571"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -1775,7 +1773,7 @@ function decodeBSG2Data(hexData, cardElement) {
 }
 
 // Dekoder dla 0x575 (mBSG_3 - Rozszerzone statusy oświetlenia i stacyjki)
-function decodeBSG3Data(hexData, cardElement) {
+function decodeBSG3Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (30 sygnałów)
     const fullData = {
         "BS3_Klemme_S": extractCANSignal(hexData, 0, 1),
@@ -1811,7 +1809,7 @@ function decodeBSG3Data(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["575"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -1887,7 +1885,7 @@ function decodeBSG3Data(hexData, cardElement) {
 }
 
 // Dekoder dla 0x60E (mEinheiten - Formaty jednostek i wyświetlacza)
-function decodeEinheitenData(hexData, cardElement) {
+function decodeEinheitenData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (10 sygnałów)
     const fullData = {
         "EH1_Einh_Strck": extractCANSignal(hexData, 0, 1),
@@ -1903,7 +1901,7 @@ function decodeEinheitenData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["60E"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -1947,7 +1945,7 @@ function decodeEinheitenData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x621 (mKombi_K1 - Dane z licznika)
-function decodeKombiK1Data(hexData, cardElement) {
+function decodeKombiK1Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (14 sygnałów)
     const fullData = {
         "KO1_Tankstop": extractCANSignal(hexData, 0, 1),
@@ -1973,7 +1971,7 @@ function decodeKombiK1Data(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["621"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -2036,7 +2034,7 @@ function decodeKombiK1Data(hexData, cardElement) {
 }
 
 // Dekoder dla 0x62F (mDisplay_1 - Interakcja i sterowanie ekranem FIS/MFA)
-function decodeDisplay1Data(hexData, cardElement) {
+function decodeDisplay1Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (10 sygnałów)
     const fullData = {
         "DY1_Display_OK": extractCANSignal(hexData, 0, 1),
@@ -2052,7 +2050,7 @@ function decodeDisplay1Data(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["62F"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -2105,7 +2103,7 @@ function decodeDisplay1Data(hexData, cardElement) {
 }
 
 // Dekoder dla 0x635 (mDimmung - Ściemniacz deski rozdzielczej i przycisków)
-function decodeDimmungData(hexData, cardElement) {
+function decodeDimmungData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (5 sygnałów)
     const fullData = {
         "DI1_Display": extractCANSignal(hexData, 0, 7),
@@ -2116,7 +2114,7 @@ function decodeDimmungData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["635"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -2159,7 +2157,7 @@ function decodeDimmungData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x651 (mSysteminfo_1 - Globalne flagi systemowe Gatewaya)
-function decodeSysteminfo1Data(hexData, cardElement) {
+function decodeSysteminfo1Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (27 sygnałów)
     const fullData = {
         "SY1_CAN_Extern": extractCANSignal(hexData, 0, 1),
@@ -2192,7 +2190,7 @@ function decodeSysteminfo1Data(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["651"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -2255,7 +2253,7 @@ function decodeSysteminfo1Data(hexData, cardElement) {
 }
 
 // Dekoder dla 0x653 (mGateway_3 - Wersja językowa, region i typ silnika)
-function decodeGateway3Data(hexData, cardElement) {
+function decodeGateway3Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (7 sygnałów)
     const fullData = {
         "GW3_Laendervariante": extractCANSignal(hexData, 0, 6),       // [cite: 187]
@@ -2268,7 +2266,7 @@ function decodeGateway3Data(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["653"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -2348,7 +2346,7 @@ function decodeGateway3Data(hexData, cardElement) {
 }
 
 // Dekoder dla 0x655 (mSollverbau_neu - Lista zakodowanych sterowników)
-function decodeSollverbauData(hexData, cardElement) {
+function decodeSollverbauData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (64 sygnały - po 1 bicie)
     const fullData = {
         "VBN_Motor_A": extractCANSignal(hexData, 0, 1),
@@ -2418,7 +2416,7 @@ function decodeSollverbauData(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["655"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -2467,7 +2465,7 @@ function decodeSollverbauData(hexData, cardElement) {
 }
 
 // Dekoder dla 0x65D (mDiagnose_1 - Globalny czas, data i przebieg)
-function decodeDiagnose1Data(hexData, cardElement) {
+function decodeDiagnose1Data(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (10 sygnałów)
     const fullData = {
         "DN1_Verlernzaehler": extractCANSignal(hexData, 0, 8),
@@ -2483,7 +2481,7 @@ function decodeDiagnose1Data(hexData, cardElement) {
     };
 
     // Zapisz do pamięci dla okna Modal
-    frameDataCache["65D"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
@@ -2543,13 +2541,13 @@ function decodeDiagnose1Data(hexData, cardElement) {
 }
 
 // Dekoder dla 0x65F (mFzg_Ident - Złożenie numeru VIN z multipleksera)
-function decodeFzgIdentData(hexData, cardElement) {
+function decodeFzgIdentData(id, hexData, cardElement) {
     // 1. ODCZYT MULTIPLEKSERA
     const mux = extractCANSignal(hexData, 0, 2);
 
     // Pobieramy dotychczasowe dane z pamięci (aby ich nie nadpisać przy nowym cyklu MUX)
     // Jeśli to pierwsza ramka, inicjujemy pusty obiekt.
-    const fullData = frameDataCache["65F"] || {};
+    const fullData = frameDataCache[id] || {};
     fullData["FI1_MUX"] = mux; // Zapisujemy, w którym trybie aktualnie nadaje Gateway
 
     // Odczyt kolejnych 7 bajtów (sygnały dzielone po 8 bitów)
@@ -2589,7 +2587,7 @@ function decodeFzgIdentData(hexData, cardElement) {
     }
 
     // Zapisz zaktualizowany kompletny obiekt do pamięci dla okna Modal
-    frameDataCache["65F"] = fullData;
+    frameDataCache[id] = fullData;
 
     // 3. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');

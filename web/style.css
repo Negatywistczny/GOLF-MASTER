@@ -330,3 +330,27 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
     background: var(--accent);
     box-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
 }
+
+/* --- PRZYCISK DIAGNOSTYKI AKTYWNEJ --- */
+.btn-diag {
+    background: #6c5ce7; /* Diagnostyczny fiolet */
+    color: #fff;
+    border: 1px solid #a29bfe;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-diag:hover {
+    background: #a29bfe;
+    box-shadow: 0 0 12px rgba(108, 92, 231, 0.6);
+}
+
+.btn-diag:active {
+    transform: scale(0.95);
+}

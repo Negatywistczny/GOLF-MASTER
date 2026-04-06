@@ -1038,6 +1038,41 @@ function generateSnapshot() {
 }
 
 // =========================================
+// GOLF MASTER - DIAGNOSTYKA AKTYWNA (TX)
+// =========================================
+
+const btnScanAll = document.getElementById('btn-scan-all');
+if (btnScanAll) {
+    btnScanAll.addEventListener('click', requestFullDtcScan);
+}
+
+function requestFullDtcScan() {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+        // Wysyłamy komendę pełnego skanowania do skryptu bridge.py
+        socket.send("CMD:REQ_FULL_SCAN");
+        
+        // Aktualizujemy UI
+        logTerminal("SYS:JS: Inicjowanie pełnego Auto-Skanu DTC...");
+        updateStatus("SKANOWANIE MODUŁÓW (TP 2.0)...", "var(--orange)");
+        
+        // Blokujemy przycisk na dłużej, ponieważ pełny skan zajmie Pythonowi trochę czasu
+        btnScanAll.disabled = true;
+        btnScanAll.style.opacity = "0.5";
+        btnScanAll.textContent = "⏳ SKANOWANIE...";
+        
+        // Odblokowanie po 10 sekundach (w realnym scenariuszu Python wyśle komendę odblokowującą)
+        setTimeout(() => {
+            btnScanAll.disabled = false;
+            btnScanAll.style.opacity = "1";
+            btnScanAll.textContent = "🛠️ AUTO-SKAN DTC";
+            updateStatus("AUTO-SKAN ZAKOŃCZONY", "var(--green)");
+        }, 10000); 
+    } else {
+        logError("JS", "WS_OFFLINE", "Brak połączenia z Pythonem. Nie można wysłać żądania.");
+    }
+}
+
+// =========================================
 // GOLF MASTER - SILNIK DEKODUJĄCY CAN
 // =========================================
 

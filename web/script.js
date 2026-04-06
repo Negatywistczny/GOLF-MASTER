@@ -978,6 +978,66 @@ function openModal(id) {
 }
 
 // =========================================
+// GOLF MASTER - SNAPSHOT (Zrzut Danych CAN)
+// =========================================
+
+document.getElementById('btn-snapshot').addEventListener('click', generateSnapshot);
+
+function generateSnapshot() {
+    // Nagłówek pliku CSV (średniki dla łatwego otwierania w polskim Excelu)
+    let csvContent = "ID RAMKI;NAZWA RAMKI;SYGNAŁ (ID);OPIS SYGNAŁU;WARTOŚĆ\n";
+
+    // 1. Pobranie wszystkich odebranych ramek i posortowanie ich alfabetycznie po ID
+    const sortedIds = Object.keys(frameDataCache).sort();
+
+    sortedIds.forEach(id => {
+        // Zabezpieczenie brakujących nazw
+        const frameName = canDictionary[id] ? canDictionary[id].name : "NIEZNANA RAMKA";
+        const frameData = frameDataCache[id];
+
+        // 2. Sortowanie sygnałów wewnątrz danej ramki (alfabetycznie)
+        const sortedSignals = Object.keys(frameData).sort();
+
+        sortedSignals.forEach(sigKey => {
+            const val = frameData[sigKey];
+            const meta = signalMeta[sigKey] || { label: "Brak opisu zdekodowanego", unit: "" };
+            
+            let displayVal = val;
+            
+            // Formatowanie wartości (translacja na stany lub doklejanie jednostek)
+            if (meta.states && meta.states[val] !== undefined) {
+                displayVal = meta.states[val];
+            } else {
+                const num = (typeof val === 'number' && !Number.isInteger(val)) ? val.toFixed(2) : val;
+                displayVal = `${num}${meta.unit || ""}`;
+            }
+
+            // Dodanie wiersza do pliku (zabezpieczenie przecinków/średników w opisach)
+            const safeLabel = meta.label.replace(/;/g, ",");
+            csvContent += `${id};${frameName};${sigKey};${safeLabel};${displayVal}\n`;
+        });
+    });
+
+    // 3. Tworzenie obiektu Blob i pobieranie pliku
+    const blob = new Blob(["\ufeff", csvContent], { type: 'text/csv;charset=utf-8;' }); // \ufeff to BOM dla polskich znaków w Excelu
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    
+    // Generowanie nazwy pliku z datą i czasem
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0,19).replace(/T/g,"_").replace(/:/g,"-");
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", `PQ35_CAN_SNAPSHOT_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Opcjonalne: Powiadomienie w UI
+    updateStatus("SNAPSHOT ZAPISANY DO PLIKU", "var(--accent)");
+}
+
+// =========================================
 // GOLF MASTER - SILNIK DEKODUJĄCY CAN
 // =========================================
 

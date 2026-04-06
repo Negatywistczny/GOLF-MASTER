@@ -14,7 +14,6 @@ WS_PORT = 8765
 connected_clients = set()
 has_connected_once = False  # Flaga, by nie wyłączać się przed pierwszym połączeniem
 shutdown_task = None        # Zadanie odliczające do wyłączenia
-tx_queue = asyncio.Queue()  # Kolejka komend do wysłania
 
 async def auto_shutdown_timer():
     """Odlicza 2 sekundy i zabija proces, jeśli nikogo nie ma"""
@@ -34,13 +33,6 @@ async def handle_serial():
             await broadcast("SYS:PY:SERIAL_READY")
 
             while True:
-                # --- WYSYŁANIE KOMEND DO ARDUINO (TX) ---
-                if not tx_queue.empty():
-                    msg_to_send = tx_queue.get_nowait()
-                    ser.write(msg_to_send.encode('ascii'))
-                    print(f"SYS:PY:TX_SENT_TO_AUTO: {msg_to_send.strip()}")
-
-                # --- ODBIERANIE DANYCH Z ARDUINO (RX) ---
                 if ser.in_waiting > 0:
                     try:
                         line = ser.readline().decode('utf-8').strip()
@@ -65,39 +57,6 @@ async def broadcast(message):
     if connected_clients:
         await asyncio.gather(*(client.send(message) for client in connected_clients), return_exceptions=True)
 
-async def perform_full_scan(websocket):
-    """Odpytuje kolejno najważniejsze moduły na platformie PQ35"""
-    modules = {
-        "01": "Silnik (Engine)",
-        "03": "ABS / ESP",
-        "08": "Climatronic",
-        "09": "Centralna Elektryka (Bordnetz)",
-        "15": "Airbag",
-        "16": "Kierownica (Steering Wheel)",
-        "17": "Licznik (Instrument Cluster)",
-        "19": "Gateway CAN",
-        "44": "Wspomaganie Kierownicy",
-        "46": "Modul Komfortu",
-        "56": "Radio / Infotainment"
-    }
-    
-    await websocket.send("SYS:PYTHON:Rozpoczynam procedurę Auto-Skan (TP 2.0)...")
-    
-    for addr, name in modules.items():
-        print(f"[DIAG] Odpytywanie: {name} (0x{addr})")
-        
-        # Ramka inicjująca TP 2.0 dla konkretnego adresu z pętli
-        tx_msg = f"TX:200:7:{addr} C0 00 10 00 03 01\n"
-        await tx_queue.put(tx_msg)
-        
-        # Aktualizacja w terminalu JS
-        await websocket.send(f"SYS:PYTHON:TP2.0 -> Szukam: {name} (0x{addr})")
-        
-        # Odczekujemy 1 sekundę, aby Gateway zdążył zestawić kanał i odpowiedzieć
-        await asyncio.sleep(1.0)
-        
-    await websocket.send("SYS:PYTHON:Wysłano żądania do wszystkich modułów!")
-
 async def ws_handler(websocket):
     """Obsługa nowych połączeń z przeglądarki"""
     global has_connected_once, shutdown_task
@@ -113,16 +72,7 @@ async def ws_handler(websocket):
     print(f"SYS:PY:BROWSER_CONNECTED (Total: {len(connected_clients)})")
     
     try:
-        # Pętla nasłuchująca wiadomości od przeglądarki (Smart UI)
-        async for message in websocket:
-            if message.startswith("CMD:"):
-                command = message.split(":")[1]
-                
-                if command == "REQ_FULL_SCAN":
-                    print("[DIAG] Otrzymano żądanie Auto-Scan z UI.")
-                    
-                    # Tworzymy asynchroniczne zadanie w tle, żeby nie zablokować nasłuchiwania WebSocketa
-                    asyncio.create_task(perform_full_scan(websocket))
+        await websocket.wait_closed()
     finally:
         connected_clients.remove(websocket)
         print(f"SYS:PY:BROWSER_DISCONNECTED (Total: {len(connected_clients)})")

@@ -40,7 +40,6 @@ bool carIsAwake = false;
 
 void setup() {
   Serial.begin(115200);
-  Serial.setTimeout(10);
   pinMode(CAN_INT_PIN, INPUT);
   pinMode(TJA_ERR, INPUT_PULLUP);
   pinMode(TJA_STB, OUTPUT);
@@ -77,51 +76,10 @@ void checkHardwareErrors() {
   CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00);
 }
 
-// --- ODBIERANIE KOMEND Z PORTU SZEREGOWEGO (TX Z LAPTOPA) ---
-void processSerial() {
-  if (Serial.available() > 0) {
-    String data = Serial.readStringUntil('\n');
-    data.trim();
-    
-    // Sprawdzamy czy przyszła komenda do wysłania (format TX:ID:LEN:DATA)
-    // Przykład: TX:200:7:15 C0 00 10 00 03 01
-    if (data.startsWith("TX:")) {
-      int idx1 = data.indexOf(':', 3);       // Szuka dwukropka po ID (np. za "200")
-      int idx2 = data.indexOf(':', idx1 + 1); // Szuka dwukropka po długości (np. za "7")
-      
-      if (idx1 > 0 && idx2 > 0) {
-        String idStr = data.substring(3, idx1);
-        String lenStr = data.substring(idx1 + 1, idx2);
-        String payloadStr = data.substring(idx2 + 1);
-        
-        // Konwersja tekstowego ID na liczbę HEX
-        long txId = strtol(idStr.c_str(), NULL, 16);
-        // Konwersja długości na liczbę
-        int txLen = lenStr.toInt();
-        byte txBuf[8] = {0};
-        
-        // Pętla tnąca payload (np. "15 C0 00...") na poszczególne bajty Hex
-        int charIndex = 0;
-        for (int i = 0; i < txLen; i++) {
-          String byteStr = payloadStr.substring(charIndex, charIndex + 2);
-          txBuf[i] = (byte)strtol(byteStr.c_str(), NULL, 16);
-          charIndex += 3; // Skok do następnego bajtu (2 znaki HEX + 1 spacja)
-        }
-        
-        // Nadawanie poskładanej ramki na magistralę CAN!
-        CAN0.sendMsgBuf(txId, 0, txLen, txBuf);
-      }
-    }
-  }
-}
-
 void loop() {
   long unsigned int rxId;
   unsigned char len = 0;
   unsigned char rxBuf[8];
-  
-  // --- ODBIERANIE Z KOMPUTERA I WYSYŁANIE NA CAN ---
-  processSerial();
 
   // --- CZYTANIE RAMEK ---
   if (!digitalRead(CAN_INT_PIN)) {

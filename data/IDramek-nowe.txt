@@ -1,0 +1,24 @@
+==================================================
+=== INFORMACJE O RAMCE: mTP_Dyn_Diag_1_1 ===
+==================================================
+ID (Dziesiętne):  768
+ID (Szesnastkowe): 0x300
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Booster_AMP, DSP_SKODA, GSM_Pager, Kompassmodul, MDI, Radio_2DIN, Radio_Modul, Radio_SKODA, Rearview, RNS_MFD2, RNS_midline, Sprachbedienung, Standheizung, Tastatur, Telematik_Basis, TV_hybrid, UHV_High, UHV_low, UHV_Premium
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: TPDyn_Diag_1_1
+   Opis:           Tester
+TP 2.0 Empfangskanal 1 fuer Tester
+   Startbit:       0
+   Długość:        64 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................

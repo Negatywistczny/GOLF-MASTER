@@ -1,7 +1,7 @@
 import cantools
 
 # 1. Nazwa Twojego pliku DBC
-nazwa_pliku = 'PQ35_46_ICAN_V3_6_9_F_20081104_ASR_V1_2.dbc'
+nazwa_pliku = '/Users/kacper/Documents/GitHub/GOLF-MASTER/data/PQ35_46_ICAN_V3_6_9_F_20081104_ASR_V1_2.dbc'
 
 # Wczytanie bazy danych
 db = cantools.database.load_file(nazwa_pliku)
@@ -9,7 +9,7 @@ db = cantools.database.load_file(nazwa_pliku)
 # ==========================================
 # 2. TUTAJ WPISZ NAZWĘ RAMKI LUB JEJ ID
 # ==========================================
-szukana_nazwa = "mSollverbau_neu" # Zmień na nazwę ramki, której szukasz
+szukana_nazwa = "mTP_Dyn_Diag_1_1" # Zmień na nazwę ramki, której szukasz
 
 try:
     # Szukamy wiadomości po nazwie

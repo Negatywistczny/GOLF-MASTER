@@ -37,6 +37,7 @@ bool isDelta(uint32_t id, uint8_t len, uint8_t *data) {
 }
 
 bool carIsAwake = false;
+unsigned long wakeUpTime = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -53,6 +54,7 @@ void setup() {
   // Standardowy, poprawny start bez ingerencji w timingi CAN
   if (CAN0.begin(MCP_ANY, CAN_100KBPS, MCP_8MHZ) == CAN_OK) {
     CAN0.setMode(MCP_NORMAL);
+    CAN0.mcp2515_modifyRegister(0x0F, 0x08, 0x08);
     Serial.println(F("SYS:HW:READY")); 
   } else {
     Serial.println(F("ERR:HW:INIT_FAIL"));
@@ -60,21 +62,31 @@ void setup() {
   }
 }
 
-// --- STANDARDOWA OBSŁUGA BŁĘDÓW ---
+
+
+// --- W PEŁNI JAWNA OBSŁUGA BŁĘDÓW (NIC NIE UKRYWAMY) ---
 void checkHardwareErrors() {
   byte err = CAN0.checkError(); 
   if (err != 0) {
+    // 1. ZAWSZE drukujemy błąd, żebyś widział co się dzieje!
     Serial.print(F("ERR:HW:0x")); 
     if (err < 0x10) Serial.print(F("0"));
     Serial.println(err, HEX);
     
-    // Tylko przywracamy tryb przy całkowitym wyrzuceniu z magistrali
+    // 2. Jeśli to błąd nadawania (TXWAR 0x04) - zrzucamy zawieszoną ramkę
+    if ((err & 0x04) || (err & 0x20)) {
+      CAN0.mcp2515_modifyRegister(0x30, 0x08, 0x00);
+      CAN0.mcp2515_modifyRegister(0x40, 0x08, 0x00);
+      CAN0.mcp2515_modifyRegister(0x50, 0x08, 0x00);
+    }
+    
+    // 3. Reset układu przy Bus-Off
     if (err & 0x20) {
       CAN0.setMode(MCP_NORMAL);
     }
+    
+    CAN0.mcp2515_modifyRegister(0x2D, 0xC0, 0x00);
   }
-  // Czyścimy flagi błędów układu (nie ingerujemy w bufory nadawcze!)
-  CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00);
 }
 
 // --- ODBIERANIE KOMEND Z PORTU SZEREGOWEGO (TX Z LAPTOPA) ---
@@ -126,11 +138,15 @@ void loop() {
   // --- CZYTANIE RAMEK ---
   if (!digitalRead(CAN_INT_PIN)) {
     if (CAN0.readMsgBuf(&rxId, &len, rxBuf) == CAN_OK) {
-      if (!carIsAwake) carIsAwake = true;
+      
+      if (!carIsAwake) {
+        carIsAwake = true;
+        wakeUpTime = millis(); // Zapisujemy, w której milisekundzie auto się obudziło!
+      }
 
       if (rxId != 0x531 && rxId != 0x661 && rxId != 0x461) {
         if (isDelta(rxId, len, rxBuf)) {
-          Serial.print(rxId, HEX); Serial.print(F(":"));
+          Serial.print(F("0x")); Serial.print(rxId, HEX); Serial.print(F(":"));
           for (int i = 0; i < len; i++) {
             if (rxBuf[i] < 0x10) Serial.print(F("0"));
             Serial.print(rxBuf[i], HEX); if (i < len - 1) Serial.print(F(" "));
@@ -141,20 +157,23 @@ void loop() {
     }
   }
 
-  // --- NADAWANIE ---
+  // --- NADAWANIE Z OPÓŹNIENIEM (KLUCZOWA POPRAWKA) ---
   if (carIsAwake) {
-    static unsigned long lastHB = 0;
-    if (millis() - lastHB >= 100) {
-      lastHB = millis();
-      
-      // Sprawdzamy błędy SPI tylko w momencie nadawania (bezpieczne dla wydajności)
-      checkHardwareErrors(); 
-      
-      unsigned char st[8] = {0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      unsigned char nm[8] = {0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      
-      CAN0.sendMsgBuf(0x661, 0, 8, st);
-      CAN0.sendMsgBuf(0x461, 0, 8, nm);
+    // Czekamy sztywno 3 sekundy od obudzenia!
+    // Dajemy czas fabrycznym modułom na ustabilizowanie protokołu Network Management.
+    if (millis() - wakeUpTime > 3000) {
+      static unsigned long lastHB = 0;
+      if (millis() - lastHB >= 100) {
+        lastHB = millis();
+        
+        checkHardwareErrors(); 
+        
+        unsigned char st[8] = {0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        unsigned char nm[8] = {0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        
+        CAN0.sendMsgBuf(0x661, 0, 8, st);
+        CAN0.sendMsgBuf(0x461, 0, 8, nm);
+      }
     }
   }
   

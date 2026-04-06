@@ -14,8 +14,8 @@ WS_PORT = 8765
 connected_clients = set()
 has_connected_once = False  # Flaga, by nie wyłączać się przed pierwszym połączeniem
 shutdown_task = None        # Zadanie odliczające do wyłączenia
-tx_queue = asyncio.Queue()  # Kolejka komend do wysłania
-rx_queue = asyncio.Queue()  # Kolejka nasłuchująca do analizy ramek TP 2.0
+tx_queue = None
+rx_queue = None
 
 async def auto_shutdown_timer():
     """Odlicza 2 sekundy i zabija proces, jeśli nikogo nie ma"""
@@ -217,6 +217,10 @@ async def ws_handler(websocket):
             shutdown_task = asyncio.create_task(auto_shutdown_timer())
 
 async def main():
+    global tx_queue, rx_queue
+    tx_queue = asyncio.Queue()
+    rx_queue = asyncio.Queue()
+
     print(f"--- GOLF MASTER BRIDGE STARTING ON ws://{WS_HOST}:{WS_PORT} ---")
     
     server = websockets.serve(ws_handler, WS_HOST, WS_PORT)

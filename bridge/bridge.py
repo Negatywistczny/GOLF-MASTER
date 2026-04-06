@@ -70,7 +70,7 @@ async def broadcast(message):
 async def tp20_read_dtc(addr_hex, name, websocket):
     """Przeprowadza pełny 4-etapowy Handshake TP 2.0 z jednym modułem"""
     addr_int = int(addr_hex, 16)
-    rx_id_expected = f"0x{200 + addr_int:03X}" # Np. dla 01 to będzie 0x201
+    rx_id_expected = f"0x{200 + addr_int:03X}" # Np. 0x201 dla Silnika
     
     # 1. Czyszczenie starych ramek z kolejki RX
     while not rx_queue.empty():
@@ -82,40 +82,38 @@ async def tp20_read_dtc(addr_hex, name, websocket):
     
     tx_channel = None
     
-    # 3. CZEKAMY NA ODPOWIEDŹ GATEWAYA (np. 0x201)
-    try:
-        # Czekamy max 1.5 sekundy na odpowiedź od Gatewaya
-        while True:
-            line = await asyncio.wait_for(rx_queue.get(), timeout=1.5)
+    # 3. CZEKAMY NA ODPOWIEDŹ GATEWAYA (Twardy limit 1.5s niezależny od szumu)
+    timeout_end = time.time() + 1.5
+    while time.time() < timeout_end:
+        try:
+            line = await asyncio.wait_for(rx_queue.get(), timeout=0.1)
             if line.startswith(rx_id_expected):
-                # Oczekujemy: 0x201: 00 D0 00 03 40 07 01
                 parts = line.split(":")
                 if len(parts) >= 2:
                     data_bytes = parts[1].strip().split()
                     if len(data_bytes) >= 7 and data_bytes[1] == "D0":
-                        # Format Little-Endian: 40 07 -> 0740
                         tx_channel = f"{data_bytes[5]}{data_bytes[4]}".lstrip('0')
                         break
-    except asyncio.TimeoutError:
-        await websocket.send(f"SYS:PYTHON: ❌ Brak odpowiedzi od {name}. Moduł uśpiony lub nieobecny.")
-        return
+        except asyncio.TimeoutError:
+            continue # Kolejka pusta, sprawdzamy czas i kręcimy się dalej
 
     if not tx_channel:
+        await websocket.send(f"SYS:PYTHON: ❌ Brak odpowiedzi od {name}.")
         return
 
-    await websocket.send(f"SYS:PYTHON: [2/4] Zgoda! Nasz kanał TX to 0x{tx_channel}")
+    await websocket.send(f"SYS:PYTHON: [2/4] Zgoda! Kanał TX to 0x{tx_channel}")
     
     # 4. CZEKAMY NA PROŚBĘ O TIMINGI (0x300: A8)
-    try:
-        while True:
-            line = await asyncio.wait_for(rx_queue.get(), timeout=1.0)
+    timeout_end = time.time() + 1.0
+    while time.time() < timeout_end:
+        try:
+            line = await asyncio.wait_for(rx_queue.get(), timeout=0.1)
             if line.startswith("0x300:"):
                 data_bytes = line.split(":")[1].strip().split()
                 if data_bytes[0] == "A8":
                     break
-    except asyncio.TimeoutError:
-        # Czasami moduł nie pyta, tylko czeka na parametry - idziemy dalej
-        pass
+        except asyncio.TimeoutError:
+            continue
 
     # 5. POTWIERDZAMY TIMING PARAMETERS
     await websocket.send(f"SYS:PYTHON: [3/4] Potwierdzam Timingi (A0)...")
@@ -123,23 +121,24 @@ async def tp20_read_dtc(addr_hex, name, websocket):
     await asyncio.sleep(0.1)
     
     # 6. WYSYŁAMY ŻĄDANIE KWP2000 (0x18 - Read DTC by Status)
-    # 11 = Ramka SF (Single Frame), 04 = Długość danych KWP2000, 18 = Read DTC
     await websocket.send(f"SYS:PYTHON: [4/4] Żądam Kody DTC KWP2000...")
     await tx_queue.put(f"TX:{tx_channel}:6:11 04 18 00 00 00\n")
     
     # 7. ODBIERAMY BŁĘDY NA KANALE 0x300
     dtc_frames = 0
-    try:
-        # Czekamy na pakiety z danymi DTC (ignorujemy sterujące A8, B1 itp.)
-        while True:
-            line = await asyncio.wait_for(rx_queue.get(), timeout=1.0)
+    timeout_end = time.time() + 1.5
+    while time.time() < timeout_end:
+        try:
+            line = await asyncio.wait_for(rx_queue.get(), timeout=0.1)
             if line.startswith("0x300:"):
                 data_bytes = line.split(":")[1].strip().split()
                 if data_bytes[0] not in ["A8", "B1", "B2", "B3", "B4", "B5", "A0", "A1"]:
                     dtc_frames += 1
-    except asyncio.TimeoutError:
-        pass # Koniec transmisji
-        
+                    await websocket.send(f"SYS:PYTHON: ⚠️ OTRZYMANO DANE DTC: {line}")
+                    timeout_end = time.time() + 0.5
+        except asyncio.TimeoutError:
+            continue
+            
     if dtc_frames > 0:
         await websocket.send(f"SYS:PYTHON: ✅ Odebrano {dtc_frames} ramek z kodami DTC z {name}!")
     else:
@@ -148,8 +147,7 @@ async def tp20_read_dtc(addr_hex, name, websocket):
     # 8. ZAMKNIĘCIE KANAŁU (Disconnect - A4)
     await tx_queue.put(f"TX:{tx_channel}:1:A4\n")
     await websocket.send(f"SYS:PYTHON: Sesja zamknięta. Przechodzę dalej...\n")
-    await asyncio.sleep(0.5) # Oddech przed kolejnym modułem
-
+    await asyncio.sleep(0.5)
 
 async def perform_full_scan(websocket):
     """Zarządza sekwencyjnym odpytywaniem modułów"""

@@ -127,6 +127,14 @@ void processSerial() {
   }
 }
 
+// --- BYPASS FILTRU DELTA DLA RAMEK DIAGNOSTYCZNYCH ---
+bool isDiagFrame(uint32_t id) {
+  if (id >= 0x200 && id <= 0x27F) return true; // TP 2.0 Setup Responses
+  if (id == 0x300) return true;                // TP 2.0 Dynamic RX
+  if (id >= 0x700 && id <= 0x7FF) return true; // KWP2000 / UDS Data Channels
+  return false;
+}
+
 void loop() {
   long unsigned int rxId;
   unsigned char len = 0;
@@ -145,7 +153,7 @@ void loop() {
       }
 
       if (rxId != 0x531 && rxId != 0x661 && rxId != 0x461) {
-        if (isDelta(rxId, len, rxBuf)) {
+        if (isDiagFrame(rxId) || isDelta(rxId, len, rxBuf)) {
           Serial.print(F("0x")); Serial.print(rxId, HEX); Serial.print(F(":"));
           for (int i = 0; i < len; i++) {
             if (rxBuf[i] < 0x10) Serial.print(F("0"));

@@ -9,6 +9,10 @@ const int TJA_EN  = 6;
 
 MCP_CAN CAN0(SPI_CS_PIN);
 
+bool respondToNM = false;      // Flaga: czy mamy odpowiedzieć na ramkę NM
+byte lastGatewayStatus = 0;    // Przechowuje bajt danych z 0x42B (status usypiania)
+unsigned long lastRxTime = 0;  // Do monitorowania ogólnej aktywności magistrali
+
 // --- LOGIKA DELTA ---
 #define MAX_TRACKED_IDS 50 
 struct CANFrame { uint32_t id; uint8_t len; uint8_t data[8]; };
@@ -62,30 +66,25 @@ void setup() {
   }
 }
 
-
-
-// --- W PEŁNI JAWNA OBSŁUGA BŁĘDÓW (NIC NIE UKRYWAMY) ---
 void checkHardwareErrors() {
   byte err = CAN0.checkError(); 
   if (err != 0) {
-    // 1. ZAWSZE drukujemy błąd, żebyś widział co się dzieje!
     Serial.print(F("ERR:HW:0x")); 
     if (err < 0x10) Serial.print(F("0"));
     Serial.println(err, HEX);
     
-    // 2. Jeśli to błąd nadawania (TXWAR 0x04) - zrzucamy zawieszoną ramkę
-    if ((err & 0x04) || (err & 0x20)) {
-      CAN0.mcp2515_modifyRegister(0x30, 0x08, 0x00);
-      CAN0.mcp2515_modifyRegister(0x40, 0x08, 0x00);
-      CAN0.mcp2515_modifyRegister(0x50, 0x08, 0x00);
+    // Jeśli błąd nadawania (0x04) lub Bus-Off (0x20) - wymuś czyszczenie buforów
+    if (err & 0x1D) {
+      CAN0.mcp2515_modifyRegister(0x30, 0x08, 0x00); // Abort TXB0
+      CAN0.mcp2515_modifyRegister(0x40, 0x08, 0x00); // Abort TXB1
+      CAN0.mcp2515_modifyRegister(0x50, 0x08, 0x00); // Abort TXB2
+      // Całkowity reset flag błędów w rejestrze EFLG
+      CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00); 
     }
     
-    // 3. Reset układu przy Bus-Off
     if (err & 0x20) {
       CAN0.setMode(MCP_NORMAL);
     }
-    
-    CAN0.mcp2515_modifyRegister(0x2D, 0xC0, 0x00);
   }
 }
 
@@ -146,10 +145,17 @@ void loop() {
   // --- CZYTANIE RAMEK ---
   if (!digitalRead(CAN_INT_PIN)) {
     if (CAN0.readMsgBuf(&rxId, &len, rxBuf) == CAN_OK) {
+      lastRxTime = millis();
       
       if (!carIsAwake) {
         carIsAwake = true;
-        wakeUpTime = millis(); // Zapisujemy, w której milisekundzie auto się obudziło!
+        wakeUpTime = millis();
+      }
+
+      // --- KLUCZ DO SYNCHRONIZACJI ---
+      if (rxId == 0x42B) {
+        lastGatewayStatus = rxBuf[1]; // Czytamy bajt z bitami SleepInd (bit 12)
+        respondToNM = true;          // Dajemy sygnał do wysłania odpowiedzi
       }
 
       if (rxId != 0x531 && rxId != 0x661 && rxId != 0x461) {
@@ -165,25 +171,32 @@ void loop() {
     }
   }
 
-  // --- NADAWANIE Z OPÓŹNIENIEM (KLUCZOWA POPRAWKA) ---
-  if (carIsAwake) {
-    // Czekamy sztywno 3 sekundy od obudzenia!
-    // Dajemy czas fabrycznym modułom na ustabilizowanie protokołu Network Management.
-    if (millis() - wakeUpTime > 3000) {
-      static unsigned long lastHB = 0;
-      if (millis() - lastHB >= 100) {
-        lastHB = millis();
-        
-        checkHardwareErrors(); 
-        
-        unsigned char st[8] = {0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-        unsigned char nm[8] = {0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-        
-        CAN0.sendMsgBuf(0x661, 0, 8, st);
-        CAN0.sendMsgBuf(0x461, 0, 8, nm);
-      }
-    }
+    // 1. Sprawdzamy, czy auto nie zasnęło (brak ramek przez 5 sek)
+  if (carIsAwake && (millis() - lastRxTime > 5000)) {
+    carIsAwake = false;
+    respondToNM = false;
+    Serial.println(F("SYS:HW:SLEEP"));
   }
-  
-  delay(1);
+
+  // 2. Nadajemy TYLKO w odpowiedzi na 0x42B
+  if (respondToNM) {
+    respondToNM = false; // Resetujemy flagę od razu
+    
+    checkHardwareErrors(); 
+
+    // Sprawdzamy bit SleepInd (bit 12 w opisie to 0x10 w drugim bajcie)
+    bool carWantsSleep = (lastGatewayStatus & 0x10);
+
+    unsigned char st[8] = {0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    unsigned char nm[8] = {0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+    if (carWantsSleep) {
+      // Odpowiadamy bitem SleepAck (bit 13 w opisie to 0x20 w drugim bajcie)
+      nm[1] = 0x20; 
+      Serial.println(F("SYS:HW:ACK_SLEEP"));
+    }
+
+    CAN0.sendMsgBuf(0x661, 0, 8, st);
+    CAN0.sendMsgBuf(0x461, 0, 8, nm);
+  }
 }

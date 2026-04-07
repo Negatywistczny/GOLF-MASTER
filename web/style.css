@@ -354,3 +354,27 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
 .btn-diag:active {
     transform: scale(0.95);
 }
+
+/* --- PRZYCISK LOGÓW TERMINALA --- */
+.btn-log {
+    background: #2d3436;
+    color: var(--green);
+    border: 1px solid var(--green);
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-log:hover {
+    background: #1e272e;
+    box-shadow: 0 0 12px rgba(46, 204, 113, 0.5);
+}
+
+.btn-log:active {
+    transform: scale(0.95);
+}

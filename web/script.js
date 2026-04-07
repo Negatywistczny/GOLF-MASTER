@@ -884,15 +884,19 @@ function logTerminal(msg) {
     if (!term) return;
 
     const line = document.createElement('div');
-    line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    // Pobieramy dokładny czas z milisekundami dla lepszej diagnostyki CAN
+    const now = new Date();
+    const timeStr = `${now.toLocaleTimeString()}.${now.getMilliseconds().toString().padStart(3, '0')}`;
+    
+    line.textContent = `[${timeStr}] ${msg}`;
     term.appendChild(line);
 
     // Przewijaj na dół
     term.scrollTop = term.scrollHeight;
 
-    // Usuwaj stare linie (limit 100)
-    if (term.childNodes.length > 100) {
-        term.removeChild(term.firstChild);
+    // Zwiększony limit: przechowuje do 5000 ostatnich zdarzeń
+    if (term.children.length > 5000) {
+        term.removeChild(term.firstElementChild);
     }
 }
 
@@ -1069,6 +1073,53 @@ function requestFullDtcScan() {
     } else {
         logError("JS", "WS_OFFLINE", "Brak połączenia z Pythonem.");
     }
+}
+
+// =========================================
+// GOLF MASTER - POBIERANIE LOGÓW TERMINALA
+// =========================================
+
+const btnDownloadLogs = document.getElementById('btn-download-logs');
+if (btnDownloadLogs) {
+    btnDownloadLogs.addEventListener('click', downloadTerminalLogs);
+}
+
+function downloadTerminalLogs() {
+    const term = document.getElementById('term-stream');
+    if (!term) return;
+
+    // 1. Zbudowanie nagłówka pliku z logami
+    let logContent = "=========================================\n";
+    logContent += "   GOLF MASTER v50.0 - TERMINAL LOGS\n";
+    logContent += `   DATA WYGENEROWANIA: ${new Date().toLocaleString()}\n`;
+    logContent += "=========================================\n\n";
+
+    // 2. Zbieranie linii tekstowych z DOM
+    const lines = term.querySelectorAll('div');
+    if (lines.length === 0) {
+        alert("Terminal jest pusty. Brak logów do zapisu.");
+        return;
+    }
+
+    lines.forEach(line => {
+        logContent += line.textContent + "\n";
+    });
+
+    // 3. Generowanie pliku TXT i wymuszenie pobierania
+    const blob = new Blob([logContent], { type: 'text/plain;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0,19).replace(/T/g,"_").replace(/:/g,"-");
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", `PQ35_TERMINAL_LOG_${dateStr}.txt`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    updateStatus("LOGI TERMINALA ZAPISANE DO PLIKU", "var(--green)");
 }
 
 // =========================================

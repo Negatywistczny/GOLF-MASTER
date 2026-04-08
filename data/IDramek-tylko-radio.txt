@@ -1,0 +1,4209 @@
+==================================================
+=== INFORMACJE O RAMCE: mTP_Dyn_Diag_1_1 ===
+==================================================
+ID (Dziesiętne):  768
+ID (Szesnastkowe): 0x300
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Booster_AMP, DSP_SKODA, GSM_Pager, Kompassmodul, MDI, Radio_2DIN, Radio_Modul, Radio_SKODA, Rearview, RNS_MFD2, RNS_midline, Sprachbedienung, Standheizung, Tastatur, Telematik_Basis, TV_hybrid, UHV_High, UHV_low, UHV_Premium
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: TPDyn_Diag_1_1
+   Opis:           Tester
+TP 2.0 Empfangskanal 1 fuer Tester
+   Startbit:       0
+   Długość:        64 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mTP_Er_Radio ===
+==================================================
+ID (Dziesiętne):  594
+ID (Szesnastkowe): 0x252
+Długość (DLC):    7 bajtów
+Nadawca (Tx):     Radio_2DIN, Radio_Modul, Radio_SKODA, RNS_midline
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: Radio_TP_Er
+   Opis:           Radio
+TP 2.0 Eroeffnungskanal
+   Startbit:       0
+   Długość:        56 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mTP_Er_Navigation ===
+==================================================
+ID (Dziesiętne):  603
+ID (Szesnastkowe): 0x25b
+Długość (DLC):    7 bajtów
+Nadawca (Tx):     RNS_MFD2, RNS_midline
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: Navi_TP_Er
+   Opis:           Navigation
+TP 2.0 Eroeffnungskanal
+   Startbit:       0
+   Długość:        56 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................
+   
+  ==================================================
+=== INFORMACJE O RAMCE: mNavig_1 ===
+==================================================
+ID (Dziesiętne):  673
+ID (Szesnastkowe): 0x2a1
+Długość (DLC):    7 bajtów
+Nadawca (Tx):     RNS_300_NF, RNS_midline
+Czas cyklu:       Cyclic ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: NV1_Gierrate
+   Opis:           3FFFh = ungueltig
+Gierrate
+   Startbit:       0
+   Długość:        14 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 0.01) + (0)
+   Zakres fizyczny:0 do 100
+   Jednostka:      Unit_DegreOfArcPerSecond
+   Znaczenie wartości (Value Table):
+      16383 = ungueltig
+   ........................................
+-> SYGNAŁ: NV1_Fehler_Gierrate
+   Opis:           1 = Gierratenfehler liegt vor
+   Startbit:       14
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_VZ_Gierrate
+   Opis:           0 = neg
+1 = pos
+Vorzeichen Gierrate (+/-)
+   Startbit:       15
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_Laenderkennung
+   Opis:           33=F
+44=UK
+49=D
+FFh = ungueltig
+etc...
+Vgl. MS Win95 Spec.
+Laenderkennung
+   Startbit:       16
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_Strassentyp
+   Opis:           0=Hauptstr. (Autobahn, Kraftfahrstr..)
+1=Einspurige Str. (Bundesstr.)
+2=Innerstaedtische Str.
+0xF = Fehler oder keine Info
+Strassentyp
+   Startbit:       24
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      15 = Fehler
+   ........................................
+-> SYGNAŁ: NV1_Anz_Fahrbahnen
+   Opis:           0 = Fehler
+Anzahl Fahrbahnen (0 ist ungueltig)
+   Startbit:       28
+   Długość:        3 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:1 do 7
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = Fehler
+   ........................................
+-> SYGNAŁ: NV1_Fehler_Daten
+   Opis:           1 = Keine gueltigen Navigationsdaten verfuegbar
+Fehler Navigationsdaten
+   Startbit:       31
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_Kurvenverlauf
+   Opis:           7F = keine Kurve erkannt oder Fehler
+Vorausliegender Kurvenverlauf
+   Startbit:       32
+   Długość:        7 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 50) + (0)
+   Zakres fizyczny:0 do 6350
+   Jednostka:      Unit_Meter
+   ........................................
+-> SYGNAŁ: NV1_Kurvenrichtg
+   Opis:           0=Linkskurve
+1=Rechtskurve
+Voarusliegende Kurvenrichtung
+   Startbit:       39
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_Entf_Kurve
+   Opis:           FF = keine Kurve erkannt oder Fehler
+Entfernung bis Kurvenanfang
+   Startbit:       40
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Unit_Meter
+   ........................................
+-> SYGNAŁ: NV1_Entf_Krzg
+   Opis:           3F = keine Kreuzung erkannt oder Fehler
+Entfernung bis Kreuzung
+   Startbit:       48
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 5) + (0)
+   Zakres fizyczny:0 do 315
+   Jednostka:      Unit_Meter
+   ........................................
+-> SYGNAŁ: NV1_Krzg_Typ
+   Opis:           00=Keine Kreuzung im Fangbereich
+01=Str. v. links
+10=Str. v. Rechts
+11=Strassen von beiden Seiten
+Kreuzungstyp
+   Startbit:       54
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   ........................................ 
+   
+==================================================
+=== INFORMACJE O RAMCE: mTP_Dyn_Diag_1_1 ===
+==================================================
+ID (Dziesiętne):  768
+ID (Szesnastkowe): 0x300
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Booster_AMP, DSP_SKODA, GSM_Pager, Kompassmodul, MDI, Radio_2DIN, Radio_Modul, Radio_SKODA, Rearview, RNS_MFD2, RNS_midline, Sprachbedienung, Standheizung, Tastatur, Telematik_Basis, TV_hybrid, UHV_High, UHV_low, UHV_Premium
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: TPDyn_Diag_1_1
+   Opis:           Tester
+TP 2.0 Empfangskanal 1 fuer Tester
+   Startbit:       0
+   Długość:        64 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mTP_Dyn_Diag_1_2 ===
+==================================================
+ID (Dziesiętne):  769
+ID (Szesnastkowe): 0x301
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Booster_AMP, DSP_SKODA, GSM_Pager, Kompassmodul, MDI, Radio_2DIN, Radio_Modul, Radio_SKODA, Rearview, RNS_MFD2, RNS_midline, Sprachbedienung, Standheizung, Tastatur, Telematik_Basis, TV_hybrid, UHV_High, UHV_low, UHV_Premium
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: TPDyn_Diag_1_2
+   Opis:           Tester
+TP 2.0 Empfangskanal 2 fuer Tester
+   Startbit:       0
+   Długość:        64 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: TPDyn_Diag_1_3
+   Opis:           Tester
+TP 2.0 Empfangskanal 3 fuer Tester
+   Startbit:       0
+   Długość:        64 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mTP_Dyn_Diag_1_4 ===
+==================================================
+ID (Dziesiętne):  771
+ID (Szesnastkowe): 0x303
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Booster_AMP, DSP_SKODA, GSM_Pager, Kompassmodul, MDI, Radio_2DIN, Radio_Modul, Radio_SKODA, Rearview, RNS_MFD2, RNS_midline, Sprachbedienung, Standheizung, Tastatur, Telematik_Basis, TV_hybrid, UHV_High, UHV_low, UHV_Premium
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: TPDyn_Diag_1_4
+   Opis:           Tester
+TP 2.0 Empfangskanal 4 fuer Tester
+   Startbit:       0
+   Długość:        64 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mTP_Dyn_Diag_1_5 ===
+==================================================
+ID (Dziesiętne):  772
+ID (Szesnastkowe): 0x304
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Booster_AMP, DSP_SKODA, GSM_Pager, Kompassmodul, MDI, Radio_2DIN, Radio_Modul, Radio_SKODA, Rearview, RNS_MFD2, RNS_midline, Sprachbedienung, Standheizung, Tastatur, Telematik_Basis, TV_hybrid, UHV_High, UHV_low, UHV_Premium
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: TPDyn_Diag_1_5
+   Opis:           Tester
+TP 2.0 Empfangskanal 5 fuer Tester
+   Startbit:       0
+   Długość:        64 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mTP_Dyn_Diag_1_6 ===
+==================================================
+ID (Dziesiętne):  773
+ID (Szesnastkowe): 0x305
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Booster_AMP, DSP_SKODA, GSM_Pager, Kompassmodul, MDI, Radio_2DIN, Radio_Modul, Radio_SKODA, Rearview, RNS_MFD2, RNS_midline, Sprachbedienung, Standheizung, Tastatur, Telematik_Basis, TV_hybrid, UHV_High, UHV_low, UHV_Premium
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: TPDyn_Diag_1_6
+   Opis:           Tester
+TP 2.0 Empfangskanal 6 fuer Tester
+   Startbit:       0
+   Długość:        64 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................
+
+==================================================
+=== INFORMACJE O RAMCE: mTP_Dyn_Diag_1_7 ===
+==================================================
+ID (Dziesiętne):  774
+ID (Szesnastkowe): 0x306
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Booster_AMP, DSP_SKODA, GSM_Pager, Kompassmodul, MDI, Radio_2DIN, Radio_Modul, Radio_SKODA, Rearview, RNS_MFD2, RNS_midline, Sprachbedienung, Standheizung, Tastatur, Telematik_Basis, TV_hybrid, UHV_High, UHV_low, UHV_Premium
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: TPDyn_Diag_1_7
+   Opis:           Tester
+TP 2.0 Empfangskanal 7 fuer Tester
+   Startbit:       0
+   Długość:        64 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mTP_Dyn_Diag_1_8 ===
+==================================================
+ID (Dziesiętne):  775
+ID (Szesnastkowe): 0x307
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Booster_AMP, DSP_SKODA, GSM_Pager, Kompassmodul, MDI, Radio_2DIN, Radio_Modul, Radio_SKODA, Rearview, RNS_MFD2, RNS_midline, Sprachbedienung, Standheizung, Tastatur, Telematik_Basis, TV_hybrid, UHV_High, UHV_low, UHV_Premium
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: TPDyn_Diag_1_8
+   Opis:           Tester
+TP 2.0 Empfangskanal 8 fuer Tester
+   Startbit:       0
+   Długość:        64 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 4294967295
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mRadio_3 ===
+==================================================
+ID (Dziesiętne):  865
+ID (Szesnastkowe): 0x361
+Długość (DLC):    5 bajtów
+Nadawca (Tx):     Radio_2DIN, Radio_Modul, Radio_SKODA, RNS_300_NF, RNS_MFD2, RNS_midline
+Czas cyklu:       IfActive ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): CAN-Komfort
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: RA3_Radio_SS_1
+   Opis:           Diese Botschaft wird einmalig nach Kl30 ein gesendet.
+Security Acces_Mode_1_Byte_1
+   Startbit:       0
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA3_Radio_SS_2
+   Opis:           Security Acces_Mode_1_Byte_2
+   Startbit:       8
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA3_Radio_SS_3
+   Opis:           Security Acces_Mode_1_Byte_3
+   Startbit:       16
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA3_Radio_SS_4
+   Opis:           Security Acces_Mode_1_Byte_4
+   Startbit:       24
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA3_Adress
+   Opis:           NM- Adresse - 400h
+Fuer Radio= 438h- 400h = 38h
+Stationsadresse des anfragenden Clients
+   Startbit:       32
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: PSD_01 ===
+==================================================
+ID (Dziesiętne):  929
+ID (Szesnastkowe): 0x3a1
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     RNS_midline
+Czas cyklu:       Cyclic ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: PSD_Pos_Segment_ID
+   Opis:           Identifier des Streckensegments, auf dem sich das Fahrzeug aktuell befindet
+   Startbit:       0
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:2 do 63
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Fehlerwert
+      0 = keine Position gegeben
+   ........................................
+-> SYGNAŁ: PSD_Pos_Segmentlaenge
+   Opis:           Verbleibende LÃ¤nge des Streckensegments, auf dem sich das Fahrzeug aktuell befindet
+   Startbit:       6
+   Długość:        7 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 2) + (0)
+   Zakres fizyczny:0 do 254
+   Jednostka:      Unit_Meter
+   ........................................
+-> SYGNAŁ: PSD_Pos_Inhibitzeit
+   Opis:           Zeitspanne zwischen Generierung der PSD Daten im Navigationssystem und Versand der Daten auf den Most        
+   Startbit:       13
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 10) + (0)
+   Zakres fizyczny:0 do 310
+   Jednostka:      Unit_MilliSecon
+   ........................................
+-> SYGNAŁ: PSD_Pos_Standort
+   Startbit:       18
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = mehrdeutiger_Standort
+      1 = eindeutiger_Standort
+   ........................................
+-> SYGNAŁ: PSD_Pos_Laengsfehler
+   Startbit:       19
+   Długość:        3 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 7
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      2 = <5m
+      4 = <20m
+      0 = keine PrÃ¤diktion (off-road)
+      6 = >50m
+      1 = <2m
+      7 = nicht erlaubt
+      3 = <10m
+      5 = <50m
+   ........................................
+-> SYGNAŁ: PSD_Segment_ID
+   Opis:           Identifier des prÃ¤diktiven Streckensegments
+
+   Startbit:       22
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:2 do 63
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Fehlerwert
+      0 = keine Segmentinformationen vorhanden
+   ........................................
+-> SYGNAŁ: PSD_Vorgaenger_Segment_ID
+   Opis:           An dem Streckensegment mit diesem Identifier schlieÃŸt sich das neue Segment mit der ID 'PSD_01_Segment_ID' an.
+   Startbit:       28
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:2 do 63
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Fehlerwert
+      0 = keine Segmentinformation vorhanden
+   ........................................
+-> SYGNAŁ: PSD_Strassenklasse
+   Opis:           Die Klassifizierung der StraÃŸe
+   Startbit:       34
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Ortsstrasse
+      3 = Autobahn
+      2 = Bundes_Landstrasse
+      0 = Rest_Feldweg_Schotterweg_Privatweg
+   ........................................
+-> SYGNAŁ: PSD_Segmentlaenge
+   Opis:           GesamtlÃ¤nge des prÃ¤diktiven Streckensegments
+   Startbit:       36
+   Długość:        7 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 2) + (0)
+   Zakres fizyczny:0 do 254
+   Jednostka:      Unit_Meter
+   ........................................
+-> SYGNAŁ: PSD_Rampe
+   Startbit:       43
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Auffahrt_Einbahnstr
+      2 = Abfahrt_Einbahnstr
+      3 = Einbahnstrasse
+      0 = Strasse_mit_Gegenverkehr
+   ........................................
+-> SYGNAŁ: PSD_Endkruemmung
+   Opis:           'EndkrÃ¼mmung der Klotoide des Ã¼bermittelten Streckensegments. Die AnfangskrÃ¼mmung des folgenden Streckensegments entspricht der EndkrÃ¼mmung dieses Segments. KrÃ¼mmung = 1/(1+0.155 * xÂ²) [1/m]
+   Startbit:       45
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 254
+   Jednostka:      Unit_None
+   Znaczenie wartości (Value Table):
+      255 = Gerade
+   ........................................
+-> SYGNAŁ: PSD_Endkruemmung_Vorz
+   Startbit:       53
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Kruemmung_negativ
+      0 = Kruemmung_positiv
+   ........................................
+-> SYGNAŁ: PSD_Endsteigung
+   Opis:           Endsteigung des Streckensegments.
+   Startbit:       54
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 0.5) + (0)
+   Zakres fizyczny:0 do 14.5
+   Jednostka:      Unit_PerCent
+   Znaczenie wartości (Value Table):
+      30 = gleich_oder_mehr_15_Prozent_Steigung
+      31 = nicht_definiert
+   ........................................
+-> SYGNAŁ: PSD_Endsteigung_Vorz
+   Startbit:       59
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Steigung
+      0 = Gefaelle
+   ........................................
+-> SYGNAŁ: PSD_ADAS_Qualitaet
+   Opis:           ADAS QualtitÃ¤t des Streckensegments.
+   Startbit:       60
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = keine_ADAS_Qualitaet
+      1 = ADAS_Qualitaet
+   ........................................
+-> SYGNAŁ: PSD_Fahrspuren
+   Opis:           Fahrspuren in Fahrtrichtung
+   Startbit:       61
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = Einbahnstrasse_in_falscher_Richtung
+      1 = eine_Fahrspur
+      3 = drei_Fahrspuren
+      2 = zwei_Fahrspuren
+   ........................................
+-> SYGNAŁ: PSD_wahrscheinlichster_Pfad
+   Opis:           Identifiziert den vom Navigationssystem berechneten wahrscheinlichsten Pfad des Fahrzeuges.
+   Startbit:       63
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = Pfad_mit_geringer_Wahrscheinlichkeit
+      1 = wahrscheinlichster_Pfad
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: PSD_02 ===
+==================================================
+ID (Dziesiętne):  930
+ID (Szesnastkowe): 0x3a2
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     RNS_midline
+Czas cyklu:       Cyclic ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: PSD_Multiplex
+   Opis:           Identifieziert den Multiplex der Botschaft.
+   Startbit:       0
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = fÃ¼r System Informationen, die sich nur langsam Ã¤ndern
+      1 = Informationen Ã¼ber ein Streckensegment
+      2 = fÃ¼r Informationen Ã¼ber Geschwindigkeitsbegrenzungen und mÃ¶gliche EinschrÃ¤nkungen der Geschwindigkeitsbegrenzungen 
+      3 = Fahrzeugposition aus der Koppelortung
+   ........................................
+-> SYGNAŁ: PSD_Sys_Segment_ID
+   Opis:           Identifier des prÃ¤diktiven Streckensegments ab dem die Systeminformationen gÃ¼ltig sind.
+   Startbit:       2
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:2 do 63
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = nicht zulaessig
+      0 = keine Segmentinformationen vorhanden
+   ........................................
+-> SYGNAŁ: PSD_Abz_Segment_ID
+   Opis:           Identifier des prÃ¤diktiven abzweigenden Streckensegments.
+   Startbit:       2
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:2 do 63
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = keine Segmentinformationen vorhanden
+      1 = nicht zulaessig
+   ........................................
+-> SYGNAŁ: PSD_Ges_Segment_ID
+   Opis:           Identifier des prÃ¤diktiven Streckensegments ab dem die Geschwindigkeitsbegrenzungen und mÃ¶gliche EinschrÃ¤nkungen gelten.
+   Startbit:       2
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:2 do 63
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = keine Segmentinformationen vorhanden
+      1 = nicht zulaessig
+   ........................................
+-> SYGNAŁ: PSD_Ort_Laenge_VZ
+   Opis:           Vorzeichen Laengengrad
+   Startbit:       2
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = West
+      0 = Ost
+   ........................................
+-> SYGNAŁ: PSD_Ort_Laenge
+   Opis:           Laengengrad in WGS84 aus Koppelnavigation
+   Startbit:       3
+   Długość:        25 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1e-05) + (0)
+   Zakres fizyczny:0 do 180
+   Jednostka:      Unit_DegreOfArc
+   Znaczenie wartości (Value Table):
+      33554431 =        Keine GPS Position verfuegbar
+   ........................................
+-> SYGNAŁ: PSD_Sys_Laendercode
+   Opis:           LÃ¤ndercode
+   Startbit:       8
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: PSD_Abz_Segmentlaenge
+   Opis:           LÃ¤nge des aktuell Ã¼bermittelten Streckensegments der Abzweigung
+   Startbit:       8
+   Długość:        7 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 2) + (0)
+   Zakres fizyczny:0 do 254
+   Jednostka:      Unit_Meter
+   ........................................
+-> SYGNAŁ: PSD_Ges_Geschwindigkeit
+   Startbit:       8
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 31
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = 0 km/h < v_max <  5 km/h
+      7 = 30 km/h Â¿ v_max < 35 km/h
+      10 = 45 km/h Â¿ v_max < 50 km/h
+      19 = 130 km/h Â¿ v_max < 140 km/h
+      22 = 160 km/h Â¿ v_max
+      13 = 70 km/h Â¿ v_max < 80 km/h
+      18 = 120 km/h Â¿ v_max < 130 km/h
+      14 = 80 km/h Â¿ v_max < 90 km/h
+      15 = 90 km/h Â¿ v_max < 100 km/h
+      6 = 25 km/h Â¿ v_max < 30 km/h
+      20 = 140 km/h Â¿ v_max < 150 km/h
+      11 = 50 km/h Â¿ v_max < 60 km/h
+      23 = Geschwindigkeitsgebot aufgehoben
+      3 = 10 km/h Â¿ v_max < 15 km/h
+      12 = 60 km/h Â¿ v_max < 70 km/h
+      24 = ..0x1F ungÃ¼ltig
+      5 = 20 km/h Â¿ v_max < 25 km/h
+      16 = 100 km/h Â¿ v_max < 110 km/h
+      17 = 110 km/h Â¿ v_max < 120 km/h
+      9 = 40 km/h Â¿ v_max < 45 km/h
+      21 = 150 km/h Â¿ v_max < 160 km/h
+      2 = 5 km/h Â¿ v_max < 10km/h
+      4 = 15 km/h Â¿ v_max < 20 km/h
+      8 = 35 km/h Â¿ v_max < 40 km/h
+      0 = Kein Geschwindigkeitsgebot
+   ........................................
+-> SYGNAŁ: PSD_Ges_Geschwindigkeit_Typ
+   Opis:           Typ der Geschwindigkeitsbegrenzung
+   Startbit:       13
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Der Wert im Attribut Geschwindigkeitsbegrenzung entspricht einer explizit angegebenen Begrenzung der Geschwindigkeit. 
+      0 = Der Wert im Attribut Geschwindigkeitsbegrenzung entspricht der Geschwindigkeitsklasse von Navteq.
+   ........................................
+-> SYGNAŁ: PSD_Ges_Geschwindigkeit_Gespann
+   Opis:           Gilt diese EinschrÃ¤nkung der Geschwindigkeit fÃ¼r alle Fahrzeuge oder ausschlieÃŸlich fÃ¼r PKW mit Gespann oder fÃ¼r LKW, Buss, etc.
+   Startbit:       14
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      2 = LKW, Busse, etc.
+      0 = alle Fahrzeuge
+      1 = PKW mit Gespann
+   ........................................
+-> SYGNAŁ: PSD_Abz_Vorgaenger_Segment_ID
+   Opis:           Identifier des prÃ¤diktiven Streckensegments an dessen Ende die Abzweigung angeheftet ist.
+   Startbit:       15
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:2 do 63
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = nicht zulaessig
+      0 = keine Segmentinformationen vorhanden
+   ........................................
+-> SYGNAŁ: PSD_Sys_Geschwindigkeit_Einheit
+   Opis:           Unterscheidung zwischen km/h und miles/h
+   Startbit:       16
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = km/h
+      1 = mph
+   ........................................
+-> SYGNAŁ: PSD_Ges_Geschwindigkeit_Witter
+   Opis:           WitterungsabhÃ¤ngigkeit der Geschwindigkeitsbegrenzung
+   Startbit:       16
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      3 = Nebel
+      0 = WitterungsunabhÃ¤ngig
+      1 = NÃ¤sse, Regen, Niederschlag
+      2 = GlÃ¤tte
+   ........................................
+-> SYGNAŁ: PSD_Sys_Verkehrsrichtung
+   Opis:           Unterscheidung zwischen Linksverkehr und Rechtsverkehr
+   Startbit:       17
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = Rechtsverkehr
+      1 = Linksverkehr
+   ........................................
+-> SYGNAŁ: PSD_Sys_Release_Monat
+   Opis:           Release Datum der Daten DVD: Monat 01Â¿12
+   Startbit:       18
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 12
+   Jednostka:      Unit_Month
+   ........................................
+-> SYGNAŁ: PSD_Ges_Geschwindigkeit_Tag_Anf
+   Opis:           Wochentag, an dem die tÃ¤gliche Geschwindigkeitsbegrenzung beginnt
+   Startbit:       18
+   Długość:        3 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 7
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      3 = Mittwoch
+      7 = Sonntag
+      0 = kein Beginn definiert
+      5 = Freitag
+      6 = Samstag
+      2 = Dienstag
+      1 = Montag
+      4 = Donnerstag
+   ........................................
+-> SYGNAŁ: PSD_Abz_Geschwindigkeit
+   Startbit:       21
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 31
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      19 = 130 km/h Â¿ v_max < 140 km/h
+      12 = 60 km/h Â¿ v_max < 70 km/h
+      7 = 30 km/h Â¿ v_max < 35 km/h
+      16 = 100 km/h Â¿ v_max < 110 km/h
+      23 = Geschwindigkeitsgebot aufgehoben
+      15 = 90 km/h Â¿ v_max < 100 km/h
+      11 = 50 km/h Â¿ v_max < 60 km/h
+      6 = 25 km/h Â¿ v_max < 30 km/h
+      8 = 35 km/h Â¿ v_max < 40 km/h
+      0 = Kein Geschwindigkeitsgebot
+      13 = 70 km/h Â¿ v_max < 80 km/h
+      2 = 5 km/h Â¿ v_max < 10km/h
+      17 = 110 km/h Â¿ v_max < 120 km/h
+      24 = ..0x1F ungÃ¼ltig
+      22 = 160 km/h Â¿ v_max
+      1 = 0 km/h < v_max <  5 km/h
+      10 = 45 km/h Â¿ v_max < 50 km/h
+      18 = 120 km/h Â¿ v_max < 130 km/h
+      4 = 15 km/h Â¿ v_max < 20 km/h
+      3 = 10 km/h Â¿ v_max < 15 km/h
+      9 = 40 km/h Â¿ v_max < 45 km/h
+      5 = 20 km/h Â¿ v_max < 25 km/h
+      21 = 150 km/h Â¿ v_max < 160 km/h
+      20 = 140 km/h Â¿ v_max < 150 km/h
+      14 = 80 km/h Â¿ v_max < 90 km/h
+   ........................................
+-> SYGNAŁ: PSD_Ges_Geschwindigkeit_Tag_Ende
+   Opis:           Wochentag, an dem die tÃ¤gliche Geschwindigkeitsbegrenzung endet
+   Startbit:       21
+   Długość:        3 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 7
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      6 = Samstag
+      0 = kein Ende definiert
+      2 = Dienstag
+      1 = Montag
+      7 = Sonntag
+      3 = Mittwoch
+      5 = Freitag
+      4 = Donnerstag
+   ........................................
+-> SYGNAŁ: PSD_Sys_Release_Jahr
+   Opis:           Release Datum der Daten DVD Jahr 2000 - 2031
+   Startbit:       22
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (2000)
+   Zakres fizyczny:2000 do 2031
+   Jednostka:      Unit_Year
+   ........................................
+-> SYGNAŁ: PSD_Ges_Geschwindigkeit_Std_Anf
+   Opis:           Stunde, zu der die stÃ¼ndliche Geschwindigkeitsbegrenzung beginnt
+0h.. 24h
+   Startbit:       24
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 24
+   Jednostka:      Unit_Hours
+   Znaczenie wartości (Value Table):
+      25 = kein Beginn fÃ¼r stundenweise EinschrÃ¤nkungen
+   ........................................
+-> SYGNAŁ: PSD_Abz_Geschwindigkeit_Typ
+   Opis:           Typ der Geschwindigkeitsbegrenzung
+   Startbit:       26
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = Der Wert im Attribut Geschwindigkeitsbegrenzung entspricht der Geschwindigkeitsklasse von Navteq.
+      1 = Der Wert im Attribut Geschwindigkeitsbegrenzung entspricht einer explizit angegebenen Begrenzung der Geschwindigkeit  
+   ........................................
+-> SYGNAŁ: PSD_Sys_Tunnel
+   Opis:           Tunnel
+   Startbit:       27
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Tunnel
+      0 = kein Tunnel oder keine Information verfuegbar
+   ........................................
+-> SYGNAŁ: PSD_Abz_Strassenklasse
+   Opis:           Die Klassifizierung des abzweigenden Streckensegments.
+   Startbit:       27
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = OrtsstraÃŸe
+      0 =  Rest (Feldweg, Schotter, Privatweg)
+      2 = Bundes-,Landstrasse
+      3 = Autobahn
+   ........................................
+-> SYGNAŁ: PSD_Sys_Bruecke
+   Opis:           Bruecke
+   Startbit:       28
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Bruecke
+      0 = keine Bruecke oder keine Information verfuegbar
+   ........................................
+-> SYGNAŁ: PSD_Ort_Breite_VZ
+   Startbit:       28
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Sued
+      0 = Nord
+   ........................................
+-> SYGNAŁ: PSD_Sys_Fahrsp_Gegenr
+   Opis:           Fahrspuren in Gegenrichtung
+   Startbit:       29
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      2 = mehr als eine Fahrspur
+      0 = keine Fahrspur
+      3 = keine Information verfuegbar
+      1 = eine Fahrspur
+   ........................................
+-> SYGNAŁ: PSD_Abz_ADAS_Qualitaet
+   Opis:           ADAS QualtitÃ¤t des abzweigenden Streckensegments.
+   Startbit:       29
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = keine ADAS QualitÃ¤t
+      1 = ADAS QualitÃ¤t
+   ........................................
+-> SYGNAŁ: PSD_Ges_Geschwindigkeit_Std_Ende
+   Opis:           Stunde, an der die stÃ¼ndliche Geschwindigkeitsbegrenzung endet
+0h.. 24h
+   Startbit:       29
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 24
+   Jednostka:      Unit_Hours
+   Znaczenie wartości (Value Table):
+      25 = kein Ende fÃ¼r stundenweise EinschrÃ¤nkungen
+   ........................................
+-> SYGNAŁ: PSD_Ort_Breite
+   Opis:           Breitengrad in WGS84 aus Koppelnavigation
+   Startbit:       29
+   Długość:        24 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1e-05) + (0)
+   Zakres fizyczny:0 do 90
+   Jednostka:      Unit_DegreOfArc
+   ........................................
+-> SYGNAŁ: PSD_Abz_Abzweigerichtung
+   Opis:           Richtung, in die die Abzweigung von der Hauptroute abzweigt.
+   Startbit:       30
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = links abzweigende StraÃŸe
+      0 = rechts abzweigende StraÃŸe
+   ........................................
+-> SYGNAŁ: PSD_Sys_TMC_Baustelle
+   Opis:           TMC Signal fuer Baustellenbereich
+   Startbit:       31
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = keine Baustelle oder keine Information verfuegbar
+      1 = Baustelle
+   ........................................
+-> SYGNAŁ: PSD_Abz_Abzweigewinkel
+   Opis:           Winkel, unter dem die Abzweigung von der Hauptroute abzweigt.
+   Startbit:       31
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = 0Â¿ < Winkel Â¿ 12Â¿
+      0 = 0Â¿: StraÃŸe verlÃ¤uft gerade aus
+      6 = 60Â¿ < Winkel Â¿ 72Â¿
+      9 = 96Â¿ < Winkel Â¿ 108Â¿
+      5 = 48Â¿ < Winkel Â¿ 60Â¿
+      15 = 168Â¿ < Winkel Â¿ 180Â¿
+      3 = 24Â¿ < Winkel Â¿ 36Â¿
+      12 = 132Â¿ < Winkel Â¿ 144Â¿
+      14 = 156Â¿ < Winkel Â¿ 168Â¿
+      13 = 144Â¿ < Winkel Â¿ 156Â¿
+      4 = 36Â¿ < Winkel Â¿ 48Â¿
+      2 = 12Â¿ < Winkel Â¿ 24Â¿
+      11 = 120Â¿ < Winkel Â¿ 132Â¿
+      10 = 108Â¿ < Winkel Â¿ 120Â¿
+      7 = 72Â¿ < Winkel Â¿ 84Â¿
+      8 = 84Â¿ < Winkel Â¿ 96Â¿
+   ........................................
+-> SYGNAŁ: PSD_Sys_TMC_Stau
+   Opis:           TMC Signal fuer Stauinformation
+   Startbit:       32
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Stau
+      0 = kein Stau oder keine Information verfuegbar
+   ........................................
+-> SYGNAŁ: PSD_Ges_alter_Geschw
+   Startbit:       34
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 31
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      19 = 130 km/h Â¿ v_max < 140 km/h
+      15 = 90 km/h Â¿ v_max < 100 km/h
+      20 = 140 km/h Â¿ v_max < 150 km/h
+      3 = 10 km/h Â¿ v_max < 15 km/h
+      0 = Kein Geschwindigkeitsgebot
+      5 = 20 km/h Â¿ v_max < 25 km/h
+      6 = 25 km/h Â¿ v_max < 30 km/h
+      10 = 45 km/h Â¿ v_max < 50 km/h
+      17 = 110 km/h Â¿ v_max < 120 km/h
+      18 = 120 km/h Â¿ v_max < 130 km/h
+      9 = 40 km/h Â¿ v_max < 45 km/h
+      8 = 35 km/h Â¿ v_max < 40 km/h
+      23 = Geschwindigkeitsgebot aufgehoben
+      13 = 70 km/h Â¿ v_max < 80 km/h
+      12 = 60 km/h Â¿ v_max < 70 km/h
+      16 = 100 km/h Â¿ v_max < 110 km/h
+      7 = 30 km/h Â¿ v_max < 35 km/h
+      11 = 50 km/h Â¿ v_max < 60 km/h
+      24 = ..0x1F ungÃ¼ltig
+      2 = 5 km/h Â¿ v_max < 10km/h
+      21 = 150 km/h Â¿ v_max < 160 km/h
+      4 = 15 km/h Â¿ v_max < 20 km/h
+      14 = 80 km/h Â¿ v_max < 90 km/h
+      1 = 0 km/h < v_max <  5 km/h
+      22 = 160 km/h Â¿ v_max
+   ........................................
+-> SYGNAŁ: PSD_Abz_Rampe
+   Startbit:       35
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = StraÃŸe mit Gegenverkehr
+      1 = Auffahrt (Einbahnstr.)
+      2 = Abfahrt (Einbahnstr.)
+      3 = EinbahnstraÃŸe
+   ........................................
+-> SYGNAŁ: PSD_Abz_Anfangskruemmung
+   Opis:           AnfangskrÃ¼mmung des abzweigenden Streckensegments.
+KrÃ¼mmung = 1/(1+0,155*xÂ²)  [1/m]
+   Startbit:       37
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 254
+   Jednostka:      Unit_None
+   Znaczenie wartości (Value Table):
+      255 = Gerade
+   ........................................
+-> SYGNAŁ: PSD_Ges_alter_Geschw_Gespann
+   Opis:           Gilt diese alternative EinschrÃ¤nkung der Geschwindigkeit fÃ¼r alle Fahrzeuge oder ausschlieÃŸlich fÃ¼r PKW mit Gespann oder LKW, Busse, etc.
+0x0 = alle Fahrzeuge
+0x1 = PKW mit Gespann
+0x2 = LKW, Busse, etc.
+   Startbit:       39
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = alle Fahrzeuge
+      1 = PKW mit Gespann
+      2 = LKW, Busse, etc.
+   ........................................
+-> SYGNAŁ: PSD_Ges_alter_Geschw_Witter
+   Opis:           WitterungsabhÃ¤ngigkeit der alternativen Geschwindigkeitsbegrenzung.
+   Startbit:       41
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = NÃ¤sse, Regen, Niederschlag
+      2 = GlÃ¤tte
+      0 = WitterungsunabhÃ¤ngig
+      3 = Nebel
+   ........................................
+-> SYGNAŁ: PSD_Ges_alter_Geschw_Tag_Anf
+   Opis:           Wochentag, an dem die tÃ¤gliche alternative Geschwindigkeitsbegrenzung beginnt
+   Startbit:       43
+   Długość:        3 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 7
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      4 = Donnerstag
+      0 = kein Beginn definiert
+      5 = Freitag
+      2 = Dienstag
+      6 = Samstag
+      7 = Sonntag
+      1 = Montag
+      3 = Mittwoch
+   ........................................
+-> SYGNAŁ: PSD_Abz_Anfangskruemmung_Vorz
+   Startbit:       45
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = KrÃ¼mmung positiv
+      1 = KrÃ¼mmung negativ
+   ........................................
+-> SYGNAŁ: PSD_Sys_Anfangskruemmung
+   Opis:           AnfangskrÃ¼mmung des abzweigenden Streckensegments.
+KrÃ¼mmung = 1/(1+0,155*xÂ²)  [1/m]
+   Startbit:       46
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 254
+   Jednostka:      Unit_None
+   Znaczenie wartości (Value Table):
+      255 = Gerade
+   ........................................
+-> SYGNAŁ: PSD_Abz_Endkruemmung
+   Opis:           EndkrÃ¼mmung des abzweigenden Streckensegments.
+KrÃ¼mmung = 1/(1+0,155*xÂ²)  [1/m]
+   Startbit:       46
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 254
+   Jednostka:      Unit_None
+   Znaczenie wartości (Value Table):
+      255 = Gerade
+   ........................................
+-> SYGNAŁ: PSD_Ges_alter_Geschw_Tag_Ende
+   Opis:           Wochentag, an dem die tÃ¤gliche alternative Geschwindigkeitsbegrenzung endet.
+   Startbit:       46
+   Długość:        3 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 7
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      5 = Freitag
+      1 = Montag
+      7 = Sonntag
+      0 = kein Ende definiert
+      3 = Mittwoch
+      4 = Donnerstag
+      6 = Samstag
+      2 = Dienstag
+   ........................................
+-> SYGNAŁ: PSD_Ges_alter_Geschw_Std_Anf
+   Opis:           Stunde, zu der die stÃ¼ndliche alternative Geschwindigkeitsbegrenzung beginnt
+0h.. 24h.
+   Startbit:       49
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 24
+   Jednostka:      Unit_Hours
+   Znaczenie wartości (Value Table):
+      25 = kein Beginn fÃ¼r stundenweise EinschrÃ¤nkungen
+   ........................................
+-> SYGNAŁ: PSD_Ort_Hoehe
+   Opis:           Hoehe ueber NN an der
+   Startbit:       53
+   Długość:        11 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 5) + (-1000)
+   Zakres fizyczny:-1000 do 8000
+   Jednostka:      Unit_Meter
+   ........................................
+-> SYGNAŁ: PSD_Sys_Anfangskruemmung_Vorz
+   Startbit:       54
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = KrÃ¼mmung negativ
+      0 = KrÃ¼mmung positiv
+   ........................................
+-> SYGNAŁ: PSD_Abz_Endkruemmung_Vorz
+   Startbit:       54
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = KrÃ¼mmung negativ
+      0 = KrÃ¼mmung positiv
+   ........................................
+-> SYGNAŁ: PSD_Ges_alter_Geschw_Std_Ende
+   Opis:           Stunde an der die stÃ¼ndliche alternative Geschwindigkeitsbegrenzung endet
+0h.. 24h
+   Startbit:       54
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 24
+   Jednostka:      Unit_Hours
+   Znaczenie wartości (Value Table):
+      25 = kein Ende fÃ¼r stundenweise EinschrÃ¤nkungen
+   ........................................
+-> SYGNAŁ: PSD_Sys_Anfangssteigung
+   Opis:           Anfangssteigung des Streckensegments.
+   Startbit:       55
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 0.5) + (0)
+   Zakres fizyczny:0 do 14.5
+   Jednostka:      Unit_PerCent
+   Znaczenie wartości (Value Table):
+      31 = ungÃ¼ltig
+      30 = gleich oder mehr als 15 % Steigung
+   ........................................
+-> SYGNAŁ: PSD_Abz_Endsteigung
+   Opis:           Endsteigung des Streckensegments.
+   Startbit:       55
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 0.5) + (0)
+   Zakres fizyczny:0 do 14.5
+   Jednostka:      Unit_PerCent
+   Znaczenie wartości (Value Table):
+      30 = gleich oder mehr als 15 % Steigung
+      31 = ungÃ¼ltig
+   ........................................
+-> SYGNAŁ: PSD_Ges_Ueberholverbot
+   Startbit:       59
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      3 = Ãœberholverbot fÃ¼r LKW, Busse, etc.
+      1 = alle Fahrzeuge
+      2 = Ãœberholverbot fÃ¼r PKW mit Gespann
+      0 = kein Ãœberholverbot
+   ........................................
+-> SYGNAŁ: PSD_Sys_Anfangssteigung_Vorz
+   Startbit:       60
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Steigung
+      0 = GefÃ¤lle
+   ........................................
+-> SYGNAŁ: PSD_Abz_Endsteigung_Vorz
+   Startbit:       60
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Steigung
+      0 = GefÃ¤lle
+   ........................................
+-> SYGNAŁ: PSD_Sys_Ortschaft
+   Opis:           Die Grenze wird nicht durch das Ortsschild, sondern durch den Beginn der Bebauung markiert.
+   Startbit:       61
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = innerhalb der Ortschaft
+      0 = auÃŸerhalb der Ortschaft
+   ........................................
+-> SYGNAŁ: PSD_Abz_Fahrspuren
+   Opis:           Fahrspuren der abzweigenden Strecke in Fahrtrichtung.
+   Startbit:       61
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = eine Fahrspur
+      3 = mehr als 2 Fahrspuren
+      0 = EinbahnstraÃŸe in falscher Richtung
+      2 = zwei Fahrspuren
+   ........................................
+-> SYGNAŁ: PSD_Ges_Wechselverkehrszeichen
+   Opis:           Am Beginn des Segments ist ein Wechselverkehrszeichen angebracht.
+   Startbit:       61
+   Długość:        3 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 7
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      2 = Wechselverkehrszeichen rechts
+      3 = Wechselverkehrszeichen links und rechts
+      0 = Kein Wechselverkehrszeichen
+      1 = Wechselverkehrszeichen links
+      4 = Wechselverkerhszeichen Ã¼ber der Fahrbahn
+   ........................................
+-> SYGNAŁ: PSD_Sys_Digitalisierung
+   Opis:           QualitÃ¤t des Kartenmaterials.
+In digitalisierten Karten sind sÃ¤mtliche StraÃŸen erfasst.
+In teildigitalisierten Karten kÃ¶nnen einzelne StraÃŸen nicht erfasst sein. Dies kann zu Fehlinterpretationen beim MapMatching innerhalb des Navigationssystems fÃ¼hren
+   Startbit:       62
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = teildigitalisiert
+      1 = volldigitalisiert
+   ........................................
+-> SYGNAŁ: PSD_Sys_Zielfuehrung
+   Opis:           Zielfuehrung im Navigationssystem. Damit lÃ¤sst sich der wahrscheinlichste Pfad des Fahrzeuges zuverlÃ¤ssig angeben.
+   Startbit:       63
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Zielfuehrung aktiv
+      0 = Zielfuehrung nicht aktiv
+   ........................................
+-> SYGNAŁ: PSD_Abz_wahrscheinlichster_Pfad
+   Opis:           Identifiziert den vom Navigationssystem berechneten wahrscheinlichsten Pfad des Fahrzeuges fÃ¼r die abzweigende Strecke.
+   Startbit:       63
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = Pfad mit geringer Wahrscheinlichkeit
+      1 = wahrscheinlichster Pfad
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: NWM_RNS ===
+==================================================
+ID (Dziesiętne):  1078
+ID (Szesnastkowe): 0x436
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     RNS_300_NF, RNS_MFD2, RNS_midline
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: NWM_RNS_Receiver
+   Opis:           SG Adresse
+   Startbit:       0
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_CmdRing
+   Opis:           Ring Message
+   Startbit:       8
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = CmdRing
+   ........................................
+-> SYGNAŁ: NWM_RNS_CmdAlive
+   Opis:           Alive Message
+   Startbit:       9
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = CmdAlive
+   ........................................
+-> SYGNAŁ: NWM_RNS_CmdLimpHome
+   Opis:           Limp Home Message
+   Startbit:       10
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = CmdLimpHome
+   ........................................
+-> SYGNAŁ: NWM_RNS_SleepInd
+   Opis:           Bussleep Indication
+   Startbit:       12
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = SleepInd
+   ........................................
+-> SYGNAŁ: NWM_RNS_SleepAck
+   Opis:           Bussleep Acknowledge
+   Startbit:       13
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = SleepAck
+   ........................................
+-> SYGNAŁ: NWM_RNS_Per_WakeUp
+   Opis:           Weckursache Peripherie
+0 = wenn Funktionswakeup
+1 = CAN
+2 = P-WakeUp, Ursache nicht bekannt
+3 = Klemme 15 Hardware, falls vorhanden
+4 = Klemme 30 Reset
+5 = ON Tipper
+6 = Telefon Mute
+7 = RTC (Real Time Clock)
+8 = CD-Eject
+9 = CD-Insert
+   Startbit:       16
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 31
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      3 = KL15_HW
+      4 = KL30_Reset
+      8 = Eject
+      7 = RTC
+      5 = ON_Tipper
+      1 = CAN
+      9 = CD_Insert
+      0 = Funktionswakeup
+      2 = P_WakeUp
+      6 = Telefon_Mute
+   ........................................
+-> SYGNAŁ: NWM_RNS_Fkt_WakeUp
+   Opis:           Weckursache Funktion
+0 = wenn Peripheriewakeup
+1 = Dimmungsnachlauf
+2 = 'Communication Request' by any application (Verwendung von prÃ¤zisen Weckursachen sind diesem Wert vorzuziehen)
+3 = Telefon Mute
+   Startbit:       21
+   Długość:        3 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 7
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      3 = Telefon_Mute
+      1 = Dimmung
+      2 = Comm_Req
+      0 = P_WakeUp
+   ........................................
+-> SYGNAŁ: NWM_RNS_Klemme_15
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Klemme 15 ein
+   Startbit:       24
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = KL15_ein
+   ........................................
+-> SYGNAŁ: NWM_RNS_Diagnose
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Diagnose bei Kl 15 aus
+   Startbit:       25
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Diagnose
+   ........................................
+-> SYGNAŁ: NWM_RNS_MindestAktivZeit
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Mindestaktivzeit Taktiv_min (WAKE_TEMP)
+OSEK-NM: Mindestaktivzeit
+   Startbit:       26
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = MindestAktivZeit
+   ........................................
+-> SYGNAŁ: NWM_RNS_Ursache_4
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Radio On und BAP-Kommunikation aktiv
+   Startbit:       27
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Radio_BAP_Comm
+   ........................................
+-> SYGNAŁ: NWM_RNS_Ursache_5
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Die DDP-Komponente Navigation/Kompass hÃ¤lt den Bus wach
+   Startbit:       28
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = TP20_RNS
+   ........................................
+-> SYGNAŁ: NWM_RNS_Ursache_6
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Die DDP-Komponente Audio hÃ¤lt den Bus wach
+   Startbit:       29
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = TP20_RADIO
+   ........................................
+-> SYGNAŁ: NWM_RNS_Ursache_7
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Nachlaufursache 7
+   Startbit:       30
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Ursache_8
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Nachlaufursache 8
+   Startbit:       31
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Nachlauf_1
+   Opis:           1 = interner Nachlauf vor Wakeup 1
+   Startbit:       32
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Nachlauf_2
+   Opis:           1 = Dimmung (Kl58d)
+interner Nachlauf vor Wakeup 2
+   Startbit:       33
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Dimmung
+   ........................................
+-> SYGNAŁ: NWM_RNS_Nachlauf_3
+   Opis:           1 = Telefon Mute
+interner Nachlauf vor Wakeup 3
+   Startbit:       34
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Telefon_Mute
+   ........................................
+-> SYGNAŁ: NWM_RNS_Nachlauf_4
+   Opis:           1 = interner Nachlauf vor Wakeup 4
+   Startbit:       35
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Nachlauf_5
+   Opis:           1 = interner Nachlauf vor Wakeup 5
+   Startbit:       36
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Nachlauf_6
+   Opis:           1 = interner Nachlauf vor Wakeup 6
+   Startbit:       37
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Nachlauf_7
+   Opis:           1 = interner Nachlauf vor Wakeup 7
+   Startbit:       38
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Nachlauf_8
+   Opis:           1 = interner Nachlauf vor Wakeup 8
+   Startbit:       39
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_TimeOut_Fehler
+   Opis:           1 = Aktiver Timeout Fehlerspeichereintrag
+   Startbit:       41
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = TimeOut_FSP
+   ........................................
+-> SYGNAŁ: NWM_RNS_CAN_Diag_deaktiv
+   Opis:           1 = Keine CAN Bus bezogene Eigendiagnose
+   Startbit:       42
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Diag_inaktiv
+   ........................................
+-> SYGNAŁ: NWM_RNS_KompSchutz
+   Opis:           1 = FunktionseinschrÃ¤nkung aufgrund Komponentenschutz aktiv
+   Startbit:       43
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Komponentenschutz
+   ........................................
+-> SYGNAŁ: NWM_RNS_Mute_Mode
+   Opis:           1 = FunktionseinschrÃ¤nkung aufgrund Mute Mode aktiv, nur VW
+   Startbit:       44
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Mute_Mode
+   ........................................
+-> SYGNAŁ: NWM_RNS_Transport_Mode
+   Opis:           1 = FunktionseinschrÃ¤nkung aufgrund Transport Mode aktiv
+   Startbit:       45
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Transport_Mode
+   ........................................
+-> SYGNAŁ: NWM_RNS_Abschaltst_aktiv
+   Opis:           1 = Funktionsabschaltung wegen Abschaltschaltstufe
+   Startbit:       46
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Abschaltstufe
+   ........................................
+-> SYGNAŁ: NWM_RNS_Eindraht_Fehler
+   Opis:           1 = Eindrahtbetrieb erkannt
+   Startbit:       47
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Eindraht
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_1
+   Opis:           fÃ¼r kÃ¼nftige Anforderungen
+   Startbit:       48
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_2
+   Startbit:       49
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_3
+   Startbit:       50
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_4
+   Startbit:       51
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_5
+   Startbit:       52
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_6
+   Startbit:       53
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_7
+   Startbit:       54
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_8
+   Startbit:       55
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_9
+   Opis:           fÃ¼r kÃ¼nftige Anforderungen 2
+   Startbit:       56
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_10
+   Startbit:       57
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_11
+   Startbit:       58
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_12
+   Startbit:       59
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_13
+   Startbit:       60
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_14
+   Startbit:       61
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_15
+   Startbit:       62
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_RNS_Anf_16
+   Startbit:       63
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: NWM_Radio ===
+==================================================
+ID (Dziesiętne):  1081
+ID (Szesnastkowe): 0x439
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Radio_2DIN, Radio_Modul, Radio_SKODA
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: NWM_Radio_Receiver
+   Opis:           SG Adresse
+   Startbit:       0
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_CmdRing
+   Opis:           Ring Message
+   Startbit:       8
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = CmdRing
+   ........................................
+-> SYGNAŁ: NWM_Radio_CmdAlive
+   Opis:           Alive Message
+   Startbit:       9
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = CmdAlive
+   ........................................
+-> SYGNAŁ: NWM_Radio_CmdLimpHome
+   Opis:           Limp Home Message
+   Startbit:       10
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = CmdLimpHome
+   ........................................
+-> SYGNAŁ: NWM_Radio_SleepInd
+   Opis:           Bussleep Indication
+   Startbit:       12
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = SleepInd
+   ........................................
+-> SYGNAŁ: NWM_Radio_SleepAck
+   Opis:           Bussleep Acknowledge
+   Startbit:       13
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = SleepAck
+   ........................................
+-> SYGNAŁ: NWM_Radio_Per_WakeUp
+   Opis:           Weckursache Peripherie
+0 = wenn Funktionswakeup
+1 = CAN
+2 = P-WakeUp, Ursache nicht bekannt
+3 = Radio wird eingeschaltet
+4 = Radio wird ausgeschaltet
+5 = Klemme 15 Hardware, falls vorhanden
+30 = Klemme 30 Reset
+   Startbit:       16
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 31
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      2 = P_WakeUp
+      3 = Radio_On
+      1 = CAN
+      30 = KL30_Reset
+      4 = Radio_Off
+      0 = Funktionswakeup
+      5 = KL15_HW
+   ........................................
+-> SYGNAŁ: NWM_Radio_Fkt_WakeUp
+   Opis:           Weckursache Funktion
+0 = wenn Peripheriewakeup
+1 = Dimmungsnachlauf (bei Blaupunkt auch fÃ¼r Telefon ohne BAP)
+2 = 'Communication Request' by any application (Verwendung von prÃ¤zisen Weckursachen sind diesem Wert vorzuziehen)
+3 = Wecken durch S-Kontakt
+   Startbit:       21
+   Długość:        3 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 7
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      2 = Comm_Req
+      1 = Dimmung
+      0 = P_WakeUp
+      4 = Telefon
+      3 = S_Kontakt
+   ........................................
+-> SYGNAŁ: NWM_Radio_Klemme_15
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Klemme 15 ein
+   Startbit:       24
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = KL15_ein
+   ........................................
+-> SYGNAŁ: NWM_Radio_Diagnose
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Diagnose bei Kl 15 aus
+   Startbit:       25
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Diagnose
+   ........................................
+-> SYGNAŁ: NWM_Radio_MindestAktivZeit
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Mindestaktivzeit Taktiv_min
+OSEK-NM: Mindestaktivzeit
+   Startbit:       26
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = MindestAktivZeit
+   ........................................
+-> SYGNAŁ: NWM_Radio_Ursache_4
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Radio On und BAP-Kommunikation aktiv (z.B. mit MDI)
+   Startbit:       27
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Radio_BAP_Comm
+   ........................................
+-> SYGNAŁ: NWM_Radio_Ursache_5
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Mindestens ein 'Communication Request' der Applikation
+   Startbit:       28
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Comm_Req
+   ........................................
+-> SYGNAŁ: NWM_Radio_Ursache_6
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Theft Protection (10 Sek fÃ¼r Radio-Komfort-Codierung)
+   Startbit:       29
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Ursache_7
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Nachlaufursache 7
+   Startbit:       30
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Ursache_8
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Nachlaufursache 8
+   Startbit:       31
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Nachlauf_1
+   Opis:           1 = deep sleep
+interner Nachlauf vor Wakeup 1
+   Startbit:       32
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = deep_sleep
+   ........................................
+-> SYGNAŁ: NWM_Radio_Nachlauf_2
+   Opis:           Nachlaufursache, kein Sleep Ind gesetzt
+1 = Dimmungsnachlauf (bei Blaupunkt auch fÃ¼r Telefon ohne BAP)
+interner Nachlauf vor Wakeup 2
+   Startbit:       33
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Dimmung
+   ........................................
+-> SYGNAŁ: NWM_Radio_Nachlauf_3
+   Opis:           1 = Radio ist eingeschaltet (Stundennachlauf)
+interner Nachlauf vor Wakeup 3
+   Startbit:       34
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Radio_On
+   ........................................
+-> SYGNAŁ: NWM_Radio_Nachlauf_4
+   Opis:           1 = Tuner ist aktiv
+interner Nachlauf vor Wakeup 4
+   Startbit:       35
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Tuner_On
+   ........................................
+-> SYGNAŁ: NWM_Radio_Nachlauf_5
+   Opis:           1 = interner Nachlauf vor Wakeup 5
+   Startbit:       36
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Nachlauf_6
+   Opis:           1 = interner Nachlauf vor Wakeup 6
+   Startbit:       37
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Nachlauf_7
+   Opis:           1 = interner Nachlauf vor Wakeup 7
+   Startbit:       38
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Nachlauf_8
+   Opis:           1 = Neustart nach Flash Update
+interner Nachlauf vor Wakeup 8
+   Startbit:       39
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Flash_Update
+   ........................................
+-> SYGNAŁ: NWM_Radio_TimeOut_Fehler
+   Opis:           1 = Aktiver Timeout Fehlerspeichereintrag
+   Startbit:       41
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = TimeOut_FSP
+   ........................................
+-> SYGNAŁ: NWM_Radio_CAN_Diag_deaktiv
+   Opis:           1 = Keine CAN Bus bezogene Eigendiagnose
+   Startbit:       42
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Diag_inaktiv
+   ........................................
+-> SYGNAŁ: NWM_Radio_KompSchutz
+   Opis:           1 = FunktionseinschrÃ¤nkung aufgrund Komponentenschutz aktiv
+   Startbit:       43
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Komponentenschutz
+   ........................................
+-> SYGNAŁ: NWM_Radio_Mute_Mode
+   Opis:           1 = FunktionseinschrÃ¤nkung aufgrund Mute Mode aktiv, nur VW
+   Startbit:       44
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Mute_Mode
+   ........................................
+-> SYGNAŁ: NWM_Radio_Transport_Mode
+   Opis:           1 = FunktionseinschrÃ¤nkung aufgrund Transport Mode aktiv
+   Startbit:       45
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Transport_Mode
+   ........................................
+-> SYGNAŁ: NWM_Radio_Abschaltst_aktiv
+   Opis:           1 = Funktionsabschaltung wegen Abschaltschaltstufe
+   Startbit:       46
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Abschaltstufe
+   ........................................
+-> SYGNAŁ: NWM_Radio_Eindraht_Fehler
+   Opis:           1 = Eindrahtbetrieb erkannt
+   Startbit:       47
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Eindraht
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_1
+   Opis:           fÃ¼r kÃ¼nftige Anforderungen
+   Startbit:       48
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_2
+   Startbit:       49
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_3
+   Startbit:       50
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_4
+   Startbit:       51
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_5
+   Startbit:       52
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_6
+   Startbit:       53
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_7
+   Startbit:       54
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_8
+   Startbit:       55
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_9
+   Opis:           fÃ¼r kÃ¼nftige Anforderungen 2
+   Startbit:       56
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_10
+   Startbit:       57
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_11
+   Startbit:       58
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_12
+   Startbit:       59
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_13
+   Startbit:       60
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_14
+   Startbit:       61
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_15
+   Startbit:       62
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NWM_Radio_Anf_16
+   Startbit:       63
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mRadio_MUX_1 ===
+==================================================
+ID (Dziesiętne):  1121
+ID (Szesnastkowe): 0x461
+Długość (DLC):    6 bajtów
+Nadawca (Tx):     RNS_MFD2
+Czas cyklu:       IfActive ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: RA6_Ziel
+   Opis:           Festlegung von Zieladresse (CD, CDW, TV, ..), Comand und
+Zieladresse
+   Startbit:       0
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA6_Command
+   Opis:           Operand in separater Tabelle: mRadio_MUX_1
+Radiobefehl
+   Startbit:       8
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA6_Operand_0
+   Opis:           Operand_0
+   Startbit:       16
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA6_Operand_1
+   Opis:           Operand_1
+   Startbit:       24
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA6_Operand_2
+   Opis:           Operand_2
+   Startbit:       32
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA6_Operand_3
+   Opis:           Operand_3
+   Startbit:       40
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mMenue_DSP_1 ===
+==================================================
+ID (Dziesiętne):  1287
+ID (Szesnastkowe): 0x507
+Długość (DLC):    6 bajtów
+Nadawca (Tx):     Radio_Modul, Radio_SKODA, RNS_midline
+Czas cyklu:       Cyclic ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: DS1_Power_Mode
+   Opis:           Power Mode:
+0=Standby
+1=Active
+3=Run
+Anwahl des DSP Power Mode
+   Startbit:       0
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Status_Request
+   Opis:           Anforderung aller Statusbotschaften vom DSP
+   Startbit:       2
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Loudness
+   Opis:           1 = Loudness ON
+0 = OFF
+Aktivierung Loudness
+   Startbit:       3
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Dynamic
+   Opis:           1 = Dynamik On
+0 = Dynamik Off
+Aktivierung Dynamic
+   Startbit:       4
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Driver_On_Off
+   Opis:           1 = DSP Einstellungen in Abhaengigkeit von Fahrerposition
+Soundanpassung an Fahrerposition
+   Startbit:       5
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Sitzbezuege
+   Opis:           1 = Lederbezuege
+0 = Stoffbezuege
+NUR ENTWICKLUNGSSTAND, Bit darf ausserhalb VW611 nicht verwendet werden!
+   Startbit:       7
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_GALA
+   Opis:           Auswahl einer im DSP abgelegten Funktion(Gerade) zur GALA Anpassung der Lautstaerke
+GALA Steuerung
+   Startbit:       8
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Klangcharakter
+   Opis:           Auswahl eines im DSP abgelegten Klangcharakters
+   Startbit:       12
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Bass
+   Opis:           Einstellung Bass +/-
+0, 0x10 = Nullstellung
+-15 = min ........ 15 = max
+Tiefeneinstellung
+   Startbit:       16
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (-16)
+   Zakres fizyczny:-15 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Mid
+   Opis:           Einstellung Mid +/-
+0, 0x10 = Nullstellung
+-15 = min ........ 15 = max
+Mitteneinstellung
+   Startbit:       24
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (-16)
+   Zakres fizyczny:-15 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Treble
+   Opis:           Einstellung Treble +/-
+0, 0x10 = Nullstellung
+-15 = min ........ 15 = max
+Hoeheneinstellung
+   Startbit:       32
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (-16)
+   Zakres fizyczny:-15 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Mute_Mode
+   Opis:           1 = Mute Fast
+0 = Mute Slow
+Fast/Soft Mute
+   Startbit:       40
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Ch_1_Mute
+   Opis:           1 = Mute Channel 1
+0 = kein Mute
+   Startbit:       41
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Ch_2_Mute
+   Opis:           1 = Mute Channel 2
+0 = kein Mute
+   Startbit:       42
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Ch_3_Mute
+   Opis:           1 = Mute Channel 3
+0 = kein Mute
+   Startbit:       43
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS1_Effektstaerke
+   Opis:           0, 0x8 = Nullstellung
+0x9...0xF = Abschwaechung (Min to Max)
+0x1...0x7 = Verstaerkung (Min to Max)
+Bestimmt einen Abschwaechungs- bzw. Verstaerkungsgrad des eingestellten Klangcharakters (s. Byte 2 / Bit 4..7)
+Effektstaerke fuer Klangcharaktere
+   Startbit:       44
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mMenue_DSP_2 ===
+==================================================
+ID (Dziesiętne):  1291
+ID (Szesnastkowe): 0x50b
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Radio_SKODA
+Czas cyklu:       Cyclic ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: DS2_Ch_1_Source
+   Opis:           Quellentyp zur Soundanpssung
+0 = nicht bekannt
+1 = Radio AM
+2 = Radio FM
+3 = CD
+4 = MC
+5 = TV
+6 = Navigation
+7 = Telefon
+8 = Sprachausgabe
+9 = DVD
+Source Type Channel 1
+   Startbit:       0
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Ch_2_Source
+   Opis:           Quellentyp zur Soundanpassung
+0 = nicht bekannt
+1 = Radio AM
+2 = Radio FM
+3 = CD
+4 = MC
+5 = TV
+6 = Navigation
+7 = Telefon
+8 = Sprachausgabe
+9 = DVD
+Source Type Channel 2
+   Startbit:       4
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Stereo1_Active
+   Opis:           Quellenschaltung
+Stereo Channel activ (Channel 1)
+   Startbit:       8
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Mono1_Active
+   Opis:           Quellenschaltung
+Mono Channel 1 activ (Channel 2)
+   Startbit:       9
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Ch_1_Volume
+   Opis:           0xFF = Fehler
+0x00 = min
+0xFE = max
+Ziellautstaerke wenn Cross-Fading Channel 1 aktiv
+Volume Channel 1
+   Startbit:       16
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Ch_1_Fader
+   Opis:           0 = Initwert = Nullstellung
+0x10 = Nullstellung
+1 = max. Daempfung Vorne
+31 = max. Daempfung Hinten
+Fader Channel 1
+   Startbit:       24
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (-16)
+   Zakres fizyczny:-15 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Ch_1_Cross_Fading
+   Opis:           0 = kein Fading
+1 = slow Fading
+2 = middle Fading
+3 = fast Fading
+Cross Fading Lauf Channel 1
+   Startbit:       29
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Ch_1_Fading_ID
+   Opis:           0 = Fading Kanal 0
+1 = Fading Kanal 1
+Der DSP beginnt erst mit Cross-Fading, wenn ein Fading Paar von zwei Kanaelen vorliegt (ID1=0 und ID2=1)
+Cross Fading pair number
+   Startbit:       31
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Ch_1_Balance
+   Opis:           0 = Initwert = Nullstellung
+0x10 = Nullstellung
+1 = max. Daempfung Rechts
+31 = max. Daempfung Links
+Balance Channel 1
+   Startbit:       32
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (-16)
+   Zakres fizyczny:-15 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Ch_2_Volume
+   Opis:           0xFF = Fehler
+0x00 = min
+0xFE = max
+Ziellautstaerke wenn Cross-Fading Channel 2 aktiv
+Volume Channel 2
+   Startbit:       40
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Ch_2_Fader
+   Opis:           0 = Initwert = Nullstellung
+0x10 = Nullstellung
+1 = max. Daempfung Vorne
+31 = max. Daempfung Hinten
+Fader Channel 2
+   Startbit:       48
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (-16)
+   Zakres fizyczny:-15 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Ch_2_Cross_Fading
+   Opis:           0 = kein Fading
+1 = slow Fading
+2 = middle Fading
+3 = fast Fading
+Cross Fading Lauf Channel 2
+   Startbit:       53
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Ch_2_Fading_ID
+   Opis:           0 = Fading Kanal 0
+1 = Fading Kanal 1
+Der DSP beginnt erst mit Cross-Fading, wenn ein Fading Paar von zwei Kanaelen vorliegt (ID1=0 und ID2=1)
+Cross Fading pair number
+   Startbit:       55
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS2_Ch_2_Balance
+   Opis:           0 = Initwert = Nullstellung
+0x10 = Nullstellung
+1 = max. Daempfung Rechts
+31 = max. Daempfung Links
+Keine Bedeutung wenn Stereo aktiv
+Balance Channel 2
+   Startbit:       56
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (-16)
+   Zakres fizyczny:-15 do 15
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mMenue_DSP_3 ===
+==================================================
+ID (Dziesiętne):  1293
+ID (Szesnastkowe): 0x50d
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Radio_SKODA
+Czas cyklu:       Cyclic ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: DS3_Ch_3_Source
+   Opis:           Quellentyp zur Soundanpssung
+0 = nicht bekannt
+1 = Radio AM
+2 = Radio FM
+3 = CD
+4 = MC
+5 = TV
+6 = Navigation
+7 = Telefon
+8 = Sprachausgabe
+9 = DVD
+Source Type Channel 3
+   Startbit:       0
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS3_Mono2_Active
+   Opis:           Mono Channel 2 activ (Channel 3)
+   Startbit:       4
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS3_Chime_Active
+   Opis:           Einmischen von Signalisierungstoenen
+Chime activ
+   Startbit:       5
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS3_Chime_Number
+   Opis:           0xFF = Fehler
+Auswahl eines Signaltones / Tabelle oder Freq. ?
+Auswahl Chime
+   Startbit:       8
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS3_Ch_3_Volume
+   Opis:           0xFF = Fehler
+0x00 = min
+0xFE = max
+Ziellautstaerke wenn Cross-Fading Channel 3 aktiv
+Volume Channel 3
+   Startbit:       16
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS3_Ch_3_Fader
+   Opis:           0 = Initwert = Nullstellung
+0x10 = Nullstellung
+1 = max. Daempfung Vorne
+31 = max. Daempfung Hinten
+Fader Channel 3
+   Startbit:       24
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (-16)
+   Zakres fizyczny:-15 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS3_Ch_3_Cross_Fading
+   Opis:           0 = kein Fading
+1 = slow Fading
+2 = middle Fading
+3 = fast Fading
+Cross Fading Lauf Channel 3
+   Startbit:       29
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS3_Ch_3_Fading_ID
+   Opis:           0 = Fading Kanal 0
+1 = Fading Kanal 1
+Der DSP beginnt erst mit Cross-Fading, wenn ein Fading Paar von zwei Kanaelen vorliegt (ID1=0 und ID2=1)
+Cross Fading pair number
+   Startbit:       31
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS3_Ch_3_Balance
+   Opis:           0 = Initwert = Nullstellung
+0x10 = Nullstellung
+1 = max. Daempfung Rechts
+31 = max. Daempfung Links
+Balance Channel 3
+   Startbit:       32
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (-16)
+   Zakres fizyczny:-15 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS3_Chime_Volume
+   Opis:           0xFF = Fehler
+0x00 = min
+0xFE = max
+Volume Chime
+   Startbit:       40
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS3_Chime_Fader
+   Opis:           0 = Initwert = Nullstellung
+0x10 = Nullstellung
+1 = max. Daempfung Vorne
+31 = max. Daempfung Hinten
+Fader Chime
+   Startbit:       48
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (-16)
+   Zakres fizyczny:-15 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS3_Chime_Balance
+   Opis:           0 = Initwert = Nullstellung
+0x10 = Nullstellung
+1 = max. Daempfung Rechts
+31 = max. Daempfung Links
+Balance Chime
+   Startbit:       56
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (-16)
+   Zakres fizyczny:-15 do 15
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mMenue_DSP_4 ===
+==================================================
+ID (Dziesiętne):  1295
+ID (Szesnastkowe): 0x50f
+Długość (DLC):    6 bajtów
+Nadawca (Tx):     Radio_SKODA
+Czas cyklu:       Cyclic ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: DS4_Hall
+   Opis:           Veraenderung der Halleffekte in max. 15 Stufen
+Halleffekteinstellung
+   Startbit:       0
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS4_Echo
+   Opis:           Veraenderung der Echoeffekte in max. 15 Stufen
+Echoeffekteinstellung
+   Startbit:       4
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS4_Cathedral
+   Opis:           Veraenderung der Echoeffekte in max. 15 Stufen
+Echoeffekteinstellung_CATHEDRAL
+   Startbit:       8
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS4_Stadium
+   Opis:           Veraenderung der Echoeffekte in max. 15 Stufen
+Echoeffekteinstellung_STADIUM
+   Startbit:       12
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS4_Talk
+   Opis:           Veraenderung der Echoeffekte in max. 15 Stufen
+Echoeffekteinstellung_TALK
+   Startbit:       16
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS4_ROCK
+   Opis:           Veraenderung der Echoeffekte in max. 15 Stufen
+Halleffekteinstellung_ROCK
+   Startbit:       24
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS4_POP
+   Opis:           Veraenderung der Echoeffekte in max. 15 Stufen
+Halleffekteinstellung_POP
+   Startbit:       28
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS4_CLASSIC
+   Opis:           Veraenderung der Echoeffekte in max. 15 Stufen
+Halleffekteinstellung_CLASSIC
+   Startbit:       32
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS4_LIVE
+   Opis:           Veraenderung der Echoeffekte in max. 15 Stufen
+Halleffekteinstellung_LIVE
+   Startbit:       36
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: DS4_NEWS
+   Opis:           Veraenderung der Echoeffekte in max. 15 Stufen
+Halleffekteinstellung_NEWS
+   Startbit:       40
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mNAVDATA ===
+==================================================
+ID (Dziesiętne):  1441
+ID (Szesnastkowe): 0x5a1
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     RNS_300_NF, RNS_midline
+Czas cyklu:       Cyclic ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: ND_Init
+   Opis:           Initialisierung
+   Startbit:       0
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_ErrorTime
+   Opis:           Error UTC-Time
+   Startbit:       1
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_ErrorDate
+   Opis:           Error UTC-Date
+   Startbit:       2
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_ErrorRestentf
+   Opis:           Error Restentfernung
+   Startbit:       3
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_ErrorHeading
+   Opis:           Error Heading
+   Startbit:       4
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_ErrorSpeed
+   Opis:           Error Speed
+   Startbit:       5
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_KM
+   Opis:           Einheiteneinstellung KM/h/ MPH
+1= Kilometer
+0= Miles
+   Startbit:       6
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_AMPM
+   Opis:           Zeiteinstellung
+1= AM
+0= PM
+   Startbit:       7
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_Stunde
+   Opis:           UTC-Stunden 0-12
+   Startbit:       8
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 12
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_Minuten
+   Opis:           UTC-Minuten 0-59
+   Startbit:       12
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 59
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_Sekunden
+   Opis:           UTC-Sekunden 0-59
+   Startbit:       18
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 59
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_Year
+   Opis:           UTC-Year 0-99
+   Startbit:       24
+   Długość:        7 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 99
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_Month
+   Opis:           UTC-Month 1...12
+   Startbit:       31
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:1 do 12
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_Day
+   Opis:           UTC-Day 1...31
+   Startbit:       35
+   Długość:        5 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:1 do 31
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_Restentfernug
+   Opis:           Restentfernung bis zum eingegebenen Ziel
+   Startbit:       40
+   Długość:        7 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:1 do 127
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: ND_Heading
+   Opis:           Heading
+   Startbit:       47
+   Długość:        9 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 359
+   Jednostka:      Unit_DegreOfArc
+   ........................................
+-> SYGNAŁ: ND_Speed
+   Opis:           Speed
+   Startbit:       56
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Unit_KiloMeterPerHour
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mNAVPOS ===
+==================================================
+ID (Dziesiętne):  1443
+ID (Szesnastkowe): 0x5a3
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     RNS_300_NF, RNS_midline
+Czas cyklu:       Cyclic ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: NP_Degree
+   Opis:           Latitude (Nord-SÃ¼d Wert)
+   Startbit:       0
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 90
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NP_Richtung_NS
+   Opis:           00=Nord
+01=SÃ¼d
+10=Ost
+11=West
+   Startbit:       8
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NP_Minuten_NS
+   Opis:           Grad in Minuten
+   Startbit:       10
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 59
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NP_MinFraction_NS
+   Opis:           Min. Fraction
+   Startbit:       16
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 99
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NP_Degree_OW
+   Opis:           Longitude (Ost-West Wert)
+   Startbit:       24
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 180
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NP_Richtung_OW
+   Opis:           00=Nord
+01=SÃ¼d
+10_Ost
+11=West
+   Startbit:       32
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NP_Minuten_OW
+   Opis:           Grad in Minuten
+   Startbit:       34
+   Długość:        6 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 59
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NP_MinFraction_OW
+   Opis:           Min. Fraction
+   Startbit:       40
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 99
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NP_Fix
+   Opis:           00=Init
+01=No Fix
+10=2D Fix
+11=3D Fix
+   Startbit:       48
+   Długość:        2 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 3
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NP_GDOP
+   Opis:           GDOP
+1.0+Value/10  =>  1.0...4.2
+
+   Startbit:       50
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 0.2) + (1)
+   Zakres fizyczny:1 do 4
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NP_Altitude
+   Opis:           Hoehe ueber NN
+   Startbit:       54
+   Długość:        10 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 10) + (-230)
+   Zakres fizyczny:-230 do 10000
+   Jednostka:      Unit_Meter
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mNAV_1 ===
+==================================================
+ID (Dziesiętne):  1540
+ID (Szesnastkowe): 0x604
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     RNS_300_NF, RNS_MFD2, RNS_midline
+Czas cyklu:       Cyclic ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: NV1_NAV_On
+   Opis:           Festlegung von Statuscodes und Parametern erfolgt in separater Tabelle.
+Navigation Einschaltzustand
+   Startbit:       0
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_NAV_mute
+   Opis:           Mute On/Off
+   Startbit:       1
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_NAV_Wartnton_Geschw
+   Startbit:       2
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_NAV_Error_flag
+   Opis:           Fehlereintrag vorhanden
+   Startbit:       7
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Fehlerspeichereintrag
+      0 = kein_Fehlerspeichereintrag
+   ........................................
+-> SYGNAŁ: NV1_NAV_Mode
+   Opis:           siehe Spezifikation Mode-Codierung
+Mode-Information
+   Startbit:       8
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_NAV_Para1
+   Opis:           Parameter des jew. Modes
+   Startbit:       16
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_NAV_Para2
+   Opis:           Parameter des jew. Modes
+   Startbit:       24
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_NAV_Para3
+   Opis:           Parameter des jew. Modes
+   Startbit:       32
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_NAV_Para4
+   Opis:           Parameter des jew. Modes
+   Startbit:       40
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_NAV_Para5
+   Opis:           Parameter des jew. Modes
+   Startbit:       48
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: NV1_NAV_Para6
+   Opis:           Parameter des jew. Modes
+   Startbit:       56
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: BAP_MDI ===
+==================================================
+ID (Dziesiętne):  1596
+ID (Szesnastkowe): 0x63c
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     MDI
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: BAP_Data_MDI
+   Opis:           FSG: MDI => ASG: RNS, Radio
+   Startbit:       0
+   Długość:        16 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 65535
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: mRadio_4 ===
+==================================================
+ID (Dziesiętne):  1633
+ID (Szesnastkowe): 0x661
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Radio_2DIN, Radio_Modul, Radio_SKODA, RNS_300_NF, RNS_MFD2, RNS_midline
+Czas cyklu:       Cyclic ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: RA4_Radio_on
+   Opis:           1 = Radio ein
+0 = Radio aus
+Radio ist eingeschaltet
+   Startbit:       0
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_Show_Radio
+   Opis:           1 =Display request
+Zur Zeit immer 1 wenn Radio eingeschaltet
+
+VW: Show_Request fÃ¼r Infotainmentinhalt in Kombizeile
+Display_requirement_Vorhalt
+
+AU: PowerAmpON (0x0 mute PowerAmp, 0x1 demute PowerAmp)
+   Startbit:       1
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_Radio_mute
+   Opis:           Vorhalt fuer NF request
+   Startbit:       2
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_Radio_Master_locked
+   Opis:           1 = Radio gesperrt
+0 = Radio freigeschaltet
+Radiokomponenten gesperrt nach Kl. 30
+   Startbit:       3
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_VNC_OFF
+   Opis:           1 = VNC (Vehicle Noice Cancellation) ausgeschaltet
+(vorher: RA4_Radio_Audiopilot_OFF, 1 = Audiopilot ausgeschaltet)
+   Startbit:       4
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_Radio_Surround
+   Opis:           vorher RA4_Radio_Surround_OFF (1 = Surround ausgeschaltet)
+   Startbit:       5
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      0 = inaktiv
+      1 = aktiv
+   ........................................
+-> SYGNAŁ: RA4_Radio_Wake_Up_Komfort
+   Opis:           Wecken des Komfort-CAN
+   Startbit:       6
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_Radio_Error_flag
+   Opis:           Fehlereintrag vorhanden
+   Startbit:       7
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   Znaczenie wartości (Value Table):
+      1 = Fehlerspeichereintrag
+      0 = kein_Fehlerspeichereintrag
+   ........................................
+-> SYGNAŁ: RA4_Radio_Mode
+   Opis:           Mode-Information
+   Startbit:       8
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_Radio_Para1
+   Opis:           Parameter des jew. Modes
+   Startbit:       16
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_Radio_Para2
+   Opis:           Parameter des jew. Modes
+   Startbit:       24
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_Radio_Para3
+   Opis:           Parameter des jew. Modes
+   Startbit:       32
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_Radio_Para4
+   Opis:           Parameter des jew. Modes
+   Startbit:       40
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_Radio_Para5
+   Opis:           Vorhalt
+   Startbit:       48
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: RA4_Radio_Para6
+   Opis:           Vorhalt
+   Startbit:       56
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+   
+==================================================
+=== INFORMACJE O RAMCE: BAP_AUDIO ===
+==================================================
+ID (Dziesiętne):  1644
+ID (Szesnastkowe): 0x66c
+Długość (DLC):    8 bajtów
+Nadawca (Tx):     Radio_2DIN, Radio_Modul, RNS_300_NF, RNS_midline
+Czas cyklu:       NoMsgSendType ms (0 = wysyłane przy zmianie, OnChange)
+Opis (Komentarz): Brak opisu
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: BAP_Data_AUDIO
+   Opis:           FSG: Radio, Navi => ASG: KBI
+   Startbit:       0
+   Długość:        16 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 65535
+   Jednostka:      Brak
+   ........................................

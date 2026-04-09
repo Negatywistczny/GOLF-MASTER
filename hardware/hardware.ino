@@ -19,11 +19,13 @@ const int NEXT_NODE_ID = 0x2B;
 MCP_CAN CAN0(SPI_CS_PIN);
 
 // --- ZMIENNE STANU I TIMERY ---
+// Domyślnie: magistrala uśpiona / brak powodu wybudzenia — bez nadawania NM (0x40B), bez 0x661.
 unsigned long lastRxTime = 0;
-unsigned long lastSendTime = 0; 
+unsigned long lastSendTime = 0;
 byte lastBajt2 = 0x00;
 bool isHanging = false;
-bool isSleepIndicated = false;
+// true = cisza traktowana jak OK (watchdog nie krzyczy); Alive 0x42B→0x0B bez 0x10 ustawia false.
+bool isSleepIndicated = true;
 
 // --- LOGIKA DELTA ---
 #define MAX_TRACKED_IDS 60 

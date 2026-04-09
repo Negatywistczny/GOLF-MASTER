@@ -1,7 +1,6 @@
 import serial
 import asyncio
 import websockets
-import serial.tools.list_ports
 import time
 import os  # NOWOŚĆ: Potrzebne do twardego zamykania procesu
 
@@ -12,7 +11,6 @@ WS_HOST = 'localhost'
 WS_PORT = 8765
 
 connected_clients = set()
-has_connected_once = False  # Flaga, by nie wyłączać się przed pierwszym połączeniem
 shutdown_task = None        # Zadanie odliczające do wyłączenia
 is_scanning = False
 tx_queue = None
@@ -211,10 +209,9 @@ async def perform_full_scan(websocket):
 
 async def ws_handler(websocket):
     """Obsługa nowych połączeń z przeglądarki"""
-    global has_connected_once, shutdown_task
+    global shutdown_task
     
     connected_clients.add(websocket)
-    has_connected_once = True
     
     # Anulowanie odliczania (np. jeśli użytkownik tylko odświeżył stronę)
     if shutdown_task is not None and not shutdown_task.done():
@@ -227,13 +224,15 @@ async def ws_handler(websocket):
         # Pętla nasłuchująca wiadomości od przeglądarki (Smart UI)
         async for message in websocket:
             if message.startswith("CMD:"):
-                command = message.split(":")[1]
-                
-                if command == "REQ_FULL_SCAN":
-                    print("[DIAG] Otrzymano żądanie Auto-Scan z UI.")
-                    
-                    # Tworzymy asynchroniczne zadanie w tle, żeby nie zablokować nasłuchiwania WebSocketa
-                    asyncio.create_task(perform_full_scan(websocket))
+                parts = message.split(":", 1)
+                if len(parts) >= 2:
+                    command = parts[1].strip()
+
+                    if command == "REQ_FULL_SCAN":
+                        print("[DIAG] Otrzymano żądanie Auto-Scan z UI.")
+
+                        # Tworzymy asynchroniczne zadanie w tle, żeby nie zablokować nasłuchiwania WebSocketa
+                        asyncio.create_task(perform_full_scan(websocket))
     finally:
         connected_clients.discard(websocket)
         print(f"SYS:PY:BROWSER_DISCONNECTED (Total: {len(connected_clients)})")
@@ -248,9 +247,9 @@ async def main():
     rx_queue = asyncio.Queue()
 
     print(f"--- GOLF MASTER BRIDGE STARTING ON ws://{WS_HOST}:{WS_PORT} ---")
-    
-    server = websockets.serve(ws_handler, WS_HOST, WS_PORT)
-    await asyncio.gather(server, handle_serial())
+
+    async with websockets.serve(ws_handler, WS_HOST, WS_PORT):
+        await handle_serial()
 
 if __name__ == "__main__":
     try:

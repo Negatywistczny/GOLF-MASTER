@@ -13,8 +13,23 @@ const int TJA_ERR = 4;
 
 // --- DEFINICJE VAG PQ35 (LOGIKA NIETYKALNA) ---
 const long NM_GATEWAY_ID = 0x42B;
-const long NM_ARDUINO_ID = 0x40B; 
+const long NM_ARDUINO_ID = 0x40B;
 const int NEXT_NODE_ID = 0x2B;
+
+// NM — Bajt 1: typ Alive od Gatewaya = NM_CMD_ALIVE; domyślna odpowiedź Ring w TX = ta sama wartość;
+// NM_CMD_RING = odpowiedź Alive / zejście z Limp Home, gdy ustawiony NM_MASK_LIMP w ramce Gatewaya.
+const uint8_t NM_CMD_ALIVE = 0x02;
+const uint8_t NM_CMD_RING = 0x01;
+const uint8_t NM_MASK_SLEEP = 0x10;
+const uint8_t NM_MASK_LIMP = 0x04;
+const uint8_t NM_NODE_SELF = 0x0B;
+
+const unsigned long INTERVAL_RADIO_PUMP = 150;
+const unsigned long INTERVAL_HANG_CHECK = 2000;
+const unsigned long INTERVAL_TJA_ERR_LOG = 5000;
+
+const long CAN_ID_RADIO_STATUS = 0x661;
+const long CAN_ID_SNIFFER_IGNORE_A = 0x531;
 
 MCP_CAN CAN0(SPI_CS_PIN);
 
@@ -22,13 +37,14 @@ MCP_CAN CAN0(SPI_CS_PIN);
 // Domyślnie: magistrala uśpiona / brak powodu wybudzenia — bez nadawania NM (0x40B), bez 0x661.
 unsigned long lastRxTime = 0;
 unsigned long lastSendTime = 0;
-byte lastBajt2 = 0x00;
+// Ostatnia Weckursache z ramki Alive (Bajt 2 ramki 0x42B); tylko NM_CMD_ALIVE aktualizuje to pole.
+byte lastWakeCauseByte = 0x00;
 bool isHanging = false;
-// true = cisza traktowana jak OK (watchdog nie krzyczy); Alive 0x42B→0x0B bez 0x10 ustawia false.
+// true = cisza traktowana jak OK (watchdog nie krzyczy); Alive 0x42B→0x0B bez NM_MASK_SLEEP ustawia false.
 bool isSleepIndicated = true;
 
 // --- LOGIKA DELTA ---
-#define MAX_TRACKED_IDS 60 
+#define MAX_TRACKED_IDS 60
 struct CANFrame { uint32_t id; uint8_t len; uint8_t data[8]; };
 CANFrame trackedFrames[MAX_TRACKED_IDS];
 uint8_t trackedCount = 0;
@@ -51,7 +67,7 @@ bool isDelta(uint32_t id, uint8_t len, uint8_t *data) {
           return true;
         }
       }
-      return false; 
+      return false;
     }
   }
   if (trackedCount < MAX_TRACKED_IDS) {
@@ -63,54 +79,80 @@ bool isDelta(uint32_t id, uint8_t len, uint8_t *data) {
   return true;
 }
 
+void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
+  if (id != (uint32_t)NM_GATEWAY_ID || len < 4) return;
+
+  if (buf[1] == NM_CMD_ALIVE) {
+    lastWakeCauseByte = buf[2];
+
+    if (buf[0] == NM_NODE_SELF) {
+      if (buf[1] & NM_MASK_SLEEP) {
+        if (!isSleepIndicated) {
+          isSleepIndicated = true;
+          Serial.println(F("SYS:CAN:SLEEP_IND"));
+        }
+      } else {
+        isSleepIndicated = false;
+      }
+    }
+  }
+
+  if (buf[0] == NM_NODE_SELF && lastWakeCauseByte != 0x00) {
+    unsigned char txBuf[6] = {(unsigned char)NEXT_NODE_ID, NM_CMD_ALIVE, 0, 0, 0, 0};
+    if (buf[1] & NM_MASK_LIMP) txBuf[1] = NM_CMD_RING;
+    CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
+  }
+}
+
 // --- DIAGNOSTYKA BŁĘDÓW HW ---
 void checkHardwareErrors() {
-  // 1. Błędy układu MCP2515 (kontroler)
-  byte err = CAN0.checkError(); 
+  byte err = CAN0.checkError();
   if (err != 0) {
-    Serial.print(F("ERR:HW:MCP:0x")); 
+    Serial.print(F("ERR:HW:MCP:0x"));
     if (err < 0x10) Serial.print(F("0"));
     Serial.println(err, HEX);
     if (err & 0x1D) {
-      CAN0.mcp2515_modifyRegister(0x30, 0x08, 0x00); //MCP_TXB0CTRL
-      CAN0.mcp2515_modifyRegister(0x40, 0x08, 0x00); //MCP_TXB1CTRL
-      CAN0.mcp2515_modifyRegister(0x50, 0x08, 0x00); //MCP_TXB2CTRL
-      CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00); //MCP_EFLG
+      CAN0.mcp2515_modifyRegister(0x30, 0x08, 0x00); // MCP_TXB0CTRL
+      CAN0.mcp2515_modifyRegister(0x40, 0x08, 0x00); // MCP_TXB1CTRL
+      CAN0.mcp2515_modifyRegister(0x50, 0x08, 0x00); // MCP_TXB2CTRL
+      CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00); // MCP_EFLG
     }
     if (err & 0x20) CAN0.setMode(MCP_NORMAL);
   }
 
-  // 2. Błędy układu TJA1055T (transiwer / zwarcie kabli)
-  if (digitalRead(TJA_ERR) == LOW) Serial.println(F("ERR:HW:TJA"));
+  static unsigned long lastTjaErrLog = 0;
+  if (digitalRead(TJA_ERR) == LOW) {
+    unsigned long now = millis();
+    if (now - lastTjaErrLog >= INTERVAL_TJA_ERR_LOG) {
+      lastTjaErrLog = now;
+      Serial.println(F("ERR:HW:TJA"));
+    }
+  }
 }
 
 // --- ODBIERANIE Z SERIALA (TX na CAN) ---
 void processSerial() {
   if (Serial.available() > 0) {
     char buf[SERIAL_BUF_SIZE];
-    // Odczytujemy dane do bufora bajt po bajcie [cite: 18]
     size_t len = Serial.readBytesUntil('\n', buf, SERIAL_BUF_SIZE - 1);
-    buf[len] = '\0'; // Zamknięcie ciągu znaków
+    buf[len] = '\0';
 
     if (strncmp(buf, "TX:", 3) == 0) {
       char* ptr;
-      // Parsowanie ID (Hex) [cite: 20]
-      long txId = strtol(buf + 3, &ptr, 16); 
-      
+      long txId = strtol(buf + 3, &ptr, 16);
+
       if (*ptr == ':') {
         ptr++;
-        // Parsowanie Długości (Dec) [cite: 21]
         int txLen = strtol(ptr, &ptr, 10);
         if (txLen > 8) txLen = 8;
-        
+
         if (*ptr == ':') {
           ptr++;
           byte txBuf[8] = {0};
-          // Parsowanie bajtów danych (Hex) [cite: 22, 23]
           for (int i = 0; i < txLen && i < 8; i++) {
             txBuf[i] = (byte)strtol(ptr, &ptr, 16);
           }
-          CAN0.sendMsgBuf(txId, 0, txLen, txBuf); // [cite: 23]
+          CAN0.sendMsgBuf(txId, 0, txLen, txBuf);
         }
       }
     }
@@ -126,11 +168,11 @@ void setup() {
   pinMode(TJA_EN, OUTPUT);
   digitalWrite(TJA_STB, HIGH);
   digitalWrite(TJA_EN, HIGH);
-  
+
   if (CAN0.begin(MCP_ANY, CAN_100KBPS, MCP_8MHZ) == CAN_OK) {
     CAN0.mcp2515_modifyRegister(0x0F, 0x08, 0x08); // MCP_CANCTRL (One-Shot)
-    CAN0.setMode(MCP_NORMAL); 
-    Serial.println(F("SYS:HW:READY")); 
+    CAN0.setMode(MCP_NORMAL);
+    Serial.println(F("SYS:HW:READY"));
     lastRxTime = millis();
   } else {
     Serial.println(F("ERR:HW:INIT_FAIL"));
@@ -145,41 +187,14 @@ void loop() {
 
   processSerial();
 
-  // --- ODBIÓR DANYCH ---
-  if (!digitalRead(CAN_INT_PIN)) {
+  while (!digitalRead(CAN_INT_PIN)) {
     if (CAN0.readMsgBuf(&rxId, &len, rxBuf) == CAN_OK) {
       lastRxTime = millis();
-      isHanging = false; // Każda ramka resetuje błąd zawieszenia
+      isHanging = false;
 
-      // 1. LOGIKA NM I USYPIANIA
-      if (rxId == NM_GATEWAY_ID && len >= 4) {
-        // Bajt 2 (Weckursache) tylko z Alive — Ring ma puste/zmienne payloady i nie może zerować stanu
-        if (rxBuf[1] == 0x02) {
-          lastBajt2 = rxBuf[2];
+      handleGatewayNm((uint32_t)rxId, rxBuf, len);
 
-          if (rxBuf[0] == 0x0B) {
-            // SLEEP_IND (0x10 w Bajcie 1) z Gatewaya — tylko przy Alive, żeby watchdog nie reagował na Ring
-            if (rxBuf[1] & 0x10) {
-              if (!isSleepIndicated) {
-                isSleepIndicated = true;
-                Serial.println(F("SYS:CAN:SLEEP_IND"));
-              }
-            } else {
-              isSleepIndicated = false;
-            }
-          }
-        }
-
-        // Odpowiedź w ringu tylko przy aktywnej przyczynie wybudzenia (Bajt 2 != 0)
-        if (rxBuf[0] == 0x0B && lastBajt2 != 0x00) {
-          unsigned char txBuf[6] = {NEXT_NODE_ID, 0x02, 0, 0, 0, 0};
-          if (rxBuf[1] & 0x04) txBuf[1] = 0x01;
-          CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
-        }
-      }
-
-      // 2. SNIFFER Z FILTRAMI
-      if (rxId != 0x531 && rxId != 0x661 && rxId != NM_ARDUINO_ID) {
+      if (rxId != CAN_ID_SNIFFER_IGNORE_A && rxId != CAN_ID_RADIO_STATUS && rxId != NM_ARDUINO_ID) {
         if (isDiagFrame(rxId) || isDelta(rxId, len, rxBuf)) {
           Serial.print(F("0x")); Serial.print(rxId, HEX); Serial.print(F(":"));
           for (int i = 0; i < len; i++) {
@@ -193,22 +208,17 @@ void loop() {
     CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00);
   }
 
-  // --- 3. WATCHDOG ZAWIESZENIA ---
-  // Jeśli od >2s jest cisza, A Gateway NIE wysłał flagi uśpienia -> błąd!
-  if (!isHanging && !isSleepIndicated && (millis() - lastRxTime > 2000)) {
+  if (!isHanging && !isSleepIndicated && (millis() - lastRxTime > INTERVAL_HANG_CHECK)) {
     Serial.println(F("ERR:CAN:HANG"));
     isHanging = true;
   }
 
-  // --- 4. PODTRZYMANIE HARDWARE ---
-  // Pompka radia tylko przy aktywnym Bajcie 2 (Weckursache) z Alive Gatewaya
-  if ((lastBajt2 != 0x00) && (millis() - lastSendTime >= 150)) {
+  if ((lastWakeCauseByte != 0x00) && (millis() - lastSendTime >= INTERVAL_RADIO_PUMP)) {
     lastSendTime = millis();
     unsigned char stRadio[8] = {0x01, 0x01, 0x10, 0, 0, 0, 0, 0};
-    CAN0.sendMsgBuf(0x661, 0, 8, stRadio);
+    CAN0.sendMsgBuf(CAN_ID_RADIO_STATUS, 0, 8, stRadio);
   }
 
-  // Okresowa diagnostyka HW
   static unsigned long lastErrCheck = 0;
   if (millis() - lastErrCheck > 1000) {
     lastErrCheck = millis();

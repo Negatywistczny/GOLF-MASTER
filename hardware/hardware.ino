@@ -21,7 +21,7 @@ MCP_CAN CAN0(SPI_CS_PIN);
 // --- ZMIENNE STANU I TIMERY ---
 unsigned long lastRxTime = 0;
 unsigned long lastSendTime = 0; 
-byte lastBajt3 = 0x00;
+byte lastBajt2 = 0x00;
 bool isHanging = false;
 bool isSleepIndicated = false;
 
@@ -151,7 +151,7 @@ void loop() {
 
       // 1. LOGIKA NM I USYPIANIA
       if (rxId == NM_GATEWAY_ID && len >= 4) {
-        lastBajt3 = rxBuf[3]; 
+        lastBajt2 = rxBuf[2]; // Śledzimy nasz magiczny Bajt 2
 
         if (rxBuf[0] == 0x0B) {
             
@@ -165,9 +165,10 @@ void loop() {
                 isSleepIndicated = false; // Powrót do aktywności
             }
 
-            if ((rxBuf[3] & 0xFB) != 0) { // Zapłon lub Komfort
+            // Odbijamy piłeczkę TYLKO, gdy Gateway utrzymuje flagę aktywności (0x80 w Bajcie 2)
+            if (rxBuf[2] & 0x80) { 
                 unsigned char txBuf[6] = {NEXT_NODE_ID, 0x02, 0, 0, 0, 0};
-                if (rxBuf[1] & 0x04) txBuf[1] = 0x01; 
+                if (rxBuf[1] & 0x04) txBuf[1] = 0x01; // W razie czego zdejmujemy Limp Home
                 CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
             }
         }
@@ -196,7 +197,8 @@ void loop() {
   }
 
   // --- 4. PODTRZYMANIE HARDWARE ---
-  if (((lastBajt3 & 0xFB) != 0) && (millis() - lastSendTime >= 150)) {
+  // Pompka radia działa TYLKO wtedy, gdy magistrala jest w oknie aktywności
+  if ((lastBajt2 & 0x80) && (millis() - lastSendTime >= 150)) {
     lastSendTime = millis();
     unsigned char stRadio[8] = {0x01, 0x01, 0x10, 0, 0, 0, 0, 0};
     CAN0.sendMsgBuf(0x661, 0, 8, stRadio);

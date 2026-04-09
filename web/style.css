@@ -14,6 +14,10 @@
     --orange: #ffa502;
     --border: #222;
     --term-bg: #050505;
+    --space-sm: 8px;
+    --space-md: 15px;
+    --space-lg: 20px;
+    --space-xl: 30px;
 }
 
 /* --- RESET I BAZA --- */
@@ -21,13 +25,13 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', 'Roboto', sans-serif;
 }
 
 body {
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
     background-color: var(--bg-main);
     color: var(--text-main);
-    padding: 15px;
+    padding: var(--space-md);
     padding-bottom: 150px; 
 }
 
@@ -38,10 +42,16 @@ body {
     align-items: center;
     border-bottom: 1px solid var(--accent);
     padding-bottom: 10px;
-    margin-bottom: 15px;
+    margin-bottom: var(--space-md);
 }
 
 h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
+
+.header-actions {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+}
 
 #sim-clock {
     font-size: 1.4em;
@@ -51,16 +61,16 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
 
 .sim-box {
     background: #1a1a24;
-    padding: 8px;
+    padding: var(--space-sm);
     border-radius: 4px;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-lg);
     border-left: 4px solid var(--green);
     font-size: 0.9em;
 }
 
 /* --- UKŁAD SIATKI (GRID) --- */
-.zone-container { margin-bottom: 30px; }
+.zone-container { margin-bottom: var(--space-xl); }
 
 .section-label {
     font-size: 0.85em;
@@ -142,11 +152,11 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
 }
 
 .ind {
-    font-size: 11px !important;
-    color: #ffffff !important;
-    font-weight: 700 !important;
+    font-size: 11px;
+    color: #ffffff;
+    font-weight: 700;
     text-transform: uppercase;
-    padding: 8px 4px;
+    padding: var(--space-sm) 4px;
     border-radius: 4px;
     text-align: center;
     flex: 1;
@@ -156,22 +166,22 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
 }
 
-.ind.active        { background: #0a3d62 !important; }
-.ind.active-green  { background: #0e3d1f !important; }
-.ind.active-error  { background: #4a0e0e !important; }
-.ind.active-orange { background: #5e3a00 !important; }
-.ind.active-blue   { background: #0a3d62 !important; }
-.ind.active-lock   { background: #322387 !important; }
+.ind.active        { background: #0a3d62; }
+.ind.active-green  { background: #0e3d1f; }
+.ind.active-error  { background: #4a0e0e; }
+.ind.active-orange { background: #5e3a00; }
+.ind.active-blue   { background: #0a3d62; }
+.ind.active-lock   { background: #322387; }
 .ind.full-width    { min-width: 100%; }
 
 /* --- PANEL DIAGNOSTYCZNY --- */
 #diag-panel {
     margin-top: 40px;
     border-top: 2px solid #222;
-    padding-top: 20px;
+    padding-top: var(--space-lg);
 }
 
-.diag-split { display: flex; gap: 20px; flex-wrap: wrap; }
+.diag-split { display: flex; gap: var(--space-lg); flex-wrap: wrap; }
 .diag-section { flex: 1; min-width: 300px; background: #111; border-radius: 5px; padding: 10px; }
 
 .table-scroll { max-height: 200px; overflow-y: auto; }
@@ -248,7 +258,7 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
 .modal-grid-container {
     display: grid;
     grid-template-columns: 1fr 1fr; /* Dwie równe kolumny */
-    gap: 30px;                      /* Odstęp między tabelami */
+    gap: var(--space-xl);           /* Odstęp między tabelami */
     align-items: start;
 }
 
@@ -316,7 +326,7 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
     background: var(--accent-dark);
     color: #fff;
     border: 1px solid var(--accent);
-    padding: 8px 15px;
+    padding: var(--space-sm) var(--space-md);
     border-radius: 4px;
     font-weight: bold;
     cursor: pointer;
@@ -336,7 +346,7 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
     background: #6c5ce7; /* Diagnostyczny fiolet */
     color: #fff;
     border: 1px solid #a29bfe;
-    padding: 8px 15px;
+    padding: var(--space-sm) var(--space-md);
     border-radius: 4px;
     font-weight: bold;
     cursor: pointer;
@@ -360,7 +370,7 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
     background: #2d3436;
     color: var(--green);
     border: 1px solid var(--green);
-    padding: 8px 15px;
+    padding: var(--space-sm) var(--space-md);
     border-radius: 4px;
     font-weight: bold;
     cursor: pointer;

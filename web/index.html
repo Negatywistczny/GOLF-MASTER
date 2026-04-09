@@ -5,24 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GOLF MASTER v50.0 - Smart UI</title>
     <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
 </head>
 <body>
 
-    <div class="header">
+    <header class="header">
         <h1>GOLF PLUS ULTIMATE v50.0</h1>
-        <div style="display: flex; gap: 15px; align-items: center;">
+        <div class="header-actions">
             <button id="btn-scan-all" class="btn-diag">🛠️ SKANUJ DTC</button>
             <button id="btn-snapshot" class="btn-snap">📸 SNAPSHOT</button>
             <button id="btn-download-logs" class="btn-log">📝 ZAPISZ LOGI</button>
             <div id="sim-clock">--:--:--</div>
         </div>
-    </div>
+    </header>
 
     <div class="sim-box">
         <span id="sim-info">LIVE: OCZEKIWANIE NA DANE CAN...</span>
     </div>
 
-    <div id="dashboard-container">
+    <main id="dashboard-container">
         
         <div class="zone-container" id="zone-naped">
             <div class="section-label">⚙️ NAPĘD I ZASILANIE</div>
@@ -49,7 +50,7 @@
             <div class="layout-grid" id="grid-nieznane"></div>
         </div>
 
-    </div>
+    </main>
 
     <div id="diag-panel">
         
@@ -95,6 +96,5 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
 </body>
 </html>

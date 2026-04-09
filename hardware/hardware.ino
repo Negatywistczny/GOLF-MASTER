@@ -8,6 +8,9 @@ const int TJA_STB = 5;
 const int TJA_EN  = 6;
 const int TJA_ERR = 4;
 
+// --- WIELKOŚĆ BUFORA SERIAL ---
+#define SERIAL_BUF_SIZE 64
+
 // --- DEFINICJE VAG PQ35 (LOGIKA NIETYKALNA) ---
 const long NM_GATEWAY_ID = 0x42B;
 const long NM_ARDUINO_ID = 0x40B; 
@@ -66,10 +69,10 @@ void checkHardwareErrors() {
     if (err < 0x10) Serial.print(F("0"));
     Serial.println(err, HEX);
     if (err & 0x1D) {
-      CAN0.mcp2515_modifyRegister(0x30, 0x08, 0x00);
-      CAN0.mcp2515_modifyRegister(0x40, 0x08, 0x00);
-      CAN0.mcp2515_modifyRegister(0x50, 0x08, 0x00);
-      CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00); 
+      CAN0.mcp2515_modifyRegister(0x30, 0x08, 0x00); //MCP_TXB0CTRL
+      CAN0.mcp2515_modifyRegister(0x40, 0x08, 0x00); //MCP_TXB1CTRL
+      CAN0.mcp2515_modifyRegister(0x50, 0x08, 0x00); //MCP_TXB2CTRL
+      CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00); //MCP_EFLG
     }
     if (err & 0x20) CAN0.setMode(MCP_NORMAL);
   }
@@ -81,22 +84,30 @@ void checkHardwareErrors() {
 // --- ODBIERANIE Z SERIALA (TX na CAN) ---
 void processSerial() {
   if (Serial.available() > 0) {
-    String data = Serial.readStringUntil('\n');
-    data.trim();
-    if (data.startsWith("TX:")) {
-      int idx1 = data.indexOf(':', 3);
-      int idx2 = data.indexOf(':', idx1 + 1);
-      if (idx1 > 0 && idx2 > 0) {
-        long txId = strtol(data.substring(3, idx1).c_str(), NULL, 16);
-        int txLen = data.substring(idx1 + 1, idx2).toInt();
-        String payloadStr = data.substring(idx2 + 1);
-        byte txBuf[8] = {0};
-        int charIndex = 0;
-        for (int i = 0; i < txLen; i++) {
-          txBuf[i] = (byte)strtol(payloadStr.substring(charIndex, charIndex + 2).c_str(), NULL, 16);
-          charIndex += 3;
+    char buf[SERIAL_BUF_SIZE];
+    // Odczytujemy dane do bufora bajt po bajcie [cite: 18]
+    size_t len = Serial.readBytesUntil('\n', buf, SERIAL_BUF_SIZE - 1);
+    buf[len] = '\0'; // Zamknięcie ciągu znaków
+
+    if (strncmp(buf, "TX:", 3) == 0) {
+      char* ptr;
+      // Parsowanie ID (Hex) [cite: 20]
+      long txId = strtol(buf + 3, &ptr, 16); 
+      
+      if (*ptr == ':') {
+        ptr++;
+        // Parsowanie Długości (Dec) [cite: 21]
+        int txLen = strtol(ptr, &ptr, 10);
+        
+        if (*ptr == ':') {
+          ptr++;
+          byte txBuf[8] = {0};
+          // Parsowanie bajtów danych (Hex) [cite: 22, 23]
+          for (int i = 0; i < txLen && i < 8; i++) {
+            txBuf[i] = (byte)strtol(ptr, &ptr, 16);
+          }
+          CAN0.sendMsgBuf(txId, 0, txLen, txBuf); // [cite: 23]
         }
-        CAN0.sendMsgBuf(txId, 0, txLen, txBuf);
       }
     }
   }
@@ -113,7 +124,7 @@ void setup() {
   digitalWrite(TJA_EN, HIGH);
   
   if (CAN0.begin(MCP_ANY, CAN_100KBPS, MCP_8MHZ) == CAN_OK) {
-    CAN0.mcp2515_modifyRegister(0x0F, 0x08, 0x08); // One-Shot
+    CAN0.mcp2515_modifyRegister(0x0F, 0x08, 0x08); // MCP_CANCTRL (One-Shot)
     CAN0.setMode(MCP_NORMAL); 
     Serial.println(F("SYS:HW:READY")); 
     lastRxTime = millis();
@@ -129,7 +140,6 @@ void loop() {
   unsigned char rxBuf[8];
 
   processSerial();
-  CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00);
 
   // --- ODBIÓR DANYCH ---
   if (!digitalRead(CAN_INT_PIN)) {
@@ -173,6 +183,7 @@ void loop() {
         }
       }
     }
+    CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00);
   }
 
   // --- 3. WATCHDOG ZAWIESZENIA ---

@@ -45,6 +45,7 @@ bool isDelta(uint32_t id, uint8_t len, uint8_t *data) {
       for (uint8_t j = 0; j < len; j++) {
         if (trackedFrames[i].data[j] != data[j]) {
           memcpy(trackedFrames[i].data, data, len);
+          trackedFrames[i].len = len;
           return true;
         }
       }
@@ -98,6 +99,7 @@ void processSerial() {
         ptr++;
         // Parsowanie Długości (Dec) [cite: 21]
         int txLen = strtol(ptr, &ptr, 10);
+        if (txLen > 8) txLen = 8;
         
         if (*ptr == ':') {
           ptr++;
@@ -148,7 +150,7 @@ void loop() {
       isHanging = false; // Każda ramka resetuje błąd zawieszenia
 
       // 1. LOGIKA NM I USYPIANIA
-      if (rxId == NM_GATEWAY_ID) {
+      if (rxId == NM_GATEWAY_ID && len >= 4) {
         lastBajt3 = rxBuf[3]; 
 
         if (rxBuf[0] == 0x0B) {

@@ -19,7 +19,8 @@ unsigned long lastSendTime = 0;
 unsigned long lastMessageTime = 0;
 
 byte lastBajt1 = 0xFF;
-byte lastBajt3 = 0xFF; 
+byte lastBajt2Log = 0xFF; // ostatnia wartość Bajtu 2 do wykrywania zmian w logu
+byte lastBajt2 = 0x00;    // jak w hardware.ino — ostatni Bajt 2 z Gateway (okno aktywności / pompka)
 bool currentlyActive = true; 
 
 // --- LOGIKA DELTA ---
@@ -142,16 +143,18 @@ void loop() {
       // ========================================================
       // SZCZEGÓŁOWY FILTR GATEWAYA (0x42B)
       // ========================================================
-      if (rxId == NM_GATEWAY_ID) {
+      if (rxId == NM_GATEWAY_ID && len >= 4) {
+        lastBajt2 = rxBuf[2];
+
         bool stateChanged = false;
-        // Reagujemy na każdą zmianę w Bajcie 1 (Flagi NM) lub Bajcie 3 (Powody wybudzenia)
-        if (rxBuf[1] != lastBajt1 || rxBuf[3] != lastBajt3) {
+        // Reagujemy na każdą zmianę w Bajcie 1 (flagi NM) lub Bajcie 2 (m.in. bit 0x80 = okno aktywności)
+        if (rxBuf[1] != lastBajt1 || rxBuf[2] != lastBajt2Log) {
             stateChanged = true;
             lastBajt1 = rxBuf[1];
-            lastBajt3 = rxBuf[3];
+            lastBajt2Log = rxBuf[2];
         }
 
-        bool isBusActive = (rxBuf[3] & 0xFB) != 0;
+        bool isBusActive = (rxBuf[2] & 0x80) != 0;
 
         // RAPORTOWANIE ZMIAN Z GATEWAYA
         if (stateChanged) {
@@ -168,10 +171,10 @@ void loop() {
             else if (rxBuf[1] & 0x01) Serial.print(F(" [RING]"));
             else if (rxBuf[1] & 0x02) Serial.print(F(" [ALIVE]"));
             
-            // Dekodowanie Bajtu 3 (POWODY)
-            Serial.print(F(" | Powód: 0x")); Serial.print(rxBuf[3], HEX);
-            if (rxBuf[3] == 0x00) Serial.print(F(" [CZYSTO -> CHCĘ SPAĆ]"));
-            else Serial.print(F(" [AKTYWNOŚĆ]"));
+            // Dekodowanie Bajtu 2 (bit 0x80 = oficjalne okno aktywności Gateway / ALIVE)
+            Serial.print(F(" | Bajt2: 0x")); Serial.print(rxBuf[2], HEX);
+            if (rxBuf[2] & 0x80) Serial.print(F(" [BIT 0x80 AKTYWNY -> MAGISTRALA W OKNIE]"));
+            else Serial.print(F(" [BEZ 0x80 -> BRAK OKNA AKTYWNOŚCI]"));
             Serial.println();
 
             // ZMIANA TRYBU FAZY 4
@@ -187,17 +190,11 @@ void loop() {
             }
         }
 
-        // LOGIKA WYSYŁANIA OSEK 0x40B (TYLKO W TRYBIE AKTYWNYM)
-        if (rxBuf[0] == 0x0B) {
-            if (currentlyActive) {
-                unsigned char txBuf[6] = {NEXT_NODE_ID, 0, 0, 0, 0, 0};
-                if (rxBuf[1] & 0x04) {
-                    txBuf[1] = 0x01; // Alive 
-                } else {
-                    txBuf[1] = 0x02; // Ring 
-                }
-                CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
-            }
+        // LOGIKA WYSYŁANIA OSEK 0x40B — tylko gdy Gateway utrzymuje bit 0x80 w Bajcie 2
+        if (rxBuf[0] == 0x0B && (rxBuf[2] & 0x80)) {
+            unsigned char txBuf[6] = {NEXT_NODE_ID, 0x02, 0, 0, 0, 0};
+            if (rxBuf[1] & 0x04) txBuf[1] = 0x01; // Limp Home -> Alive
+            CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
         }
       }
 
@@ -221,7 +218,7 @@ void loop() {
   // ========================================================
   // WYSYŁANIE STATUSU RADIA (0x661) (TYLKO W TRYBIE AKTYWNYM)
   // ========================================================
-  if (currentlyActive && (millis() - lastSendTime >= 150)) {
+  if ((lastBajt2 & 0x80) && (millis() - lastSendTime >= 150)) {
     lastSendTime = millis();
     unsigned char stRadio[8] = {0x01, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00};
     CAN0.sendMsgBuf(0x661, 0, 8, stRadio);

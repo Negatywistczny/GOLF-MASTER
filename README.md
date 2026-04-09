@@ -22,7 +22,7 @@ Każdy folder zawiera dedykowaną dokumentację techniczną:
 
 * [**`/hardware`**](./hardware/README.md) – Kod źródłowy Arduino, schematy połączeń i konfiguracja transiwera TJA.
 * [**`/bridge`**](./bridge/README.md) – Skrypt Python pośredniczący w komunikacji (WebSocket server).
-* [**`/web_ui`**](./web_ui/README.md) – Interfejs użytkownika, dekodery sygnałów i terminal live.
+* [**`/web`**](./web/README.md) – Interfejs użytkownika, dekodery sygnałów i terminal live.
 * [**`/data`**](./data/README.md) – Bazy wiedzy DBC, mapy adresów i opisy sygnałów CAN.
 * [**`MESSAGES.md`**](./MESSAGES.md) – **Słownik komunikatów** (SYS/ERR) używanych w całym systemie.
 

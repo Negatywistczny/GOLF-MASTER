@@ -8,4 +8,4 @@ start python bridge/bridge.py
 timeout /t 2 /nobreak > NUL
 
 :: Otwórz przeglądarkę Chrome z Twoim linkiem (zezwoleniem na brak HTTPS)
-start chrome "https://negatywistczny.github.io/GOLF-MASTER/web" --allow-running-insecure-content
+start chrome web/index.html --allow-running-insecure-content

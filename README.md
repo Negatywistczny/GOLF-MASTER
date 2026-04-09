@@ -11,7 +11,7 @@ System łączy precyzję sprzętową mikrokontrolera z nowoczesnym interfejsem w
 ## 🏗️ Architektura Systemu
 Projekt składa się z trzech współpracujących warstw:
 
-1.  **Hardware (Arduino + MCP2515 + TJA1055):** Fizyczny mostek wpięty w kable samochodu. Obsługuje niskopoziomowy protokół OSEK NM i filtruje szum informacyjny.
+1.  **Hardware (Arduino + MCP2515 + TJA1055):** Fizyczny mostek wpięty w kable samochodu. Obsługuje niskopoziomowy protokół OSEK NM w **logice zero-jedynkowej**: odpowiedź `0x40B` i podtrzymanie radia (`0x661`) działają tylko, gdy Gateway w ramce Alive (`0x42B`) raportuje **Weckursache** (niezerowy Bajt 2 — powody wybudzenia CAN / Wake / Timer). Po wygaśnięciu przyczyn Arduino celowo milknie, umożliwiając uśpienie magistrali. Szczegóły: [hardware/README.md](./hardware/README.md).
 2.  **Bridge (Python):** Asynchroniczny serwer zarządzający przepływem danych, obsługujący diagnostykę TP 2.0 oraz automatyczne zwalnianie portów.
 3.  **Smart UI (Web Frontend):** Responsywny dashboard wizualizujący stan auta w czasie rzeczywistym oraz umożliwiający przeprowadzanie pełnych skanów DTC.
 

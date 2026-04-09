@@ -1,11 +1,12 @@
 # DOKUMENTACJA KODU ARDUINO - VAG PQ35 INFOTAINMENT CAN
 
 ## 1. ZASADA DZIAŁANIA KOMUNIKACJI CAN (LOGIKA NM OSEK)
-Oprogramowanie realizuje pełną obsługę protokołu **Network Management (NM)** stosowanego w grupie VAG. Kod na bieżąco analizuje stan magistrali i decyduje o podtrzymaniu komunikacji lub przejściu w tryb uśpienia.
+Oprogramowanie realizuje obsługę **Network Management (NM)** stosowanego w grupie VAG. Kod analizuje ramki Gatewaya (`0x42B`) i stosuje **logikę zero-jedynkową**: pełna aktywność NM i podtrzymanie radia włączają się wyłącznie wtedy, gdy Gateway w ramce **Alive** (Bajt kontrolny `0x02`) raportuje **niezerową przyczynę wybudzenia** w **Bajcie 2** (*Weckursache* — m.in. CAN, Wake, Timer jako bity maski).
 
-* **Analiza Aktywności (Bajt 2, bit 0x80):** Głównym wskaźnikiem podtrzymania aktywności sieci przez Gateway (ID `0x42B`) jest bit `0x80` w Bajcie 2 w ramkach typu ALIVE. Gdy w aucie występuje fizyczna aktywność (np. praca zamka centralnego), Gateway ustawia ten bit na około 5 sekund. Odpowiadamy w ringu OSEK i podtrzymujemy pompę radia (`0x661`) tylko i wyłącznie wtedy, gdy ten bit jest aktywny.
-* **Aktywne Podtrzymanie (Ring):** Dopóki Gateway utrzymuje bit `0x80` w Bajcie 2, Arduino aktywnie uczestniczy w ringu OSEK. Na każde odpytanie z Gatewaya (Bajt 0 = `0x0B`), przy aktywnym bicie `0x80`, Arduino odpowiada własną ramką `0x40B`. Ustawia w niej opkod `0x02` (Ring) lub `0x01` (Alive - powrót po błędzie). Jednocześnie uruchamiany jest asynchroniczny timer, który co 150 ms wysyła ramkę `0x661` (status włączonego radia).
-* **Procedura Uśpienia (Sleep Mode):** Gdy znikają powody aktywności, Gateway przestaje utrzymywać bit `0x80` w Bajcie 2. Warunek aktywności przestaje być spełniony. Arduino natychmiast przestaje wysyłać ramki `0x40B` oraz `0x661`. Całkowita cisza ze strony układu pozwala modułowi Gateway na wysłanie oficjalnej flagi uśpienia **SLEEP_INDICATION** (`0x10` w Bajcie 1) i sprzętowe wygaszenie magistrali.
+* **Weckursache (Bajt 2 ramki `0x42B`, tylko Alive):** Wartość Bajtu 2 jest zapamiętywana **wyłącznie** z ramek typu Alive (`rxBuf[1] == 0x02`). Dzięki temu puste lub niepełne payloady z ramek Ring nie zerują stanu i nie powodują migotania odpowiedzi `0x40B` ani pompy `0x661`.
+* **Tryb zero-jedynkowy:** Odpowiedź w ringu (`0x40B`) oraz cykliczna ramka podtrzymania radia (`0x661`, co 150 ms) działają **tylko** gdy `lastBajt2 != 0x00`, czyli gdy Gateway sygnalizuje aktywny co najmniej jeden powód wybudzenia (np. CAN / Wake / Timer w polu Weckursache). Gdy wszystkie przyczyny wygasną (`Bajt 2 == 0`), Arduino **natychmiast** przestaje nadawać — to celowe milczenie, które umożliwia magistrali przejście w uśpienie.
+* **Aktywne Podtrzymanie (Ring):** Na odpytanie z Gatewaya (Bajt 0 = `0x0B`), przy `lastBajt2 != 0x00`, węzeł `0x0B` odpowiada ramką `0x40B` (Ring `0x02`, ewentualnie Alive `0x01` przy bicie Limp Home w Bajcie 1).
+* **Procedura Uśpienia (Sleep Mode) i watchdog:** Flaga **SLEEP_INDICATION** (`0x10` w Bajcie 1 ramki Gatewaya) jest śledzona przy ramkach **Alive** skierowanych do węzła `0x0B`, aby **watchdog zawieszenia** (`ERR:CAN:HANG`) nie raportował błędu, gdy sieć jest już w procedurze uśpienia. Po wygaśnięciu przyczyn wybudzenia Arduino nie podtrzymuje NM ani radia, co sprzyja wyciszeniu magistrali i dalszej sekwencji uśpienia po stronie Gatewaya.
 
 ## 2. KONFIGURACJA SPRZĘTOWA
 * **TJA1055T (Transiwer):** Układ pracuje w trybie ciągłej gotowości. Piny `STB` oraz `EN` są na stałe podciągnięte do stanu wysokiego (`HIGH`). Nie ingerujemy sprzętowo w stany uśpienia transiwera – uśpienie realizowane jest w 100% programowo (brak nadawania = uśpienie z punktu widzenia Gatewaya). Monitorowany jest fizyczny pin `TJA_ERR` w celu wykrycia usterek elektrycznych na liniach CAN.
@@ -34,10 +35,10 @@ Filtr dynamiczny oszczędzający przepustowość portu Serial. Utrzymuje w pami�
 Pętla programu jest w pełni asynchroniczna (brak `delay`), co gwarantuje natychmiastową reakcję na zdarzenia:
 * **Odczyt TX:** Sprawdzenie zbuforowanych komend z PC (`processSerial()`).
 * **Odbiór CAN:** Reakcja na przerwanie sprzętowe (`CAN_INT_PIN`). Pętla `while` opróżnia cały bufor odbiorczy MCP2515. Zapisywany jest czas ostatniej udanej transmisji (`lastRxTime`) oraz zerowana flaga zawieszenia (`isHanging`).
-* **Logika OSEK:** Detekcja ramki `0x42B`. Ocena stanu uśpienia (Bajt 1) oraz warunku aktywności (bit `0x80` w Bajcie 2). Ewentualne wysłanie ramki `0x40B`.
+* **Logika OSEK:** Detekcja ramki `0x42B`. Bajt 2 (*Weckursache*) aktualizowany tylko z Alive; odpowiedź `0x40B` i warunek pompy `0x661` gdy `lastBajt2 != 0x00`. Flaga uśpienia `0x10` w Bajcie 1 (Alive → `0x0B`) steruje `isSleepIndicated` dla watchdogu.
 * **Sniffer:** Przekazanie do terminala odebranych danych po przefiltrowaniu (ignorowane są cykliczne ramki generujące duży ruch: `0x531`, `0x661`, `0x40B`).
 * **Watchdog (isHanging):** Zabezpieczenie przed zamrożeniem magistrali. Jeżeli minęło ponad 2000 ms od odbioru ostatniej ramki, a Gateway nie wysłał flagi uśpienia (`SLEEP_IND`), układ zgłasza błąd `ERR:CAN:HANG`.
-* **Pompka Radia:** Jeśli w ostatniej ramce Gateway ustawiony jest bit `0x80` w Bajcie 2, timer wysyła ramkę `0x661` co 150 ms.
+* **Pompka Radia:** Gdy `lastBajt2 != 0x00` (aktywna Weckursache z Alive), timer wysyła ramkę `0x661` co 150 ms.
 * **Watchdog Sprzętowy:** Wywołanie `checkHardwareErrors()` dokładnie co 1000 ms.
 
 ## 4. FORMAT DANYCH WYJŚCIOWYCH (SERIAL)

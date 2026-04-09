@@ -151,26 +151,28 @@ void loop() {
 
       // 1. LOGIKA NM I USYPIANIA
       if (rxId == NM_GATEWAY_ID && len >= 4) {
-        lastBajt2 = rxBuf[2]; // Śledzimy nasz magiczny Bajt 2
+        // Bajt 2 (Weckursache) tylko z Alive — Ring ma puste/zmienne payloady i nie może zerować stanu
+        if (rxBuf[1] == 0x02) {
+          lastBajt2 = rxBuf[2];
 
-        if (rxBuf[0] == 0x0B) {
-            
-            // Rejestrujemy, czy Gateway oficjalnie uśpił sieć
+          if (rxBuf[0] == 0x0B) {
+            // SLEEP_IND (0x10 w Bajcie 1) z Gatewaya — tylko przy Alive, żeby watchdog nie reagował na Ring
             if (rxBuf[1] & 0x10) {
-                if (!isSleepIndicated) {
-                    isSleepIndicated = true;
-                    Serial.println(F("SYS:CAN:SLEEP_IND"));
-                }
+              if (!isSleepIndicated) {
+                isSleepIndicated = true;
+                Serial.println(F("SYS:CAN:SLEEP_IND"));
+              }
             } else {
-                isSleepIndicated = false; // Powrót do aktywności
+              isSleepIndicated = false;
             }
+          }
+        }
 
-            // Odbijamy piłeczkę TYLKO, gdy Gateway utrzymuje flagę aktywności (0x80 w Bajcie 2)
-            if (rxBuf[2] & 0x80) { 
-                unsigned char txBuf[6] = {NEXT_NODE_ID, 0x02, 0, 0, 0, 0};
-                if (rxBuf[1] & 0x04) txBuf[1] = 0x01; // W razie czego zdejmujemy Limp Home
-                CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
-            }
+        // Odpowiedź w ringu tylko przy aktywnej przyczynie wybudzenia (Bajt 2 != 0)
+        if (rxBuf[0] == 0x0B && lastBajt2 != 0x00) {
+          unsigned char txBuf[6] = {NEXT_NODE_ID, 0x02, 0, 0, 0, 0};
+          if (rxBuf[1] & 0x04) txBuf[1] = 0x01;
+          CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
         }
       }
 
@@ -197,8 +199,8 @@ void loop() {
   }
 
   // --- 4. PODTRZYMANIE HARDWARE ---
-  // Pompka radia działa TYLKO wtedy, gdy magistrala jest w oknie aktywności
-  if ((lastBajt2 & 0x80) && (millis() - lastSendTime >= 150)) {
+  // Pompka radia tylko przy aktywnym Bajcie 2 (Weckursache) z Alive Gatewaya
+  if ((lastBajt2 != 0x00) && (millis() - lastSendTime >= 150)) {
     lastSendTime = millis();
     unsigned char stRadio[8] = {0x01, 0x01, 0x10, 0, 0, 0, 0, 0};
     CAN0.sendMsgBuf(0x661, 0, 8, stRadio);

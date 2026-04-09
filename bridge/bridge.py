@@ -14,13 +14,17 @@ WS_PORT = 8765
 connected_clients = set()
 has_connected_once = False  # Flaga, by nie wyłączać się przed pierwszym połączeniem
 shutdown_task = None        # Zadanie odliczające do wyłączenia
+is_scanning = False
 tx_queue = None
 rx_queue = None
 
-async def log_and_send(websocket, message):
+async def log_and_send(websocket, message: str):
     """Wyświetla log w konsoli i wysyła go do UI"""
     print(message)
-    await websocket.send(message)
+    try:
+        await websocket.send(message)
+    except websockets.exceptions.ConnectionClosed:
+        pass
 
 async def auto_shutdown_timer():
     """Odlicza 2 sekundy i zabija proces, jeśli nikogo nie ma"""
@@ -35,27 +39,31 @@ async def handle_serial():
     while True:
         ser = None
         try:
-            ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.1)
+            buffer = bytearray()
+            ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0)
             print(f"SYS:PY:CONNECTED_TO_{SERIAL_PORT}")
             await broadcast("SYS:PY:SERIAL_READY")
 
             while True:
                 # --- WYSYŁANIE KOMEND DO ARDUINO (TX) ---
-                if not tx_queue.empty():
+                while not tx_queue.empty():
                     msg_to_send = tx_queue.get_nowait()
                     ser.write(msg_to_send.encode('ascii'))
                     print(f"SYS:PY:TX_SENT_TO_AUTO: {msg_to_send.strip()}")
 
-                # --- ODBIERANIE DANYCH Z ARDUINO (RX) ---
-                if ser.in_waiting > 0:
-                    try:
-                        line = ser.readline().decode('utf-8').strip()
+                # --- ODBIERANIE (RX) Z BUFOROWANIEM ---
+                waiting = ser.in_waiting
+                if waiting > 0:
+                    buffer.extend(ser.read(waiting))
+
+                    while b'\n' in buffer:
+                        line_bytes, buffer = buffer.split(b'\n', 1)
+                        line = line_bytes.decode('utf-8', errors='ignore').strip()
                         if line:
                             await broadcast(line)
-                            await rx_queue.put(line) # Kopia ramki dla maszyny stanów TP 2.0
-                    except UnicodeDecodeError:
-                        pass
-                await asyncio.sleep(0.001)
+                            await rx_queue.put(line)
+
+                await asyncio.sleep(0.005)
 
         except (serial.SerialException, FileNotFoundError):
             error_msg = f"ERR:PY:SERIAL_LOST:{SERIAL_PORT}"
@@ -67,10 +75,16 @@ async def handle_serial():
             
             await asyncio.sleep(3)
 
-async def broadcast(message):
-    """Wysyła wiadomość do wszystkich otwartych kart w przeglądarce"""
+async def broadcast(message: str):
+    """Asynchronicznie wysyła wiadomość do wszystkich podłączonych kart"""
     if connected_clients:
-        await asyncio.gather(*(client.send(message) for client in connected_clients), return_exceptions=True)
+        disconnected = set()
+        for client in connected_clients:
+            try:
+                await client.send(message)
+            except websockets.exceptions.ConnectionClosed:
+                disconnected.add(client)
+        connected_clients.difference_update(disconnected)
 
 async def tp20_read_dtc(addr_hex, name, websocket):
     """Przeprowadza pełny 4-etapowy Handshake TP 2.0 z jednym modułem"""
@@ -88,8 +102,8 @@ async def tp20_read_dtc(addr_hex, name, websocket):
     tx_channel = None
     
     # 3. CZEKAMY NA ODPOWIEDŹ GATEWAYA (Twardy limit 1.5s niezależny od szumu)
-    timeout_end = time.time() + 1.5
-    while time.time() < timeout_end:
+    timeout_end = time.monotonic() + 1.5
+    while time.monotonic() < timeout_end:
         try:
             line = await asyncio.wait_for(rx_queue.get(), timeout=0.1)
             if line.startswith(rx_id_expected):
@@ -109,8 +123,8 @@ async def tp20_read_dtc(addr_hex, name, websocket):
     await log_and_send(websocket, f"SYS:PYTHON: [2/4] Zgoda! Kanał TX to 0x{tx_channel}")
     
     # 4. CZEKAMY NA PROŚBĘ O TIMINGI (0x300: A8)
-    timeout_end = time.time() + 1.0
-    while time.time() < timeout_end:
+    timeout_end = time.monotonic() + 1.0
+    while time.monotonic() < timeout_end:
         try:
             line = await asyncio.wait_for(rx_queue.get(), timeout=0.1)
             if line.startswith("0x300:"):
@@ -131,8 +145,8 @@ async def tp20_read_dtc(addr_hex, name, websocket):
     
     # 7. ODBIERAMY BŁĘDY NA KANALE 0x300
     dtc_frames = 0
-    timeout_end = time.time() + 1.5
-    while time.time() < timeout_end:
+    timeout_end = time.monotonic() + 1.5
+    while time.monotonic() < timeout_end:
         try:
             line = await asyncio.wait_for(rx_queue.get(), timeout=0.1)
             if line.startswith("0x300:"):
@@ -140,7 +154,7 @@ async def tp20_read_dtc(addr_hex, name, websocket):
                 if data_bytes[0] not in ["A8", "B1", "B2", "B3", "B4", "B5", "A0", "A1"]:
                     dtc_frames += 1
                     await log_and_send(websocket, f"SYS:PYTHON: ⚠️ OTRZYMANO DANE DTC: {line}")
-                    timeout_end = time.time() + 0.5
+                    timeout_end = time.monotonic() + 0.5
         except asyncio.TimeoutError:
             continue
             
@@ -156,35 +170,44 @@ async def tp20_read_dtc(addr_hex, name, websocket):
 
 async def perform_full_scan(websocket):
     """Zarządza sekwencyjnym odpytywaniem modułów"""
-    modules = {
-        "01": "Silnik (Engine)",
-        "02": "Skrzynia Biegów (Auto Trans)",
-        "03": "ABS / ESP / Hamulce",
-        "08": "Klimatyzacja (Climatronic)",
-        "09": "Centralna Elektryka (Bordnetz)",
-        "15": "Poduszki Powietrzne (Airbag)",
-        "16": "Koło Kierownicy (Steering Wheel)",
-        "17": "Zestaw Wskaźników (Instrument Cluster)",
-        "19": "Gateway CAN (J533)",
-        "25": "Immobilizer",
-        "37": "Nawigacja",
-        "42": "Elektronika Drzwi Kierowcy",
-        "44": "Wspomaganie Kierownicy (Steering Assist)",
-        "46": "Moduł Komfortu (Central Convenience)",
-        "52": "Elektronika Drzwi Pasażera",
-        "56": "Radio / Infotainment",
-        "62": "Elektronika Drzwi Tylnych Lewych",
-        "72": "Elektronika Drzwi Tylnych Prawych",
-        "77": "Telefon / Bluetooth"
-    }
-    
-    await log_and_send(websocket, "SYS:PYTHON: --- START AUTO-SKAN (KWP2000 over TP2.0) ---")
-    
-    for addr, name in modules.items():
-        # Uruchamiamy proces uścisku dłoni dla pojedynczego modułu
-        await tp20_read_dtc(addr, name, websocket)
-        
-    await log_and_send(websocket, "SYS:PYTHON: --- AUTO-SKAN ZAKOŃCZONY ---")
+    global is_scanning
+    if is_scanning:
+        await log_and_send(websocket, "SYS:PYTHON: ⚠️ Skanowanie już trwa. Proszę czekać.")
+        return
+
+    is_scanning = True
+    try:
+        modules = {
+            "01": "Silnik (Engine)",
+            "02": "Skrzynia Biegów (Auto Trans)",
+            "03": "ABS / ESP / Hamulce",
+            "08": "Klimatyzacja (Climatronic)",
+            "09": "Centralna Elektryka (Bordnetz)",
+            "15": "Poduszki Powietrzne (Airbag)",
+            "16": "Koło Kierownicy (Steering Wheel)",
+            "17": "Zestaw Wskaźników (Instrument Cluster)",
+            "19": "Gateway CAN (J533)",
+            "25": "Immobilizer",
+            "37": "Nawigacja",
+            "42": "Elektronika Drzwi Kierowcy",
+            "44": "Wspomaganie Kierownicy (Steering Assist)",
+            "46": "Moduł Komfortu (Central Convenience)",
+            "52": "Elektronika Drzwi Pasażera",
+            "56": "Radio / Infotainment",
+            "62": "Elektronika Drzwi Tylnych Lewych",
+            "72": "Elektronika Drzwi Tylnych Prawych",
+            "77": "Telefon / Bluetooth"
+        }
+
+        await log_and_send(websocket, "SYS:PYTHON: --- START AUTO-SKAN (KWP2000 over TP2.0) ---")
+
+        for addr, name in modules.items():
+            # Uruchamiamy proces uścisku dłoni dla pojedynczego modułu
+            await tp20_read_dtc(addr, name, websocket)
+
+        await log_and_send(websocket, "SYS:PYTHON: --- AUTO-SKAN ZAKOŃCZONY ---")
+    finally:
+        is_scanning = False
 
 async def ws_handler(websocket):
     """Obsługa nowych połączeń z przeglądarki"""
@@ -212,7 +235,7 @@ async def ws_handler(websocket):
                     # Tworzymy asynchroniczne zadanie w tle, żeby nie zablokować nasłuchiwania WebSocketa
                     asyncio.create_task(perform_full_scan(websocket))
     finally:
-        connected_clients.remove(websocket)
+        connected_clients.discard(websocket)
         print(f"SYS:PY:BROWSER_DISCONNECTED (Total: {len(connected_clients)})")
         
         # Inicjacja procesu zamykania po utracie ostatniego klienta

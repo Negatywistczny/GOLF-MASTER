@@ -1,6 +1,6 @@
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY.
- * Source of truth: web/js/**/*.js modules (entry: js/app/main.js).
+ * Source of truth: all web/js/*.js modules (recursive); entry js/app/main.js.
  * Regenerate with: python3 web/bundle_tool.py build
  */
 
@@ -4131,7 +4131,11 @@ function openModal(id) {
 
 
 
-const __setInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML").set;
+// WebKit: własny deskryptor `innerHTML` jest na HTMLElement, nie na Element.
+const _innerHTMLDesc =
+    Object.getOwnPropertyDescriptor(HTMLElement.prototype, "innerHTML") ||
+    Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML");
+const __setInnerHTML = _innerHTMLDesc?.set;
 
 function normalizeFrameIdToNumber(id) {
     if (typeof id !== "string") return Number.MAX_SAFE_INTEGER;
@@ -4165,6 +4169,10 @@ function insertCardSortedById(container, card, id) {
 
 function enableInnerHTMLDiffing(el) {
     if (!el || el._diffingEnabled) return;
+    if (!__setInnerHTML) {
+        el._diffingEnabled = true;
+        return;
+    }
     let currentValue = "";
     Object.defineProperty(el, "innerHTML", {
         configurable: true,

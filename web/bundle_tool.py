@@ -68,7 +68,7 @@ def cmd_build() -> int:
     bundle_parts.append(
         "/*\n"
         " * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY.\n"
-        " * Source of truth: web/js/**/*.js modules (entry: js/app/main.js).\n"
+        " * Source of truth: all web/js/*.js modules (recursive); entry js/app/main.js.\n"
         " * Regenerate with: python3 web/bundle_tool.py build\n"
         " */\n\n"
     )

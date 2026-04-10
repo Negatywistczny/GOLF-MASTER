@@ -1,0 +1,80 @@
+﻿ID RAMKI;NAZWA RAMKI;SYGNAŁ (ID);OPIS SYGNAŁU;2026-04-10_17-44-56;2026-04-10_17-46-15;2026-04-10_17-49-39;2026-04-10_18-01-53;2026-04-10_18-14-04;2026-04-10_18-22-55;2026-04-10_18-24-04;unikalne_wartosci (liczba)
+0x151;AIRBAG (mAirbag_1);AB1_MessageZaehler;Licznik wiadomości (Alive-Counter);5;5;14;6;6;1;14;4
+0x151;AIRBAG (mAirbag_1);AB1_Pruefsumme;Suma kontrolna ramki;168;168;24;152;152;232;24;4
+0x2C3;STACYJKA (mZAS_Status);ZS1_ZAS_Kl_15;Zacisk 15 (Zapłon);WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;Wyłączony;2
+0x2C3;STACYJKA (mZAS_Status);ZS1_ZAS_Kl_P;Zacisk P (Światła postojowe);Wyłączone;Wyłączone;Wyłączone;Wyłączone;Wyłączone;Wyłączone;WŁĄCZONE;2
+0x2C3;STACYJKA (mZAS_Status);ZS1_ZAS_Kl_S;Styk S (Obecność kluczyka);KLUCZYK WŁOŻONY;KLUCZYK WŁOŻONY;KLUCZYK WŁOŻONY;KLUCZYK WŁOŻONY;KLUCZYK WŁOŻONY;KLUCZYK WŁOŻONY;Brak kluczyka;2
+0x2C3;STACYJKA (mZAS_Status);ZS1_ZAS_Kl_X;Zacisk X (Przekaźnik odciążający);NAPIĘCIE OBECNE;NAPIĘCIE OBECNE;NAPIĘCIE OBECNE;NAPIĘCIE OBECNE;NAPIĘCIE OBECNE;NAPIĘCIE OBECNE;Brak napięcia;2
+0x351;GATEWAY (mGateway_1);GW1_FhzgGeschw_alt;Przestarzała ramka: Prędkość pojazdu;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Przestarzała;2
+0x351;GATEWAY (mGateway_1);GW1_FzgGeschw;Prędkość pojazdu;0 km/h;0 km/h;79.04 km/h;76.14 km/h;97.68 km/h;0 km/h;0 km/h;4
+0x351;GATEWAY (mGateway_1);KKO_alt_mBSG_Kombi;Przestarzała ramka: mBSG_Kombi;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Przestarzała;2
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_1_Bremse;Przestarzała ramka: Bremse 1;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Przestarzała;2
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_2_Bremse;Przestarzała ramka: Bremse 2;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Przestarzała;2
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_5_Bremse;Przestarzała ramka: Bremse 5;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Przestarzała;2
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_FzgGeschw;Przestarzała ramka: Prędkość;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Przestarzała;2
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_FzgGeschw;Prędkość pojazdu;0 km/h;0 km/h;79.04 km/h;76.29 km/h;97.66 km/h;0 km/h;0 km/h;4
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Wegimpuls_Status;Status licznika impulsów drogi;Brak przepełnienia;Brak przepełnienia;Przepełniony (Reset);Przepełniony (Reset);Przepełniony (Reset);Przepełniony (Reset);Przepełniony (Reset);2
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Wegimpulse;Impulsy przebytej drogi (Oś przednia);1;1;1516;397;1814;121;123;6
+0x35B;SILNIK (mGW_Motor);GWM_Alt_1_Motor;Przestarzała ramka: Motor 1;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Przestarzała;2
+0x35B;SILNIK (mGW_Motor);GWM_Alt_2_Motor;Przestarzała ramka: Motor 2;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Przestarzała;2
+0x35B;SILNIK (mGW_Motor);GWM_Alt_5_Motor;Przestarzała ramka: Motor 5;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Aktualna;Przestarzała;2
+0x35B;SILNIK (mGW_Motor);GWM_Anl_Ausspuren;Odcięcie pracy rozrusznika;Praca w toku / Niestabilny;ODCIĘCIE ROZRUSZNIKA;ODCIĘCIE ROZRUSZNIKA;ODCIĘCIE ROZRUSZNIKA;ODCIĘCIE ROZRUSZNIKA;ODCIĘCIE ROZRUSZNIKA;Praca w toku / Niestabilny;2
+0x35B;SILNIK (mGW_Motor);GWM_Anl_Freigabe;Zezwolenie na start (Rozrusznik);START DOZWOLONY;Brak zezwolenia;Brak zezwolenia;Brak zezwolenia;Brak zezwolenia;Brak zezwolenia;Brak zezwolenia;2
+0x35B;SILNIK (mGW_Motor);GWM_Bremstest_Schalter;Styk testowy hamulca (BTS);Puszczony;Puszczony;Puszczony;Puszczony;Puszczony;WCIŚNIĘTY;Puszczony;2
+0x35B;SILNIK (mGW_Motor);GWM_GRA_Status;Status tempomatu (GRA);Wyłączony;Brak zezwolenia;Brak zezwolenia;Brak zezwolenia;Brak zezwolenia;Brak zezwolenia;Brak zezwolenia;2
+0x35B;SILNIK (mGW_Motor);GWM_KLuefter;Wysterowanie wentylatora chłodnicy;10 %;10 %;10 %;12 %;13.60 %;10.40 %;10 %;4
+0x35B;SILNIK (mGW_Motor);GWM_KVerbrauch;Chwilowe zużycie paliwa;0 µl/cykl;10240 µl/cykl;25600 µl/cykl;29440 µl/cykl;24064 µl/cykl;15872 µl/cykl;17920 µl/cykl;7
+0x35B;SILNIK (mGW_Motor);GWM_Klimaabschaltung;Odłączenie kompresora klimatyzacji;KOMPRESOR WYŁĄCZONY;Praca dozwolona;Praca dozwolona;Praca dozwolona;Praca dozwolona;Praca dozwolona;KOMPRESOR WYŁĄCZONY;2
+0x35B;SILNIK (mGW_Motor);GWM_KuehlmittelTemp;Temperatura płynu chłodzącego;61.50 °C;64.50 °C;80.25 °C;90.75 °C;91.50 °C;90 °C;90 °C;6
+0x35B;SILNIK (mGW_Motor);GWM_Kuppl_Schalter;Czujnik pedału sprzęgła;Wciśnięty (Rozsprzęglony);Puszczony (Zasprzęglony);Puszczony (Zasprzęglony);Puszczony (Zasprzęglony);Puszczony (Zasprzęglony);Wciśnięty (Rozsprzęglony);Puszczony (Zasprzęglony);2
+0x35B;SILNIK (mGW_Motor);GWM_Motordrehzahl;Obroty silnika;0 obr/min;981 obr/min;1725 obr/min;2134 obr/min;2114 obr/min;828 obr/min;0 obr/min;6
+0x35B;SILNIK (mGW_Motor);GWM_Ueberl_KV;Przepełnienie licznika zużycia paliwa;Brak;Brak;PRZEPEŁNIONY;PRZEPEŁNIONY;PRZEPEŁNIONY;PRZEPEŁNIONY;PRZEPEŁNIONY;2
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_Lenkradwinkel;Kąt skrętu kierownicy;28.35 °;28.35 °;4.38 °;4.38 °;1.40 °;11.90 °;11.90 °;4
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_Pruefsumme;Suma kontrolna ramki;53;117;235;59;223;110;254;7
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_Zaehler;Licznik wiadomości (Alive-Counter);12;8;3;14;8;0;7;6
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_KaeltemittelDruck;Ciśnienie czynnika chłodniczego;4 bar;4 bar;2.40 bar;2.20 bar;2.40 bar;2.60 bar;51 bar;5
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Display;Podświetlenie wskaźników (Dimm);0 %;0 %;63 %;64 %;64 %;64 %;0 %;3
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Ladekontrollampe;Kontrolka ładowania (Zacisk L);BRAK ŁADOWANIA;OK;OK;OK;OK;OK;OK;2
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_MH_geoeffnet;Maska silnika;OTWARTA;Zamknięta;Zamknięta;Zamknięta;Zamknięta;Zamknięta;Zamknięta;2
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_AussenTemp_Fehler;Czujnik temp. zewnętrznej;OK;OK;OK;OK;OK;OK;BŁĄD;2
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_AussenTemp_gefiltert;Temperatura zewnętrzna (FIS);8.50 °C;8.50 °C;5.50 °C;4.50 °C;5 °C;6.50 °C;-50 °C;6
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_AussenTemp_ungefiltert;Temperatura zewnętrzna (Surowa);9.50 °C;9.50 °C;5.50 °C;4 °C;5 °C;6.50 °C;6.50 °C;5
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_FzgGeschw;Prędkość pojazdu (Wyświetlana);0 km/h;0 km/h;78.93 km/h;76.21 km/h;97.60 km/h;0 km/h;0 km/h;4
+0x555;TURBO / OLEJ (mMotor7);MO7_DFM;Sygnał DFM alternatora (Obciążenie);23.60 %;32.80 %;24 %;22.80 %;21.60 %;36.80 %;0 %;7
+0x555;TURBO / OLEJ (mMotor7);MO7_Fehler_Oel_Temp;Status czujnika temperatury oleju;Sprawny (OK);Sprawny (OK);Sprawny (OK);Sprawny (OK);Sprawny (OK);Sprawny (OK);BŁĄD CZUJNIKA;2
+0x555;TURBO / OLEJ (mMotor7);MO7_Gradient_Drehz;Gradient obrotów silnika;0 obr/min;0 obr/min;8 obr/min;0 obr/min;7 obr/min;1 obr/min;0 obr/min;4
+0x555;TURBO / OLEJ (mMotor7);MO7_Gradient_Vorz;Kierunek gradientu obrotów;Rosnące (+);Rosnące (+);Rosnące (+);Rosnące (+);Rosnące (+);Malejące (-);Rosnące (+);2
+0x555;TURBO / OLEJ (mMotor7);MO7_LL_Status;Podwyższone obroty jałowe (Stupeń 1);Brak żądania;Osiągnięto poziom 1;Brak żądania;Brak żądania;Brak żądania;Brak żądania;Brak żądania;2
+0x555;TURBO / OLEJ (mMotor7);MO7_Ladedruckneu;Ciśnienie doładowania (Turbo);1.96 bar;2.04 bar;2.48 bar;2.52 bar;2.42 bar;2.06 bar;1.98 bar;7
+0x555;TURBO / OLEJ (mMotor7);MO7_Oeltemperatur;Temperatura oleju silnikowego;58 °C;59 °C;69 °C;88 °C;90 °C;88 °C;-59 °C;6
+0x555;TURBO / OLEJ (mMotor7);MO7_Sleep_Ind;Gotowość do uśpienia sieci (Silnik);Praca na CAN;Praca na CAN;Praca na CAN;Praca na CAN;Praca na CAN;Praca na CAN;GOTOWY DO UŚPIENIA;2
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Airbag_A;Błąd: Sterownik Airbag;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;Brak błędów;2
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_BSG_K;Błąd: Bordnetz (Centralna elektryka);ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;Brak błędów;2
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_KSG_K;Błąd: Moduł komfortu;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;Brak błędów;2
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Motor_A;Błąd: Sterownik silnika;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;Brak błędów;2
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_PTC_Heizung_K;Błąd: Dogrzewacz PTC;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;Brak błędów;2
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_SMLS_K;Błąd: Moduł kolumny kierownicy;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;Brak błędów;2
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_TSG_BT_K;Błąd: Moduł drzwi pasażera;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;Brak błędów;2
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_TSG_FT_K;Błąd: Moduł drzwi kierowcy;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;Brak błędów;2
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_TSG_HL_K;Błąd: Moduł drzwi tył-lewe;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;Brak błędów;2
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_TSG_HR_K;Błąd: Moduł drzwi tył-prawe;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;ZAPISANY BŁĄD;Brak błędów;2
+0x571;ZASILANIE / AKU (mBSG_2);BS2_U_BATT;Napięcie akumulatora (Bordnetz);12.30 V;14.35 V;14.30 V;14.40 V;14.40 V;14.40 V;12.75 V;5
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Haubenkontakt;Czujnik maski silnika;OTWARTA;Zamknięta;Zamknięta;Zamknięta;Zamknięta;Zamknięta;Zamknięta;2
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Klemme_15;Zacisk 15 (Zapłon);WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;Wyłączony;2
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Klemme_15_Motorraum;Zacisk 15 (Komora silnika);WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;Wyłączony;2
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Klemme_P;Zacisk P (Światła postojowe);Wyłączony;Wyłączony;Wyłączony;Wyłączony;Wyłączony;Wyłączony;WŁĄCZONY;2
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Klemme_S;Styk S (Kluczyk w stacyjce);WŁOŻONY;WŁOŻONY;WŁOŻONY;WŁOŻONY;WŁOŻONY;WŁOŻONY;Wyjęty;2
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Klemme_X;Zacisk X (Odciążenie);WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;WŁĄCZONY;Wyłączony;2
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Ladekontrollampe;Kontrolka ładowania (Bordnetz);WŁĄCZONA;Wyłączona;Wyłączona;Wyłączona;Wyłączona;Wyłączona;Wyłączona;2
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Tankinhalt;Poziom paliwa;10 L;10 L;10 L;8 L;8 L;9 L;0 L;4
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_WFS_Schluessel;Numer kluczyka (Immo);2;2;2;2;2;2;0;2
+0x635;ŚCIEMNIANIE DESKI (mDimmung);DI1_Display;Jasność podświetlenia wyświetlacza;0 %;0 %;63 %;64 %;64 %;64 %;0 %;3
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Sleep_Komfort;Uśpienie sieci CAN-Komfort;Aktywna;Aktywna;Aktywna;Aktywna;Aktywna;Aktywna;UŚPIONA;2
+0x653;REGION / JĘZYK (mGateway_3);GW3_Alt_5_Motor;Status danych z silnika (Motor_5);Aktualne;Aktualne;Aktualne;Aktualne;Aktualne;Aktualne;Przestarzałe;2
+0x653;REGION / JĘZYK (mGateway_3);GW3_Motortyp_empf;Odbiór typu silnika;Odebrano;Odebrano;Odebrano;Odebrano;Odebrano;Odebrano;Brak;2
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_KM_Stand;Przebieg całkowity pojazdu;292967 km;292967 km;292970 km;292982 km;292998 km;293008 km;293008 km;5
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_Minute;Czas: Minuta;44;45;49;1;13;22;23;7
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_Sekunde;Czas: Sekunda;30;48;12;27;37;28;37;6
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_Stunde;Czas: Godzina;19;19;19;20;20;20;20;2
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_Verlernzaehler;Licznik cykli weryfikacji błędów;190;190;190;191;191;191;191;2
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_MUX;Indeks multipleksera (MUX);2;1;2;0;1;0;1;3

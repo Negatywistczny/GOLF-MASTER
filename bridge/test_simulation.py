@@ -1,7 +1,6 @@
 import asyncio
 import websockets
 import os
-import time
 
 # --- KONFIGURACJA ---
 WS_HOST = 'localhost'
@@ -39,8 +38,8 @@ CAN_FRAMES = [
 ]
 
 connected_clients = set()
-has_connected_once = False 
-shutdown_task = None        
+shutdown_task = None
+is_scanning = False
 
 async def auto_shutdown_timer():
     """Zamyka proces, jeśli nikt nie jest podłączony przez 2 sekundy"""
@@ -52,7 +51,21 @@ async def auto_shutdown_timer():
 async def broadcast(message):
     """Rozsyła wiadomość do wszystkich odbiorców"""
     if connected_clients:
-        await asyncio.gather(*(client.send(message) for client in connected_clients), return_exceptions=True)
+        disconnected = set()
+        for client in connected_clients:
+            try:
+                await client.send(message)
+            except websockets.exceptions.ConnectionClosed:
+                disconnected.add(client)
+        connected_clients.difference_update(disconnected)
+
+async def log_and_send(websocket, message: str):
+    """Wyświetla log w konsoli i wysyła go do konkretnego klienta"""
+    print(message)
+    try:
+        await websocket.send(message)
+    except websockets.exceptions.ConnectionClosed:
+        pass
 
 async def simulate_can_bus():
     """Symuluje pracę magistrali CAN - wysyła ramki w pętli"""
@@ -71,12 +84,80 @@ async def simulate_can_bus():
             # Jeśli nikt nie słucha, czekamy sekundę i sprawdzamy ponownie
             await asyncio.sleep(1)
 
+async def simulate_tp20_read_dtc(addr_hex, name, websocket):
+    """
+    Symulacja odpowiednika tp20_read_dtc() z bridge.py.
+    Nie komunikuje się z hardware - jedynie emituje analogiczne logi i ramki.
+    """
+    await log_and_send(websocket, f"SYS:PYTHON: [1/4] Łączenie z {name} (0x{addr_hex})...")
+    await asyncio.sleep(0.08)
+
+    tx_channel = f"{int(addr_hex, 16) + 0x300:03X}".lstrip("0")
+    await log_and_send(websocket, f"SYS:PYTHON: [2/4] Zgoda! Kanał TX to 0x{tx_channel}")
+
+    await asyncio.sleep(0.05)
+    await log_and_send(websocket, "SYS:PYTHON: [3/4] Potwierdzam Timingi (A0)...")
+    await asyncio.sleep(0.05)
+
+    await log_and_send(websocket, "SYS:PYTHON: [4/4] Żądam Kody DTC KWP2000...")
+    await asyncio.sleep(0.08)
+
+    # Prosta, deterministyczna symulacja: niektóre moduły zwracają DTC.
+    has_dtc = int(addr_hex, 16) % 3 == 0
+    if has_dtc:
+        dtc_frame = f"0x300: 58 04 {addr_hex} 00 11 22 33"
+        await broadcast(dtc_frame)
+        await log_and_send(websocket, f"SYS:PYTHON: ⚠️ OTRZYMANO DANE DTC: {dtc_frame}")
+        await log_and_send(websocket, f"SYS:PYTHON: ✅ Odebrano 1 ramek z kodami DTC z {name}!")
+    else:
+        await log_and_send(websocket, f"SYS:PYTHON: ✅ {name} jest czysty (Brak DTC).")
+
+    await log_and_send(websocket, "SYS:PYTHON: Sesja zamknięta. Przechodzę dalej...")
+    await asyncio.sleep(0.12)
+
+async def perform_full_scan(websocket):
+    """Symulowany auto-skan modułów, zgodny przepływem z bridge.py."""
+    global is_scanning
+    if is_scanning:
+        await log_and_send(websocket, "SYS:PYTHON: ⚠️ Skanowanie już trwa. Proszę czekać.")
+        return
+
+    is_scanning = True
+    try:
+        modules = {
+            "01": "Silnik (Engine)",
+            "02": "Skrzynia Biegów (Auto Trans)",
+            "03": "ABS / ESP / Hamulce",
+            "08": "Klimatyzacja (Climatronic)",
+            "09": "Centralna Elektryka (Bordnetz)",
+            "15": "Poduszki Powietrzne (Airbag)",
+            "16": "Koło Kierownicy (Steering Wheel)",
+            "17": "Zestaw Wskaźników (Instrument Cluster)",
+            "19": "Gateway CAN (J533)",
+            "25": "Immobilizer",
+            "37": "Nawigacja",
+            "42": "Elektronika Drzwi Kierowcy",
+            "44": "Wspomaganie Kierownicy (Steering Assist)",
+            "46": "Moduł Komfortu (Central Convenience)",
+            "52": "Elektronika Drzwi Pasażera",
+            "56": "Radio / Infotainment",
+            "62": "Elektronika Drzwi Tylnych Lewych",
+            "72": "Elektronika Drzwi Tylnych Prawych",
+            "77": "Telefon / Bluetooth",
+        }
+
+        await log_and_send(websocket, "SYS:PYTHON: --- START AUTO-SKAN (KWP2000 over TP2.0) ---")
+        for addr, name in modules.items():
+            await simulate_tp20_read_dtc(addr, name, websocket)
+        await log_and_send(websocket, "SYS:PYTHON: --- AUTO-SKAN ZAKOŃCZONY ---")
+    finally:
+        is_scanning = False
+
 async def ws_handler(websocket):
     """Obsługa połączeń z przeglądarki"""
-    global has_connected_once, shutdown_task
+    global shutdown_task
     
     connected_clients.add(websocket)
-    has_connected_once = True
     
     if shutdown_task is not None and not shutdown_task.done():
         shutdown_task.cancel()
@@ -87,9 +168,18 @@ async def ws_handler(websocket):
     try:
         # Wysyłamy status gotowości zaraz po połączeniu
         await websocket.send("SYS:PY:SERIAL_READY")
-        await websocket.wait_closed()
+        async for message in websocket:
+            if message.startswith("CMD:"):
+                parts = message.split(":", 1)
+                if len(parts) < 2:
+                    continue
+
+                command = parts[1].strip()
+                if command == "REQ_FULL_SCAN":
+                    print("[DIAG] Otrzymano żądanie Auto-Scan z UI (SIM).")
+                    asyncio.create_task(perform_full_scan(websocket))
     finally:
-        connected_clients.remove(websocket)
+        connected_clients.discard(websocket)
         print(f"SYS:PY:BROWSER_DISCONNECTED (Total: {len(connected_clients)})")
         
         if len(connected_clients) == 0:

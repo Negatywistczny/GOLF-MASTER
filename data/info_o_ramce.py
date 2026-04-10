@@ -1,7 +1,15 @@
-import cantools
+import importlib
+import sys
+from pathlib import Path
+
+try:
+    cantools = importlib.import_module("cantools")
+except ModuleNotFoundError:
+    print("BŁĄD: Brak modułu 'cantools'. Zainstaluj go poleceniem: python3 -m pip install cantools")
+    sys.exit(1)
 
 # 1. Nazwa Twojego pliku DBC
-nazwa_pliku = 'PQ35_46_ICAN_V3_6_9_F_20081104_ASR_V1_2.dbc'
+nazwa_pliku = str(Path(__file__).with_name('PQ35_46_ICAN_V3_6_9_F_20081104_ASR_V1_2.dbc'))
 
 # Wczytanie bazy danych
 db = cantools.database.load_file(nazwa_pliku)

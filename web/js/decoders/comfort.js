@@ -63,7 +63,7 @@ export function decodeZKEData(id, hexData, cardElement) {
         html += `<div class="ind active-lock full-width">PILOT: BAGAŻNIK (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
         cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.ZK1_Taste_Panik === 1) {
-        html += `<div class="ind active-error full-width" style="animation: blink 0.5s infinite;">PILOT: PANIC!</div>`;
+        html += `<div class="ind active-error full-width blink">PILOT: PANIC!</div>`;
         cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind full-width">PILOT: BRAK AKCJI</div>`;
@@ -153,10 +153,10 @@ export function decodeManetkiData(id, hexData, cardElement) {
 
     // --- Kierunkowskazy ---
     if (fullData.LS1_Blk_links === 1) {
-        html += `<div class="ind active-green" style="animation: blink 0.5s infinite;">&#8592; KIERUNEK LEWY</div>`;
+        html += `<div class="ind active-green">&#8592; KIERUNEK LEWY</div>`;
         cardElement.style.borderColor = "var(--green)";
     } else if (fullData.LS1_Blk_rechts === 1) {
-        html += `<div class="ind active-green" style="animation: blink 0.5s infinite;">KIERUNEK PRAWY &#8594;</div>`;
+        html += `<div class="ind active-green">KIERUNEK PRAWY &#8594;</div>`;
         cardElement.style.borderColor = "var(--green)";
     } else {
         html += `<div class="ind">KIERUNKI WYŁ.</div>`;
@@ -236,7 +236,7 @@ export function decodeZASData(id, hexData, cardElement) {
     // --- Wizualizacja Głównego Stanu Stacyjki ---
     // Logika priorytetów: Rozrusznik -> Zapłon -> Akcesoria -> Kluczyk -> Brak
     if (fullData.ZS1_ZAS_Kl_50 === 1) {
-        html += `<div class="ind active-lock full-width" style="animation: blink 0.2s infinite;">ROZRUSZNIK (KL. 50)</div>`;
+        html += `<div class="ind active-lock full-width blink-fast">ROZRUSZNIK (KL. 50)</div>`;
         cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.ZS1_ZAS_Kl_15 === 1) {
         html += `<div class="ind active-green full-width">ZAPŁON WŁĄCZONY (KL. 15)</div>`;
@@ -245,7 +245,7 @@ export function decodeZASData(id, hexData, cardElement) {
         html += `<div class="ind active full-width">AKCESORIA (KL. X)</div>`;
         cardElement.style.borderColor = "var(--accent)";
     } else if (fullData.ZS1_ZAS_Kl_S === 1) {
-        html += `<div class="ind active full-width" style="opacity: 0.8;">KLUCZYK W STACYJCE (KL. S)</div>`;
+        html += `<div class="ind active full-width">KLUCZYK W STACYJCE (KL. S)</div>`;
         cardElement.style.borderColor = "var(--accent)";
     } else {
         html += `<div class="ind full-width">BRAK KLUCZYKA</div>`;
@@ -338,14 +338,14 @@ export function decodeClima1Data(id, hexData, cardElement) {
 
     // --- Nagrzewnica Elektryczna (PTC) ---
     if (fullData.CL1_PTC_Clima > 0) {
-        html += `<div class="ind active-orange full-width" style="animation: blink 1s infinite;">NAGRZEWNICA PTC AKTYWNA: ${fullData.CL1_PTC_Clima}%</div>`;
+        html += `<div class="ind active-orange full-width blink">NAGRZEWNICA PTC AKTYWNA: ${fullData.CL1_PTC_Clima}%</div>`;
     }
 
     // --- Temperatura Zewnętrzna (Podszybie) ---
     if (fullData.CL1_AussenTemp > 77) {
         html += `<div class="ind active-error full-width">TEMP. ZEWN: BŁĄD CZUJNIKA</div>`;
     } else {
-        html += `<div class="ind active full-width" style="font-size: 1.1em;">TEMP. ZEWN: ${fullData.CL1_AussenTemp.toFixed(1)} °C</div>`;
+        html += `<div class="ind active full-width">TEMP. ZEWN: ${fullData.CL1_AussenTemp.toFixed(1)} °C</div>`;
     }
 
     gridContainer.innerHTML = html;
@@ -388,7 +388,7 @@ export function decodeClima2Data(id, hexData, cardElement) {
     if (fullData.CL2_InnenTemp > 76) {
         html += `<div class="ind active-error full-width">TEMP. WNĘTRZA: BŁĄD CZUJNIKA</div>`;
     } else {
-        html += `<div class="ind active full-width" style="font-size: 1.1em;">TEMP. WNĘTRZA: ${fullData.CL2_InnenTemp.toFixed(1)} °C</div>`;
+        html += `<div class="ind active full-width">TEMP. WNĘTRZA: ${fullData.CL2_InnenTemp.toFixed(1)} °C</div>`;
     }
 
     // --- Podgrzewanie Foteli ---
@@ -411,7 +411,7 @@ export function decodeClima2Data(id, hexData, cardElement) {
 
     // --- Ogrzewanie Postojowe (Webasto) ---
     if (fullData.CL2_SH === 1) {
-        html += `<div class="ind active-red" style="animation: blink 1s infinite;">WEBASTO WŁĄCZONE!</div>`;
+        html += `<div class="ind active-red blink">WEBASTO WŁĄCZONE!</div>`;
     }
 
     // --- Czujniki Nasłonecznienia ---
@@ -498,7 +498,7 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
     if (fullData.BSK_HR_geoeffnet === 1) openDoors.push("TYŁ-P");
 
     if (fullData.BSK_MH_geoeffnet === 1) {
-        html += `<div class="ind active-error full-width" style="animation: blink 0.5s infinite;">MASKA SILNIKA OTARTA!</div>`;
+        html += `<div class="ind active-error full-width">MASKA SILNIKA OTARTA!</div>`;
     }
 
     if (fullData.BSK_HD_Hauptraste === 1) {
@@ -515,11 +515,11 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
 
     // --- KIERUNKOWSKAZY / AWARYJNE ---
     if (fullData.BSK_Warnblinker === 1) {
-        html += `<div class="ind active-error full-width" style="animation: blink 0.5s infinite;">&#8592; ŚWIATŁA AWARYJNE &#8594;</div>`;
+        html += `<div class="ind active-error full-width blink">&#8592; ŚWIATŁA AWARYJNE &#8594;</div>`;
     } else if (fullData.BSK_Blk_links === 1) {
-        html += `<div class="ind active-green" style="animation: blink 0.5s infinite;">&#8592; KIERUNKOWSKAZ</div>`;
+        html += `<div class="ind active-green">&#8592; KIERUNKOWSKAZ</div>`;
     } else if (fullData.BSK_Blk_rechts === 1) {
-        html += `<div class="ind active-green" style="animation: blink 0.5s infinite;">KIERUNKOWSKAZ &#8594;</div>`;
+        html += `<div class="ind active-green">KIERUNKOWSKAZ &#8594;</div>`;
     }
 
     // --- OŚWIETLENIE ZEWNĘTRZNE ---
@@ -548,7 +548,7 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
     
     // --- AKUMULATOR / ŁADOWANIE ---
     if (fullData.BSK_Ladekontrollampe === 1 || fullData.BSK_Unterspannung === 1) {
-        html += `<div class="ind active-error full-width" style="animation: blink 0.2s infinite;">BRAK ŁADOWANIA / NISKIE NAPIĘCIE!</div>`;
+        html += `<div class="ind active-error full-width blink-fast">BRAK ŁADOWANIA / NISKIE NAPIĘCIE!</div>`;
         cardElement.style.borderColor = "var(--red)";
     }
 
@@ -615,7 +615,7 @@ export function decodeBSG3Data(id, hexData, cardElement) {
         batStatus = `<div class="ind active-orange full-width">KONDYCJA BATERII: KRYTYCZNA!</div>`;
         cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.BS3_Bordnetzbatt === 2) {
-        batStatus = `<div class="ind active-error full-width" style="animation: blink 1s infinite;">BATERIA ROZŁADOWANA!</div>`;
+        batStatus = `<div class="ind active-error full-width blink">BATERIA ROZŁADOWANA!</div>`;
         cardElement.style.borderColor = "var(--red)";
     } else if (fullData.BS3_Bordnetzbatt === 3) {
         batStatus = `<div class="ind active-error full-width">KONDYCJA BATERII: BŁĄD</div>`;
@@ -634,7 +634,7 @@ export function decodeBSG3Data(id, hexData, cardElement) {
         if (fullData.BS3_Starterlaubnis === 1) {
             html += `<div class="ind active-green">ROZRUCH: ZEZWOLONO</div>`;
         } else {
-            html += `<div class="ind active-orange" style="animation: blink 0.5s infinite;">WCIŚNIJ SPRZĘGŁO/HAMULEC</div>`;
+            html += `<div class="ind active-orange blink">WCIŚNIJ SPRZĘGŁO/HAMULEC</div>`;
         }
     } else {
         html += `<div class="ind">ROZRUCH: ZABLOKOWANY</div>`;
@@ -712,7 +712,7 @@ export function decodeDimmungData(id, hexData, cardElement) {
     } else if (fullData.DI1_Sensor === 254) {
         html += `<div class="ind active-orange full-width">CZUJNIK ŚWIATŁA: INICJALIZACJA</div>`;
     } else {
-        html += `<div class="ind active full-width" style="opacity: 0.8;">CZUJNIK ŚWIATŁA: Wartość ${fullData.DI1_Sensor}</div>`;
+        html += `<div class="ind active full-width">CZUJNIK ŚWIATŁA: Wartość ${fullData.DI1_Sensor}</div>`;
         cardElement.style.borderColor = "var(--blue)";
     }
 

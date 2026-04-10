@@ -68,7 +68,7 @@ export function decodeAirbagData(id, hexData, cardElement) {
 
     // Alarm zderzeniowy (jeśli jakakolwiek siła zderzenia jest > 0)
     if (fullData.AB1_CrashStaerke > 0 || fullData.AB1_FrontCrash === 1 || fullData.AB1_Rollover === 1) {
-        html += `<div class="ind active-error full-width" style="animation: blink 0.5s infinite;">WYPADEK / CRASH DETECTED!</div>`;
+        html += `<div class="ind active-error full-width blink-fast">WYPADEK / CRASH DETECTED!</div>`;
     }
 
     gridContainer.innerHTML = html;
@@ -168,7 +168,7 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
     // --- Stan Magistrali (Uśpienie / Wybudzenie) ---
     // Jeśli wskazanie usypiania i potwierdzenie są aktywne:
     if (fullData.NMGW_I_SleepInd === 1 && fullData.NMGW_I_SleepAck === 1) {
-        html += `<div class="ind active-blue full-width" style="animation: blink 1s infinite;">MAGISTRALA: USYPIANIE (SLEEP)</div>`;
+        html += `<div class="ind active-blue full-width">MAGISTRALA: USYPIANIE (SLEEP)</div>`;
         cardElement.style.borderColor = "var(--blue)";
     } else if (fullData.NMGW_I_SleepInd === 1 || fullData.NMGW_I_SleepAck === 1) {
         html += `<div class="ind active-orange full-width">MAGISTRALA: ŻĄDANIE UŚPIENIA</div>`;
@@ -190,12 +190,12 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
     if (fullData.NMGW_I_Wake_Up_Ltg === 1) wakeReasons.push("LINIA WAKE-UP");
 
     if (wakeReasons.length > 0) {
-        html += `<div class="ind active full-width" style="font-size: 0.9em;">WAKE-UP: ${wakeReasons.join(', ')}</div>`;
+        html += `<div class="ind active full-width">WAKE-UP: ${wakeReasons.join(', ')}</div>`;
     }
 
     // --- Tryb Awaryjny (Limp Home) ---
     if (fullData.NMGW_I_CmdLimpHome === 1) {
-        html += `<div class="ind active-error full-width" style="animation: blink 0.5s infinite;">TRYB AWARYJNY (LIMP HOME)!</div>`;
+        html += `<div class="ind active-error full-width blink">TRYB AWARYJNY (LIMP HOME)!</div>`;
     }
 
     gridContainer.innerHTML = html;
@@ -305,13 +305,13 @@ export function decodeKDErrorData(id, hexData, cardElement) {
 
     // --- Wizualizacja Błędów ---
     if (activeErrors.length > 0) {
-        html += `<div class="ind active-error full-width" style="animation: blink 1s infinite; font-weight: bold;">WYKRYTO BŁĘDY (DTC)!</div>`;
+        html += `<div class="ind active-error full-width blink">WYKRYTO BŁĘDY (DTC)!</div>`;
         
         // Wypisanie skróconej listy modułów z usterkami
-        html += `<div class="ind active-error full-width" style="font-size: 0.8em;">Moduły: ${activeErrors.join(', ')}</div>`;
+        html += `<div class="ind active-error full-width">Moduły: ${activeErrors.join(', ')}</div>`;
         cardElement.style.borderColor = "var(--red)";
     } else {
-        html += `<div class="ind active-green full-width" style="font-weight: bold;">SKANOWANIE OK - BRAK BŁĘDÓW</div>`;
+        html += `<div class="ind active-green full-width">SKANOWANIE OK - BRAK BŁĘDÓW</div>`;
         cardElement.style.borderColor = "var(--green)";
     }
 
@@ -372,7 +372,7 @@ export function decodeSysteminfo1Data(id, hexData, cardElement) {
     let steering = fullData.SY1_Rechtslenker === 1 ? "RHD (Prawa)" : "LHD (Lewa)";
     let doors = fullData.SY1_Viertuerer === 1 ? "4/5 DRZWI" : "2/3 DRZWI";
 
-    html += `<div class="ind active-blue full-width" style="font-weight: bold;">ZAKODOWANO: ${brand} | ${doors} | ${steering}</div>`;
+    html += `<div class="ind active-blue full-width">ZAKODOWANO: ${brand} | ${doors} | ${steering}</div>`;
 
     // --- Stan usypiania magistrali ---
     let sleepState = [];
@@ -387,7 +387,7 @@ export function decodeSysteminfo1Data(id, hexData, cardElement) {
 
     // --- Alert Awaryjnego Hamowania ---
     if (fullData.SY1_Notbrems_Status === 1) {
-        html += `<div class="ind active-error full-width" style="animation: blink 0.2s infinite; font-size: 1.1em;">UWAGA: AWARYJNE HAMOWANIE!</div>`;
+        html += `<div class="ind active-error full-width blink-fast">UWAGA: AWARYJNE HAMOWANIE!</div>`;
         cardElement.style.borderColor = "var(--red)";
     }
 
@@ -502,7 +502,7 @@ export function decodeSollverbauData(id, hexData, cardElement) {
     // 0 = Sollverbau ungleich Istverbau (Błąd kodowania lub brak komunikacji ze sterownikiem)
     // 1 = Sollverbau gleich Istverbau (Wszystko działa idealnie)
     if (fullData.VBN_Soll_Ist_OK === 0) {
-        html += `<div class="ind active-error full-width" style="animation: blink 0.5s infinite; font-size: 0.9em; font-weight: bold;">BŁĄD GATEWAY: BRAK ODPOWIEDZI STEROWNIKA (SOLL != IST)</div>`;
+        html += `<div class="ind active-error full-width blink">BŁĄD GATEWAY: BRAK ODPOWIEDZI STEROWNIKA (SOLL != IST)</div>`;
         cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind active-green full-width">MAGISTRALA KOMPLETNA (SOLL = IST)</div>`;
@@ -516,7 +516,7 @@ export function decodeSollverbauData(id, hexData, cardElement) {
     if (fullData.VBN_Airbag_A === 1) keyModules.push("AIRBAG");
     if (fullData.VBN_Kombi_A === 1) keyModules.push("LICZNIKI");
     
-    html += `<div class="ind full-width" style="opacity: 0.7; font-size: 0.8em;">GŁÓWNE: ${keyModules.join(', ')} ... [Kliknij by zobaczyć 64]</div>`;
+    html += `<div class="ind full-width">GŁÓWNE: ${keyModules.join(', ')} ... [Kliknij by zobaczyć 64]</div>`;
 
     gridContainer.innerHTML = html;
 }
@@ -602,11 +602,11 @@ export function decodeFzgIdentData(id, hexData, cardElement) {
         html += `<div class="ind active-error full-width">BŁĄD WFS (IMMO) / VIN NIEZAKODOWANY!</div>`;
         cardElement.style.borderColor = "var(--red)";
     } else if (!isComplete) {
-        html += `<div class="ind active-orange full-width" style="animation: blink 1s infinite;">SKANOWANIE VIN: ${vinString}</div>`;
+        html += `<div class="ind active-orange full-width blink">SKANOWANIE VIN: ${vinString}</div>`;
         cardElement.style.borderColor = "var(--orange)";
     } else {
-        html += `<div class="ind active-blue full-width" style="font-size: 1.2em; font-family: monospace; font-weight: bold; letter-spacing: 2px;">${vinString}</div>`;
-        html += `<div class="ind active full-width" style="opacity: 0.6; font-size: 0.8em;">NUMER NADWOZIA ZWERYFIKOWANY</div>`;
+        html += `<div class="ind active-blue full-width">${vinString}</div>`;
+        html += `<div class="ind active full-width">NUMER NADWOZIA ZWERYFIKOWANY</div>`;
         cardElement.style.borderColor = "var(--blue)";
     }
 

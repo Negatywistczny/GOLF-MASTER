@@ -37,7 +37,7 @@ export function decodeGWKombiData(id, hexData, cardElement) {
 
     // --- Kontrolka Wspomagania Układu Kierowniczego ---
     if (fullData.KB1_Lenkh_Lampe === 1) {
-        html += `<div class="ind active-error full-width" style="animation: blink 0.5s infinite;">BŁĄD WSPOMAGANIA (KONTROLKA)</div>`;
+        html += `<div class="ind active-error full-width blink">BŁĄD WSPOMAGANIA (KONTROLKA)</div>`;
         cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind active-green full-width">WSPOMAGANIE OK</div>`;
@@ -58,7 +58,7 @@ export function decodeGWKombiData(id, hexData, cardElement) {
     if (fullData.GWK_AussenTemp_Fehler === 1 || fullData.GWK_AussenTemp_gefiltert > 76) {
         html += `<div class="ind active-error">TEMP: BŁĄD CZUJNIKA</div>`;
     } else {
-        html += `<div class="ind active" style="font-weight: bold;">TEMP: ${fullData.GWK_AussenTemp_gefiltert.toFixed(1)} °C</div>`;
+        html += `<div class="ind active">TEMP: ${fullData.GWK_AussenTemp_gefiltert.toFixed(1)} °C</div>`;
     }
 
     // --- Status Kluczyka / Immo ---
@@ -74,7 +74,7 @@ export function decodeGWKombiData(id, hexData, cardElement) {
     }
 
     if (fullData.GWK_Warn_Heiss === 1) {
-        html += `<div class="ind active-error full-width" style="animation: blink 0.2s infinite;">OSTRZEŻENIE: SILNIK GORĄCY!</div>`;
+        html += `<div class="ind active-error full-width blink-fast">OSTRZEŻENIE: SILNIK GORĄCY!</div>`;
         cardElement.style.borderColor = "var(--red)";
     }
 
@@ -135,7 +135,7 @@ export function decodeEinheitenData(id, hexData, cardElement) {
     const days = ["BRAK/INIT", "PONIEDZIAŁEK", "WTOREK", "ŚRODA", "CZWARTEK", "PIĄTEK", "SOBOTA", "NIEDZIELA"];
     let currentDay = days[fullData.EH1_Wochentag] || "NIEZNANY";
 
-    html += `<div class="ind full-width" style="opacity: 0.8;">DZIEŃ TYGODNIA: ${currentDay}</div>`;
+    html += `<div class="ind full-width">DZIEŃ TYGODNIA: ${currentDay}</div>`;
 
     gridContainer.innerHTML = html;
 }
@@ -202,7 +202,7 @@ export function decodeDisplay1Data(id, hexData, cardElement) {
 
     // --- Powiadomienia o resecie ---
     if (fullData.DY1_Global_Reset === 1) {
-        html += `<div class="ind active-error full-width" style="animation: blink 0.5s infinite;">GLOBALNY RESET DDP!</div>`;
+        html += `<div class="ind active-error full-width blink">GLOBALNY RESET DDP!</div>`;
     }
 
     gridContainer.innerHTML = html;
@@ -260,7 +260,7 @@ export function decodeGateway3Data(id, hexData, cardElement) {
         
         let cylStr = cyl > 0 ? `${cyl} CYL.` : "NIEZNANY";
         
-        html += `<div class="ind active full-width" style="opacity: 0.9;">SILNIK: ${cylStr}${isTurbo}</div>`;
+        html += `<div class="ind active full-width">SILNIK: ${cylStr}${isTurbo}</div>`;
     }
 
     // --- Flagi Opóźnień (Timeout) ---
@@ -308,7 +308,7 @@ export function decodeDiagnose1Data(id, hexData, cardElement) {
     } else {
         // Formatujemy przebieg, dodając spacje tysięcy dla czytelności (np. 245 000 km)
         let kmFormatted = fullData.DN1_KM_Stand.toLocaleString('pl-PL');
-        html += `<div class="ind active-blue full-width" style="font-size: 1.2em; font-weight: bold;">ODO: ${kmFormatted} km</div>`;
+        html += `<div class="ind active-blue full-width">ODO: ${kmFormatted} km</div>`;
         cardElement.style.borderColor = "var(--blue)";
     }
 
@@ -331,8 +331,8 @@ export function decodeDiagnose1Data(id, hexData, cardElement) {
             let mi = fullData.DN1_Minute.toString().padStart(2, '0');
             let s = fullData.DN1_Sekunde.toString().padStart(2, '0');
 
-            html += `<div class="ind active full-width" style="opacity: 0.9;">DATA: ${d}.${mo}.${y}</div>`;
-            html += `<div class="ind active full-width" style="opacity: 0.9; font-family: monospace;">CZAS: ${h}:${mi}:${s}</div>`;
+            html += `<div class="ind active full-width">DATA: ${d}.${mo}.${y}</div>`;
+            html += `<div class="ind active full-width">CZAS: ${h}:${mi}:${s}</div>`;
         } else {
             html += `<div class="ind active-error full-width">CZAS/DATA: NIEUSTAWIONE (INIT)</div>`;
         }
@@ -341,7 +341,7 @@ export function decodeDiagnose1Data(id, hexData, cardElement) {
     // --- Verlernzaehler (Licznik cykli) ---
     // 255 (FFh) oznacza błąd
     if (fullData.DN1_Verlernzaehler === 255) {
-        html += `<div class="ind active-error full-width" style="font-size: 0.8em;">BŁĄD CYKLU JAZDY</div>`;
+        html += `<div class="ind active-error full-width blink">BŁĄD CYKLU JAZDY</div>`;
     }
 
     gridContainer.innerHTML = html;

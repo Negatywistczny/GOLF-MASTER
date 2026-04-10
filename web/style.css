@@ -321,6 +321,14 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
     100% { opacity: 1; }
 }
 
+.ind.blink {
+    animation: blink 1s infinite;
+}
+
+.ind.blink-fast {
+    animation: blink 0.35s infinite;
+}
+
 /* --- PRZYCISK SNAPSHOT --- */
 .btn-snap {
     background: var(--accent-dark);

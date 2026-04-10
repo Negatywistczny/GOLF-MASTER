@@ -259,15 +259,18 @@ export function generateSnapshot() {
 
 export function requestFullDtcScan() {
     const socket = getSocket();
+    const btnScanAll = document.getElementById('btn-scan-all');
     if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send("CMD:REQ_FULL_SCAN");
         
         logTerminal("SYS:JS: Inicjowanie pełnego Auto-Skanu DTC...");
         updateStatus("SKANOWANIE MODUŁÓW (TP 2.0)...", "var(--orange)");
         
-        btnScanAll.disabled = true;
-        btnScanAll.style.opacity = "0.5";
-        btnScanAll.textContent = "⏳ SKANOWANIE...";
+        if (btnScanAll) {
+            btnScanAll.disabled = true;
+            btnScanAll.style.opacity = "0.5";
+            btnScanAll.textContent = "⏳ SKANOWANIE...";
+        }
     } else {
         logError("JS", "WS_OFFLINE", "Brak połączenia z Pythonem.");
     }

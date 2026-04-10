@@ -6,19 +6,19 @@ Folder `web` zawiera frontend typu SPA (Vanilla JS + WebSocket) do wizualizacji 
 ## 2. Architektura ES Modules
 Frontend jest podzielony na moduly ES6 (bez bundlera):
 
-- `index.html` - punkt startowy UI, laduje `main.js` przez `type="module"`.
-- `main.js` - bootstrap aplikacji (inicjalizacja UI, podpiecie przyciskow, start WebSocket).
-- `config.js` - stale konfiguracyjne (`WS_URL`) i slownik `canDictionary`.
-- `state.js` - wspoldzielony stan runtime (`signalMeta`, cache ramek, socket, bufor terminala).
-- `utils.js` - funkcje narzedziowe (`extractCANSignal`, cache BigInt, formatowanie wartosci).
-- `ws.js` - warstwa transportu WebSocket (`connectWebSocket`, parser wejscia SYS/ERR/CAN).
-- `ui.js` - logika DOM (kafelki, modal, status, terminal, snapshot, logi).
-- `decoders/*.js` - dekodery ramek CAN podzielone strefowo:
+- `index.html` - punkt startowy UI, laduje `js/main.js` przez `type="module"`.
+- `js/main.js` - bootstrap aplikacji (inicjalizacja UI, podpiecie przyciskow, start WebSocket).
+- `js/config.js` - stale konfiguracyjne (`WS_URL`) i slownik `canDictionary`.
+- `js/state.js` - wspoldzielony stan runtime (`signalMeta`, cache ramek, socket, bufor terminala).
+- `js/utils.js` - funkcje narzedziowe (`extractCANSignal`, cache BigInt, formatowanie wartosci).
+- `js/ws.js` - warstwa transportu WebSocket (`connectWebSocket`, parser wejscia SYS/ERR/CAN).
+- `js/ui.js` - logika DOM (kafelki, modal, status, terminal, snapshot, logi).
+- `js/decoders/*.js` - dekodery ramek CAN podzielone strefowo:
   - `drive.js`
   - `comfort.js`
   - `media.js`
   - `system.js`
-- `decoders/router.js` - mapa `ID CAN -> funkcja decode...Data`.
+- `js/decoders/router.js` - mapa `ID CAN -> funkcja decode...Data`.
 
 ## 3. Kluczowe mechanizmy runtime
 
@@ -66,6 +66,6 @@ Frontend jest podzielony na moduly ES6 (bez bundlera):
 ## 6. Rozszerzanie dekoderow
 
 Przy dodawaniu nowej ramki CAN:
-1. Dodaj definicje w `config.js` (`canDictionary`).
-2. Dodaj dekoder w odpowiednim `decoders/*.js`.
-3. Podepnij funkcje w `decoders/router.js`.
+1. Dodaj definicje w `js/config.js` (`canDictionary`).
+2. Dodaj dekoder w odpowiednim `js/decoders/*.js`.
+3. Podepnij funkcje w `js/decoders/router.js`.

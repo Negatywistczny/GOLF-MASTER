@@ -5,16 +5,15 @@ function extractCANSignal(hexString, startBit, length, multiplier = 1, offset = 
     let dataBigInt;
     if (typeof hexString === 'bigint') {
         dataBigInt = hexString;
-    } else if (hexString === __cachedFrameHex) {
-        dataBigInt = __cachedFrameBigInt;
+    } else if (hexString === getCachedFrameHex()) {
+        dataBigInt = getCachedFrameBigInt();
     } else {
         const bytes = hexString.trim().split(' ').map(x => BigInt('0x' + x));
         dataBigInt = 0n;
         for (let i = 0; i < bytes.length; i++) {
             dataBigInt |= (bytes[i] << BigInt(i * 8));
         }
-        __cachedFrameHex = hexString;
-        __cachedFrameBigInt = dataBigInt;
+        setCachedFrame(hexString, dataBigInt);
     }
 
     // 3. Wycinanie odpowiednich bitów za pomocą maski

@@ -48,13 +48,13 @@ Komunikaty generowane przez skrypt pośredniczący, wysyłane do konsoli oraz pr
 
 ---
 
-## 3. WARSTWA INTERFEJSU (Frontend - script.js)
+## 3. WARSTWA INTERFEJSU (Frontend - ES Modules: main.js / ws.js / ui.js)
 Komunikaty generowane w konsoli przeglądarki lub wyświetlane bezpośrednio użytkownikowi w UI.
 
 ### Statusy Połączenia (Logi UI)
-* **`[WS] CONNECTED`** - Udane połączenie z mostkiem Python.
-* **`[WS] DISCONNECTED`** - Utrata połączenia (mostek wyłączony lub błąd sieci).
-* **`[WS] ERROR`** - Krytyczny błąd gniazda WebSocket.
+* **`SYS:JS:WS_CONNECTED`** - Udane połączenie z mostkiem Python.
+* **`ERR:JS:WS_DISCONNECTED`** - Utrata połączenia (mostek wyłączony lub błąd sieci).
+* **`ERR:JS:WS_ERROR`** - Krytyczny błąd gniazda WebSocket.
 
 ### Błędy Logiczne (Widoczne w kartach UI)
 * **`BŁĘD WFS (IMMO) / VIN NIEZAKODOWANY!`**

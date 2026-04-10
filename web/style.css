@@ -62,6 +62,23 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
     align-items: center;
 }
 
+.header-actions button {
+    min-height: 40px;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: 4px;
+    border: 1px solid transparent;
+    font-size: 0.82em;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.12s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
 #sim-clock {
     font-size: 1.4em;
     font-weight: bold;
@@ -369,14 +386,6 @@ td { padding: 8px; border-bottom: 1px solid var(--border); }
     background: var(--accent-dark);
     color: var(--text-inverse);
     border: 1px solid var(--accent);
-    padding: var(--space-sm) var(--space-md);
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .btn-snap:hover {
@@ -389,14 +398,6 @@ td { padding: 8px; border-bottom: 1px solid var(--border); }
     background: var(--accent-dark);
     color: var(--text-inverse);
     border: 1px solid var(--accent);
-    padding: var(--space-sm) var(--space-md);
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .btn-diag:hover {
@@ -410,22 +411,14 @@ td { padding: 8px; border-bottom: 1px solid var(--border); }
 
 /* --- PRZYCISK LOGÓW TERMINALA --- */
 .btn-log {
-    background: var(--surface-alt);
-    color: var(--green);
-    border: 1px solid var(--green);
-    padding: var(--space-sm) var(--space-md);
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    background: var(--accent-dark);
+    color: var(--text-inverse);
+    border: 1px solid var(--accent);
 }
 
 .btn-log:hover {
-    background: var(--surface-hover);
-    box-shadow: 0 0 12px rgba(46, 204, 113, 0.5);
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
 }
 
 .btn-log:active {

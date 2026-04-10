@@ -2261,7 +2261,6 @@ function decodeMotorData(id, hexData, cardElement) {
     // Dokumentacja dla GRA: 0=wył, 1=aktywny, 2=nadpisany gazem (overridden)
     if (fullData.GWM_GRA_Status === 1) {
         html += `<div class="ind active-green">TEMPOMAT: AKTYWNY</div>`;
-        }
     } else if (fullData.GWM_GRA_Status === 2) {
         html += `<div class="ind active-orange">TEMPOMAT: +GAZ KIEROWCY</div>`;
     } else {

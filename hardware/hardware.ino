@@ -37,7 +37,7 @@ MCP_CAN CAN0(SPI_CS_PIN);
 // Domyślnie: magistrala uśpiona / brak powodu wybudzenia — bez nadawania NM (0x40B), bez 0x661.
 unsigned long lastRxTime = 0;
 unsigned long lastSendTime = 0;
-// Ostatnia Weckursache z ramki Alive (Bajt 2 ramki 0x42B); tylko NM_CMD_ALIVE aktualizuje to pole.
+// Ostatni bajt 2 z ramki Alive 0x42B→0x0B (nie aktualizowany przy Ring). Bit 0x80 = okno aktywności Infotainment (jak Faza 4).
 byte lastWakeCauseByte = 0x00;
 bool isHanging = false;
 // true = cisza traktowana jak OK (watchdog nie krzyczy); Alive 0x42B→0x0B bez NM_MASK_SLEEP ustawia false.
@@ -82,25 +82,38 @@ bool isDelta(uint32_t id, uint8_t len, uint8_t *data) {
 void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
   if (id != (uint32_t)NM_GATEWAY_ID || len < 4) return;
 
-  if (buf[1] == NM_CMD_ALIVE) {
+  uint8_t cmdLo = buf[1] & 0x0F;
+
+  if (buf[0] == NM_NODE_SELF && cmdLo == NM_CMD_ALIVE) {
     lastWakeCauseByte = buf[2];
 
-    if (buf[0] == NM_NODE_SELF) {
-      if (buf[1] & NM_MASK_SLEEP) {
-        if (!isSleepIndicated) {
-          isSleepIndicated = true;
-          Serial.println(F("SYS:CAN:SLEEP_IND"));
-        }
-      } else {
-        isSleepIndicated = false;
+    if (buf[1] & NM_MASK_SLEEP) {
+      if (!isSleepIndicated) {
+        isSleepIndicated = true;
+        Serial.println(F("SYS:CAN:SLEEP_IND"));
       }
+    } else {
+      isSleepIndicated = false;
+    }
+
+    if (len >= 5) {
+      uint32_t wakeCombo = (uint32_t)buf[2] | ((uint32_t)buf[3] << 8) | ((uint32_t)buf[4] << 16);
+      static uint32_t prevWakeCombo = 0;
+      if (prevWakeCombo == 0 && wakeCombo != 0) {
+        Serial.println(F("SYS:CAN:WAKE_START"));
+      } else if (prevWakeCombo != 0 && wakeCombo == 0) {
+        Serial.println(F("SYS:CAN:WAKE_END"));
+      }
+      prevWakeCombo = wakeCombo;
     }
   }
 
-  if (buf[0] == NM_NODE_SELF && lastWakeCauseByte != 0x00) {
-    unsigned char txBuf[6] = {(unsigned char)NEXT_NODE_ID, NM_CMD_ALIVE, 0, 0, 0, 0};
-    if (buf[1] & NM_MASK_LIMP) txBuf[1] = NM_CMD_RING;
-    CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
+  if (buf[0] == NM_NODE_SELF && (lastWakeCauseByte & 0x80)) {
+    if (cmdLo == NM_CMD_ALIVE || cmdLo == NM_CMD_RING) {
+      unsigned char txBuf[6] = {(unsigned char)NEXT_NODE_ID, NM_CMD_ALIVE, 0, 0, 0, 0};
+      if (buf[1] & NM_MASK_LIMP) txBuf[1] = NM_CMD_RING;
+      CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
+    }
   }
 }
 
@@ -213,7 +226,7 @@ void loop() {
     isHanging = true;
   }
 
-  if ((lastWakeCauseByte != 0x00) && (millis() - lastSendTime >= INTERVAL_RADIO_PUMP)) {
+  if ((lastWakeCauseByte & 0x80) && (millis() - lastSendTime >= INTERVAL_RADIO_PUMP)) {
     lastSendTime = millis();
     unsigned char stRadio[8] = {0x01, 0x01, 0x10, 0, 0, 0, 0, 0};
     CAN0.sendMsgBuf(CAN_ID_RADIO_STATUS, 0, 8, stRadio);

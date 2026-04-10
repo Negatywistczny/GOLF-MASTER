@@ -3,10 +3,10 @@
 ## 1. Rola modulu
 Folder `web` zawiera frontend typu SPA (Vanilla JS + WebSocket) do wizualizacji ramek CAN, diagnostyki i eksportu danych.
 
-## 2. Architektura ES Modules
-Frontend jest podzielony na moduly ES6 (bez bundlera):
+## 2. Architektura kodu (moduly z bundlowaniem offline)
+Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwera uzywany jest wygenerowany bundle:
 
-- `index.html` - punkt startowy UI, laduje `js/main.js` przez `type="module"`.
+- `index.html` - punkt startowy UI, laduje gotowy plik `js/app.offline.js` (dziala z `file://`).
 - `js/main.js` - bootstrap aplikacji (inicjalizacja UI, podpiecie przyciskow, start WebSocket).
 - `js/config.js` - stale konfiguracyjne (`WS_URL`) i slownik `canDictionary`.
 - `js/state.js` - wspoldzielony stan runtime (`signalMeta`, cache ramek, socket, bufor terminala).
@@ -19,6 +19,7 @@ Frontend jest podzielony na moduly ES6 (bez bundlera):
   - `media.js`
   - `system.js`
 - `js/decoders/router.js` - mapa `ID CAN -> funkcja decode...Data`.
+- `build_offline_bundle.py` - prosty bundler Python, scala modulowy kod do `js/app.offline.js`.
 
 ## 3. Kluczowe mechanizmy runtime
 
@@ -28,13 +29,13 @@ Frontend jest podzielony na moduly ES6 (bez bundlera):
 - Aktualizacja `innerHTML` kart dziala w trybie "render only on change".
 - Terminal live ma ring buffer ograniczony do `300` ostatnich wpisow.
 
-## 4. Uruchomienie lokalne
+## 4. Uruchomienie lokalne (bez serwera HTTP)
 
-1. Uruchom warstwe bridge (`bridge/bridge.py`) i upewnij sie, ze nasluchuje na `ws://localhost:8765`.
-2. Uruchom frontend przez lokalny serwer HTTP (zalecane; unikasz ograniczen `file://`):
-   - przyklad: `python -m http.server 5500` w katalogu projektu,
-   - nastepnie otworz `http://localhost:5500/web/`.
+1. Uruchom warstwe bridge (`bridge/bridge.py` lub `bridge/test_simulation.py`) i upewnij sie, ze nasluchuje na `ws://localhost:8765`.
+2. Otworz `web/index.html` bezposrednio (double-click, adres `file://...`).
 3. Sprawdz pasek statusu LIVE - po polaczeniu powinien zmienic kolor na zielony.
+4. Po zmianach w plikach `web/js/*.js` przebuduj bundle:
+   - `python3 web/build_offline_bundle.py`
 
 ## 5. Smoke-Test checklist (lokalnie, przed testami w aucie)
 

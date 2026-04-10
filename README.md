@@ -27,32 +27,33 @@ Każdy folder zawiera dedykowaną dokumentację techniczną:
 * [**`MESSAGES.md`**](./MESSAGES.md) – **Słownik komunikatów** (SYS/ERR) używanych w całym systemie.
 
 ### Struktura Frontendu (aktualna)
-Warstwa Web UI działa w oparciu o moduły ES6 umieszczone w katalogu `web/js/`:
+Warstwa Web UI jest rozwijana w modułach ES6 (`web/js/`), a uruchamiana lokalnie przez wygenerowany bundle offline:
 
-* `web/index.html` – punkt wejścia, ładuje `js/main.js`.
+* `web/index.html` – punkt wejścia, ładuje `js/app.offline.js` (działa z `file://`).
 * `web/js/` – moduły aplikacji (`main.js`, `ws.js`, `ui.js`, `state.js`, `config.js`, `utils.js`).
 * `web/js/decoders/` – dekodery ramek CAN oraz router dekoderów.
+* `web/build_offline_bundle.py` – skrypt generujący `web/js/app.offline.js` z modułów.
 
 ---
 
 ## 🚀 Uruchamianie Systemu (One-Click Start)
 
-System posiada zautomatyzowany skrypt rozruchowy **`START.BAT`**, który samodzielnie podnosi wszystkie warstwy projektu we właściwej kolejności.
+Projekt ma dwa skrypty startowe:
+
+* Windows: `START.bat`
+* macOS: `START.command`
 
 ### Jak uruchomić?
-Wystarczy dwukrotnie kliknąć plik `START.BAT` znajdujący się w głównym katalogu projektu. 
+1. Kliknij odpowiedni plik startowy dla systemu.
+2. Wybierz tryb:
+   * `1` - realny bridge (`bridge/bridge.py`)
+   * `2` - symulacja (`bridge/test_simulation.py`)
+3. Skrypt automatycznie:
+   * przebuduje `web/js/app.offline.js`,
+   * uruchomi wybrany bridge,
+   * otworzy `web/index.html` lokalnie (`file://`).
 
-### Co dokładnie robi skrypt?
-1. **Podniesienie Mostka:** Wywołuje polecenie `start python bridge/bridge.py`, które w nowym oknie konsoli uruchamia serwer WebSocket i nawiązuje połączenie Serial z Arduino.
-2. **Synchronizacja (Timeout):** Odczekuje równe 2 sekundy (`timeout /t 2`). Jest to kluczowe, aby skrypt w Pythonie zdążył zająć port COM i uruchomić nasłuchiwanie na porcie 8765, zanim przeglądarka spróbuje się z nim połączyć.
-3. **Uruchomienie Interfejsu (Smart UI):** Otwiera `web/index.html` z wykorzystaniem zmiennej `%~dp0` (która automatycznie podstawia absolutną ścieżkę do folderu z projektem, co zapobiega błędom ścieżek względnych).
-4. **Tryb zgodności przeglądarki:** Dodaje flagę `--allow-running-insecure-content`, aby ograniczyć problemy polityk bezpieczeństwa przy uruchamianiu UI bezpośrednio z pliku.
-
-### Rekomendacja (stabilniejszy tryb pracy UI)
-Najbardziej przewidywalny tryb to uruchomienie frontendu przez lokalny serwer HTTP:
-
-1. Uruchom bridge: `python bridge/bridge.py`
-2. W katalogu projektu uruchom serwer statyczny: `python -m http.server 5500`
-3. Otwórz: `http://localhost:5500/web/`
-
-W tym trybie omijasz ograniczenia `file://` i zachowujesz tę samą komunikację WebSocket z bridge (`ws://localhost:8765`).
+### Uwagi operacyjne
+* UI działa offline po dwukliku `web/index.html`.
+* Po ręcznych zmianach w `web/js/*.js` można przebudować bundle komendą:
+  * `python3 web/build_offline_bundle.py`

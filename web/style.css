@@ -131,7 +131,22 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
     padding: 15px;
     position: relative;
     cursor: pointer;
-    transition: 0.2s;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+@keyframes card-frame-flash-kf {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 transparent;
+    }
+    45% {
+        box-shadow: 0 0 14px 2px rgba(255, 255, 255, 0.24);
+    }
+}
+
+.card.card-frame-flash {
+    animation: card-frame-flash-kf 0.42s ease-out;
+    transition: none;
 }
 
 .card:hover {

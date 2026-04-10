@@ -13,6 +13,15 @@ const _innerHTMLDesc =
     Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML");
 const __setInnerHTML = _innerHTMLDesc?.set;
 
+/** Jednolite 0x… (wielkie A–F), żeby ten sam ID z magistrali nie tworzył kilku wpisów w activeCards. */
+function canonicalFrameId(id) {
+    const s = String(id).trim();
+    if (!s) return s;
+    const n = Number.parseInt(s, 16);
+    if (Number.isNaN(n)) return s;
+    return `0x${n.toString(16).toUpperCase()}`;
+}
+
 function normalizeFrameIdToNumber(id) {
     if (typeof id !== "string") return Number.MAX_SAFE_INTEGER;
     const trimmed = id.trim().toLowerCase();
@@ -93,6 +102,28 @@ function createDynamicCard(id) {
     return card;
 }
 
+/** Jedna pełna animacja na raz — kolejne ramki w trakcie nie przerywają (brak resetu keyframes przy szybkim strumieniu). */
+function flashCardFrameUpdate(card) {
+    if (!card || card._frameFlashActive) return;
+    card._frameFlashActive = true;
+    card.classList.add("card-frame-flash");
+    let finished = false;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(tid);
+        card.removeEventListener("animationend", onEnd);
+        card.classList.remove("card-frame-flash");
+        card._frameFlashActive = false;
+    };
+    const onEnd = (e) => {
+        if (e.target !== card || e.animationName !== "card-frame-flash-kf") return;
+        finish();
+    };
+    const tid = setTimeout(finish, 480);
+    card.addEventListener("animationend", onEnd);
+}
+
 function decodeSpecificFrame(id, hexData, cardElement) {
     const valElement = cardElement.querySelector(".val");
     if (getCachedFrameHex() !== hexData) {
@@ -109,13 +140,17 @@ function decodeSpecificFrame(id, hexData, cardElement) {
 }
 
 function handleCANFrame(id, data) {
-    let card = activeCards[id];
+    const idKey = canonicalFrameId(id);
+    let card = activeCards[idKey];
     if (!card) {
-        card = createDynamicCard(id);
-        activeCards[id] = card;
+        card = createDynamicCard(idKey);
+        activeCards[idKey] = card;
     }
 
-    decodeSpecificFrame(id, data, card);
+    /* Błysk przy każdym odebraniu ramki; kolejne w czasie trwania animacji ją nie przerywają. */
+    flashCardFrameUpdate(card);
+
+    decodeSpecificFrame(idKey, data, card);
 }
 
 export { handleCANFrame, createDynamicCard, decodeSpecificFrame };

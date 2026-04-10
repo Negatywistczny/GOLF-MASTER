@@ -1,31 +1,35 @@
 import asyncio
 import websockets
 import os
+from pathlib import Path
 
 # --- KONFIGURACJA ---
 WS_HOST = 'localhost'
 WS_PORT = 8765
 
-# Lista ramek do wysłania (formatowanie zachowane zgodnie z Twoją listą)
-CAN_FRAMES = [
-    "0x151: 00 F0 C8 38",
+# Oś jazdy: dosłowne ramki z 7 logów terminala (2026-04-10), zob. bridge/can_drive_timeline.txt
+_TIMELINE_PATH = Path(__file__).resolve().parent / "can_drive_timeline.txt"
+
+# Gdy brak pliku osi czasu — statyczna lista (ostatnia znana symulacja „snapshot”).
+_FALLBACK_FRAMES = [
+    "0x151: 00 F0 18 E8",
     "0x291: 08 00 00 00 00",
     "0x2C1: 00 00 80 00 00",
     "0x2C3: 07",
     "0x351: 00 00 00 00 00 00 00 00",
-    "0x359: 18 01 00 01 00 2B 00 00",
-    "0x35B: 00 50 0F 61 08 19 C2 4D",
-    "0x3C3: A8 00 00 00 80 F0 00 67",
-    "0x3E1: 20 00 12 00 00 00 00 00",
+    "0x359: 18 01 00 79 08 2B 00 00",
+    "0x35B: 00 04 0D B8 02 1A C2 BD",
+    "0x3C3: 10 81 00 00 80 60 00 0E",
+    "0x3E1: 20 00 0C 00 00 00 00 00",
     "0x3E3: 00 00 00 00 00 00 00 00",
-    "0x42B: 0B 04 00 00 00 00",
+    "0x42B: 0B 01 00 00 00 00",
     "0x470: 00 00 00 00 00",
     "0x531: 00 00 40 40",
-    "0x527: 10 01 00 60 7A 7F 7E 00",
+    "0x527: 10 01 00 60 7A 71 71 00",
     "0x551: 02",
-    "0x555: E9 49 7D 01 64 00 00 60",
+    "0x555: E8 5B 7E 00 67 00 00 94",
     "0x557: 25 00 00 3F 4C 00 00 00",
-    "0x571: BD 00 00 00 00 00",
+    "0x571: BC 00 00 00 00 00",
     "0x575: 47 20 00 80",
     "0x60E: 08 00",
     "0x621: 00 70 2F 0E 02",
@@ -34,9 +38,38 @@ CAN_FRAMES = [
     "0x651: 80 03 59 AF 29 48",
     "0x653: 81 00 A4",
     "0x655: 75 00 60 3F 5C 10 00 00",
-    "0x65D: B4 8B 76 04 00 30 3F 0A",
-    "0x65F: 00 00 00 00 00 57 56 57"
+    "0x65D: BF 90 78 04 00 40 AF 11",
+    "0x65F: 01 5A 5A 5A 31 4B 5A 36",
 ]
+
+
+def _load_can_timeline():
+    """
+    Zwraca listę (opóźnienie_ms, ramka_str).
+    Plik: linie „delay|0xID: ...”, # = komentarz.
+    """
+    if not _TIMELINE_PATH.is_file():
+        return [(10, f) for f in _FALLBACK_FRAMES]
+
+    out = []
+    for line in _TIMELINE_PATH.read_text(encoding="utf-8", errors="replace").splitlines():
+        s = line.strip()
+        if not s or s.startswith("#"):
+            continue
+        if "|" not in s:
+            continue
+        delay_s, frame = s.split("|", 1)
+        try:
+            delay_ms = int(delay_s.strip())
+        except ValueError:
+            continue
+        frame = frame.strip()
+        if frame:
+            out.append((delay_ms, frame))
+    return out if out else [(10, f) for f in _FALLBACK_FRAMES]
+
+
+CAN_TIMELINE = _load_can_timeline()
 
 connected_clients = set()
 shutdown_task = None
@@ -69,20 +102,26 @@ async def log_and_send(websocket, message: str):
         pass
 
 async def simulate_can_bus():
-    """Symuluje pracę magistrali CAN - wysyła ramki w pętli"""
+    """
+    Odtwarza zarejestrowaną historię jazdy (ramki + odstępy z logów), w pętli.
+    Po jednym pełnym przejeździe krótka pauza przed kolejną „pętlą”.
+    """
     print("SYS:PY:SIMULATOR_STARTED")
+    if _TIMELINE_PATH.is_file():
+        print(f"SYS:PY:DRIVE_TIMELINE frames={len(CAN_TIMELINE)} file={_TIMELINE_PATH.name}")
+    else:
+        print("SYS:PY:DRIVE_TIMELINE fallback (_FALLBACK_FRAMES — brak can_drive_timeline.txt)")
+
     while True:
         if connected_clients:
-            # Wysyłamy całą paczkę ramek w jednej serii
-            for frame in CAN_FRAMES:
+            for delay_ms, frame in CAN_TIMELINE:
+                if not connected_clients:
+                    break
+                await asyncio.sleep(delay_ms / 1000.0)
                 await broadcast(frame)
-                # Krótki odstęp między ramkami, aby nie zablokować bufora przeglądarki
-                await asyncio.sleep(0.01) 
-            
-            # Czekamy 100ms przed kolejnym odświeżeniem całej listy ramek
-            await asyncio.sleep(0.1)
+            # Koniec zapisanego przejazdu — krótka pauza przed powtórką „dnia z logów”
+            await asyncio.sleep(0.2)
         else:
-            # Jeśli nikt nie słucha, czekamy sekundę i sprawdzamy ponownie
             await asyncio.sleep(1)
 
 async def simulate_tp20_read_dtc(addr_hex, name, websocket):

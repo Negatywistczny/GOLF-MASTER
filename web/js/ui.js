@@ -77,11 +77,6 @@ export function createDynamicCard(id) {
     card.className = 'card';
     card.id = `c-${id}`;
     
-    // Jeśli ramka jest znana, dajemy jej zieloną obwódkę statusu
-    if (canDictionary[id]) {
-        card.classList.add('status-active');
-    }
-
     card.innerHTML = `
     <div class="id-label">${id}</div> <h2>${def.name}</h2>
     <span class="val">-- -- --</span>

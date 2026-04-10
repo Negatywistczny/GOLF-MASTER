@@ -33,18 +33,14 @@ export function decodeGWKombiData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Kontrolka Wspomagania Układu Kierowniczego ---
     if (fullData.KB1_Lenkh_Lampe === 1) {
         html += `<div class="ind active-error full-width blink">BŁĄD WSPOMAGANIA (KONTROLKA)</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind active-green full-width">WSPOMAGANIE OK</div>`;
-        cardElement.style.borderColor = "var(--green)";
     }
 
     // --- Prędkość Pojazdu i Źródło ---
@@ -78,7 +74,6 @@ export function decodeGWKombiData(id, hexData, cardElement) {
 
     if (fullData.GWK_Warn_Heiss === 1) {
         html += `<div class="ind active-error full-width blink-fast">OSTRZEŻENIE: SILNIK GORĄCY!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
 
     gridContainer.innerHTML = html;
@@ -112,8 +107,6 @@ export function decodeEinheitenData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -174,18 +167,14 @@ export function decodeDisplay1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Status gotowości wyświetlacza ---
     if (fullData.DY1_Display_OK === 1) {
         html += `<div class="ind active-green full-width">WYŚWIETLACZ: GOTOWY (ON)</div>`;
-        cardElement.style.borderColor = "var(--green)";
     } else {
         html += `<div class="ind full-width">WYŚWIETLACZ: UŚPIONY / WYŁ</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Akcje Przycisków (MFA) ---
@@ -206,7 +195,6 @@ export function decodeDisplay1Data(id, hexData, cardElement) {
     }
 
     if (buttonPressed) {
-        cardElement.style.borderColor = "var(--blue)";
     }
 
     // --- Powiadomienia o resecie ---
@@ -242,8 +230,6 @@ export function decodeGateway3Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -257,10 +243,8 @@ export function decodeGateway3Data(id, hexData, cardElement) {
         if (lang === "BRAK") lang = "BRAK";
         
         html += `<div class="ind full-width">REGION: ${country} | JĘZYK: ${lang}</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     } else {
         html += `<div class="ind full-width">REGION/JĘZYK: DANE OCZEKUJĄCE...</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Typ Silnika ---
@@ -312,8 +296,6 @@ export function decodeDiagnose1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -324,7 +306,6 @@ export function decodeDiagnose1Data(id, hexData, cardElement) {
         // Formatujemy przebieg, dodając spacje tysięcy dla czytelności (np. 245 000 km)
         let kmFormatted = fullData.DN1_KM_Stand.toLocaleString('pl-PL');
         html += `<div class="ind active-blue full-width">ODO: ${kmFormatted} km</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     }
 
     // --- Globalna Data i Czas ---

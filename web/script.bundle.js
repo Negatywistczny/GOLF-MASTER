@@ -835,8 +835,6 @@ function decodeAirbagData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -861,10 +859,8 @@ function decodeAirbagData(id, hexData, cardElement) {
     // Status systemu Airbag (uwzględniamy błąd systemu, lampkę i usterki serwisowe)
     if (fullData.AB1_AirbagLampe_ein === 1 || fullData.AB1_Systemfehler === 1 || fullData.AB1_KD_Fehler === 1) {
         html += `<div class="ind active-error full-width">BŁĄD SYSTEMU AIRBAG</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind active-green full-width">SYSTEM AIRBAG OK</div>`;
-        cardElement.style.borderColor = "var(--green)";
     }
 
     // Alarm zderzeniowy (jeśli jakakolwiek siła zderzenia jest > 0)
@@ -898,18 +894,14 @@ function decodeGateway1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Wizualizacja Bieg Wsteczny / Światło Cofania ---
     if (fullData.GW1_Rueckfahrlicht === 1) {
         html += `<div class="ind active-orange full-width">ŚWIATŁO WSTECZNE (COFANIE)</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind full-width">BIEG WSTECZNY WYŁ.</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Prędkość pojazdu ---
@@ -967,8 +959,6 @@ function decodeNMGatewayIData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -976,13 +966,10 @@ function decodeNMGatewayIData(id, hexData, cardElement) {
     // Jeśli wskazanie usypiania i potwierdzenie są aktywne:
     if (fullData.NMGW_I_SleepInd === 1 && fullData.NMGW_I_SleepAck === 1) {
         html += `<div class="ind active-blue full-width">MAGISTRALA: USYPIANIE (SLEEP)</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     } else if (fullData.NMGW_I_SleepInd === 1 || fullData.NMGW_I_SleepAck === 1) {
         html += `<div class="ind active-orange full-width">MAGISTRALA: ŻĄDANIE UŚPIENIA</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind active-blue full-width">MAGISTRALA: AKTYWNA (AWAKE)</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     }
 
     // --- Przyczyny Wybudzenia (Weckursache) ---
@@ -1088,8 +1075,6 @@ function decodeKDErrorData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
     let activeErrors = [];
@@ -1119,10 +1104,8 @@ function decodeKDErrorData(id, hexData, cardElement) {
         
         // Wypisanie skróconej listy modułów z usterkami
         html += `<div class="ind active-error full-width">Moduły: ${activeErrors.join(', ')}</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind active-green full-width">SKANOWANIE OK - BRAK BŁĘDÓW</div>`;
-        cardElement.style.borderColor = "var(--green)";
     }
 
     gridContainer.innerHTML = html;
@@ -1173,8 +1156,6 @@ function decodeSysteminfo1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -1201,7 +1182,6 @@ function decodeSysteminfo1Data(id, hexData, cardElement) {
     // --- Alert Awaryjnego Hamowania ---
     if (fullData.SY1_Notbrems_Status === 1) {
         html += `<div class="ind active-error full-width blink-fast">UWAGA: AWARYJNE HAMOWANIE!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
 
     // --- Ostrzeżenia diagnostyczne ---
@@ -1298,8 +1278,6 @@ function decodeSollverbauData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -1319,10 +1297,8 @@ function decodeSollverbauData(id, hexData, cardElement) {
     // 1 = Sollverbau gleich Istverbau (Wszystko działa idealnie)
     if (fullData.VBN_Soll_Ist_OK === 0) {
         html += `<div class="ind active-error full-width blink">BŁĄD GATEWAY: BRAK ODPOWIEDZI STEROWNIKA (SOLL != IST)</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind active-green full-width">MAGISTRALA KOMPLETNA (SOLL = IST)</div>`;
-        cardElement.style.borderColor = "var(--green)";
     }
 
     // --- Krótki przegląd kluczowych modułów ---
@@ -1395,8 +1371,6 @@ function decodeFzgIdentData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -1419,14 +1393,11 @@ function decodeFzgIdentData(id, hexData, cardElement) {
     // Zabezpieczenie przed niewyuczonym immo (zgodnie z dokumentacją wyświetli X lub -)
     if (vinString.includes("XXX") || vinString.includes("---")) {
         html += `<div class="ind active-error full-width">BŁĄD WFS (IMMO) / VIN NIEZAKODOWANY!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else if (!isComplete) {
         html += `<div class="ind active-orange full-width blink">SKANOWANIE VIN: ${vinString}</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind active-blue full-width">${vinString}</div>`;
         html += `<div class="ind full-width">NUMER NADWOZIA ZWERYFIKOWANY</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     }
 
     gridContainer.innerHTML = html;
@@ -1483,27 +1454,20 @@ function decodeZKEData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Akcje Pilota (z uwzględnieniem przycisku Panic, jeśli auto z USA) ---
     if (fullData.ZK1_Taste_Auf === 1) {
         html += `<div class="ind active-green full-width">PILOT: OTWÓRZ (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
-        cardElement.style.borderColor = "var(--green)";
     } else if (fullData.ZK1_Taste_Zu === 1) {
         html += `<div class="ind active-orange full-width">PILOT: ZAMKNIJ (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.ZK1_Taste_HDF === 1) {
         html += `<div class="ind active-orange full-width">PILOT: BAGAŻNIK (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.ZK1_Taste_Panik === 1) {
         html += `<div class="ind active-error full-width blink">PILOT: PANIC!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind full-width">PILOT: BRAK AKCJI</div>`;
-        cardElement.style.borderColor = "var(--border-color)"; 
     }
 
     // --- Status Leaving Home ---
@@ -1585,21 +1549,16 @@ function decodeManetkiData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Kierunkowskazy ---
     if (fullData.LS1_Blk_links === 1) {
         html += `<div class="ind active-orange blink">&#8592; KIERUNEK LEWY</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.LS1_Blk_rechts === 1) {
         html += `<div class="ind active-orange blink">KIERUNEK PRAWY &#8594;</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind">KIERUNKI WYŁ.</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Klakson ---
@@ -1670,8 +1629,6 @@ function decodeZASData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -1679,19 +1636,14 @@ function decodeZASData(id, hexData, cardElement) {
     // Logika priorytetów: Rozrusznik -> Zapłon -> Akcesoria -> Kluczyk -> Brak
     if (fullData.ZS1_ZAS_Kl_50 === 1) {
         html += `<div class="ind active-orange full-width blink-fast">ROZRUSZNIK (KL. 50)</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.ZS1_ZAS_Kl_15 === 1) {
         html += `<div class="ind active-blue full-width">ZAPŁON WŁĄCZONY (KL. 15)</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     } else if (fullData.ZS1_ZAS_Kl_X === 1) {
         html += `<div class="ind active-blue full-width">AKCESORIA (KL. X)</div>`;
-        cardElement.style.borderColor = "var(--accent)";
     } else if (fullData.ZS1_ZAS_Kl_S === 1) {
         html += `<div class="ind active-blue full-width">KLUCZYK W STACYJCE (KL. S)</div>`;
-        cardElement.style.borderColor = "var(--accent)";
     } else {
         html += `<div class="ind full-width">BRAK KLUCZYKA</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     gridContainer.innerHTML = html;
@@ -1735,21 +1687,16 @@ function decodeClima1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Przycisk AC i stan kompresora ---
     if (fullData.CL1_Kompressor === 1) {
         html += `<div class="ind active-green full-width">KLIMATYZACJA (KOMPRESOR): WŁĄCZONA</div>`;
-        cardElement.style.borderColor = "var(--green)";
     } else if (fullData.CL1_AC_Schalter === 1) {
         html += `<div class="ind active-orange full-width">TRYB AC WŁ (KOMPRESOR ZATRZYMANY)</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind full-width">KLIMATYZACJA: WYŁ (AC OFF)</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Ciśnienie czynnika chłodniczego ---
@@ -1826,8 +1773,6 @@ function decodeClima2Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -1844,10 +1789,8 @@ function decodeClima2Data(id, hexData, cardElement) {
         let seatL = fullData.CL2_SitzH_links > 0 ? `L:${fullData.CL2_SitzH_links}` : `L:WYŁ`;
         let seatR = fullData.CL2_SitzH_rechts > 0 ? `P:${fullData.CL2_SitzH_rechts}` : `P:WYŁ`;
         html += `<div class="ind active-orange full-width">GRZANIE FOTELI - ${seatL} | ${seatR}</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind full-width">GRZANIE FOTELI: WYŁ</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Obieg Zamknięty ---
@@ -1936,8 +1879,6 @@ function decodeBSGKombiData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -1958,10 +1899,8 @@ function decodeBSGKombiData(id, hexData, cardElement) {
 
     if (openDoors.length > 0) {
         html += `<div class="ind active-error full-width">OTWARTE DRZWI: ${openDoors.join(', ')}</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else if (fullData.BSK_MH_geoeffnet === 0 && fullData.BSK_HD_Hauptraste === 0) {
         html += `<div class="ind full-width">ZAMKNIĘTY (NADWOZIE OK)</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- KIERUNKOWSKAZY / AWARYJNE ---
@@ -2000,7 +1939,6 @@ function decodeBSGKombiData(id, hexData, cardElement) {
     // --- AKUMULATOR / ŁADOWANIE ---
     if (fullData.BSK_Ladekontrollampe === 1 || fullData.BSK_Unterspannung === 1) {
         html += `<div class="ind active-error full-width blink-fast">BRAK ŁADOWANIA / NISKIE NAPIĘCIE!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
 
     gridContainer.innerHTML = html;
@@ -2054,8 +1992,6 @@ function decodeBSG3Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -2064,13 +2000,10 @@ function decodeBSG3Data(id, hexData, cardElement) {
     let batStatus = "B/D";
     if (fullData.BS3_Bordnetzbatt === 0) {
         batStatus = `<div class="ind active-green full-width">KONDYCJA BATERII: OK</div>`;
-        cardElement.style.borderColor = "var(--green)";
     } else if (fullData.BS3_Bordnetzbatt === 1) {
         batStatus = `<div class="ind active-orange full-width">KONDYCJA BATERII: KRYTYCZNA!</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.BS3_Bordnetzbatt === 2) {
         batStatus = `<div class="ind active-error full-width blink">BATERIA ROZŁADOWANA!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else if (fullData.BS3_Bordnetzbatt === 3) {
         batStatus = `<div class="ind active-error full-width">KONDYCJA BATERII: BŁĄD</div>`;
     }
@@ -2078,7 +2011,6 @@ function decodeBSG3Data(id, hexData, cardElement) {
     // Jeśli auto zgłasza odpięcie akumulatora na CAN
     if (fullData.BS3_Ab_Batterie === 1) {
         batStatus = `<div class="ind active-error full-width">ODPIĘTO AKUMULATOR!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
     
     html += batStatus;
@@ -2143,8 +2075,6 @@ function decodeDimmungData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -2165,12 +2095,10 @@ function decodeDimmungData(id, hexData, cardElement) {
     // --- Czujnik Światła Zewnętrznego ---
     if (fullData.DI1_Sensor === 255) {
         html += `<div class="ind active-error full-width">CZUJNIK ŚWIATŁA: BŁĄD</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else if (fullData.DI1_Sensor === 254) {
         html += `<div class="ind active-orange full-width">CZUJNIK ŚWIATŁA: INICJALIZACJA</div>`;
     } else {
         html += `<div class="ind active-blue full-width">CZUJNIK ŚWIATŁA: Wartość ${fullData.DI1_Sensor}</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     }
 
     gridContainer.innerHTML = html;
@@ -2225,8 +2153,6 @@ function decodeBremseGetriebeData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -2234,10 +2160,8 @@ function decodeBremseGetriebeData(id, hexData, cardElement) {
     // Bierzemy pod uwagę światło stop, stabilizację przyczepy i hamulec EPB
     if (fullData.PLS_Bremsleuchte === 1 || fullData.GWB_TSP_aktiv === 1 || fullData.GWB_EPB_Bremslicht === 1) {
         html += `<div class="ind active-orange full-width">ŚWIATŁO STOP WŁĄCZONE</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind full-width">HAMULEC ZWOLNIONY</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- ABS / ESP / Nagłe hamowanie ---
@@ -2306,8 +2230,6 @@ function decodeMotorData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -2339,6 +2261,7 @@ function decodeMotorData(id, hexData, cardElement) {
     // Dokumentacja dla GRA: 0=wył, 1=aktywny, 2=nadpisany gazem (overridden)
     if (fullData.GWM_GRA_Status === 1) {
         html += `<div class="ind active-green">TEMPOMAT: AKTYWNY</div>`;
+        }
     } else if (fullData.GWM_GRA_Status === 2) {
         html += `<div class="ind active-orange">TEMPOMAT: +GAZ KIEROWCY</div>`;
     } else {
@@ -2354,11 +2277,9 @@ function decodeMotorData(id, hexData, cardElement) {
     // Zapala kafelek na czerwono w razie alarmu Heissleuchtenvorwarnung
     if (fullData.GWM_Heissl_Vorwarn === 1) {
         html += `<div class="ind active-error full-width blink-fast">ALARM: PRZEGRZANIE SILNIKA!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         // Resetowanie koloru, jeśli wszystko jest okej i silnik działa
         if (fullData.GWM_Motordrehzahl > 0 && fullData.GWM_Motordrehzahl < 16320) {
-            cardElement.style.borderColor = "var(--border-color)";
         }
     }
 
@@ -2394,8 +2315,6 @@ function decodeLenkwinkelData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     // --- Kalkulacja prawdziwych wartości ze znakami (lewo/prawo) ---
     // Według dokumentacji: 0 = pozytywny (w lewo), 1 = negatywny (w prawo)
@@ -2415,9 +2334,7 @@ function decodeLenkwinkelData(id, hexData, cardElement) {
         if (fullData.LW1_Int_Status === 3) errTxt = "BŁĄD TRWAŁY";
         
         html += `<div class="ind active-error full-width blink">STATUS: ${errTxt}</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
-        cardElement.style.borderColor = "var(--green)";
     }
 
     // --- Wizualizacja Kąta Skrętu ---
@@ -2481,8 +2398,6 @@ function decodeMotor7Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -2526,7 +2441,6 @@ function decodeMotor7Data(id, hexData, cardElement) {
         html += `<div class="ind active-green full-width">ALTERNATOR WŁĄCZONY (OBCIĄŻ. DFM: ${fullData.MO7_DFM.toFixed(1)}%)</div>`;
     } else {
         html += `<div class="ind active-error full-width">ALTERNATOR: WYŁĄCZONY!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
 
     gridContainer.innerHTML = html;
@@ -2580,8 +2494,6 @@ function decodeBSG2Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -2605,7 +2517,6 @@ function decodeBSG2Data(id, hexData, cardElement) {
     // --- Zarządzanie obciążeniem (Load Management) ---
     if (fullData.BS2_Lastman_aktiv === 1 || fullData.BS2_Verbr_ab_aktiv === 1) {
         html += `<div class="ind active-orange full-width">ZARZĄDZANIE ENERGIĄ: AKTYWNE</div>`;
-        cardElement.style.borderColor = "var(--orange)";
         
         // Zliczamy co BCM wyłączył, żeby ratować prąd
         let cutoffs = [];
@@ -2622,16 +2533,13 @@ function decodeBSG2Data(id, hexData, cardElement) {
         }
     } else {
         html += `<div class="ind full-width">ZARZĄDZANIE ENERGIĄ: UŚPIONE</div>`;
-        // Powrót do zielonego lub szarego obramowania nastąpi z innych warunków, np. domyślnie:
         if (fullData.BS2_U_BATT < 17.7 && fullData.BS2_U_BATT >= 12.2) {
-            cardElement.style.borderColor = "var(--border-color)";
         }
     }
 
     // --- Status Linii Rozrusznika ---
     if (fullData.BS2_Zust_Start_Ltg === 1) {
         html += `<div class="ind active-error full-width blink">BŁĄD: ZWARCIE LINII ROZRUSZNIKA (MASA)</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
 
     gridContainer.innerHTML = html;
@@ -2675,8 +2583,6 @@ function decodeKombiK1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -2716,7 +2622,6 @@ function decodeKombiK1Data(id, hexData, cardElement) {
     
     if (alerts.length > 0) {
         html += `<div class="ind active-orange full-width">KONTROLKI: ${alerts.join(', ')}</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     }
 
     // --- Podświetlenie Wnętrza / Zegarów ---
@@ -2762,18 +2667,14 @@ function decodeGWKombiData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Kontrolka Wspomagania Układu Kierowniczego ---
     if (fullData.KB1_Lenkh_Lampe === 1) {
         html += `<div class="ind active-error full-width blink">BŁĄD WSPOMAGANIA (KONTROLKA)</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind active-green full-width">WSPOMAGANIE OK</div>`;
-        cardElement.style.borderColor = "var(--green)";
     }
 
     // --- Prędkość Pojazdu i Źródło ---
@@ -2807,7 +2708,6 @@ function decodeGWKombiData(id, hexData, cardElement) {
 
     if (fullData.GWK_Warn_Heiss === 1) {
         html += `<div class="ind active-error full-width blink-fast">OSTRZEŻENIE: SILNIK GORĄCY!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
 
     gridContainer.innerHTML = html;
@@ -2841,8 +2741,6 @@ function decodeEinheitenData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -2903,18 +2801,14 @@ function decodeDisplay1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Status gotowości wyświetlacza ---
     if (fullData.DY1_Display_OK === 1) {
         html += `<div class="ind active-green full-width">WYŚWIETLACZ: GOTOWY (ON)</div>`;
-        cardElement.style.borderColor = "var(--green)";
     } else {
         html += `<div class="ind full-width">WYŚWIETLACZ: UŚPIONY / WYŁ</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Akcje Przycisków (MFA) ---
@@ -2935,7 +2829,6 @@ function decodeDisplay1Data(id, hexData, cardElement) {
     }
 
     if (buttonPressed) {
-        cardElement.style.borderColor = "var(--blue)";
     }
 
     // --- Powiadomienia o resecie ---
@@ -2971,8 +2864,6 @@ function decodeGateway3Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -2986,10 +2877,8 @@ function decodeGateway3Data(id, hexData, cardElement) {
         if (lang === "BRAK") lang = "BRAK";
         
         html += `<div class="ind full-width">REGION: ${country} | JĘZYK: ${lang}</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     } else {
         html += `<div class="ind full-width">REGION/JĘZYK: DANE OCZEKUJĄCE...</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Typ Silnika ---
@@ -3041,8 +2930,6 @@ function decodeDiagnose1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -3053,7 +2940,6 @@ function decodeDiagnose1Data(id, hexData, cardElement) {
         // Formatujemy przebieg, dodając spacje tysięcy dla czytelności (np. 245 000 km)
         let kmFormatted = fullData.DN1_KM_Stand.toLocaleString('pl-PL');
         html += `<div class="ind active-blue full-width">ODO: ${kmFormatted} km</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     }
 
     // --- Globalna Data i Czas ---
@@ -3138,6 +3024,36 @@ const decoderRouter = Object.freeze(
 
 const __setInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
 
+function normalizeFrameIdToNumber(id) {
+    if (typeof id !== 'string') return Number.MAX_SAFE_INTEGER;
+    const trimmed = id.trim().toLowerCase();
+    if (trimmed.startsWith('0x')) {
+        const parsedHex = Number.parseInt(trimmed, 16);
+        return Number.isNaN(parsedHex) ? Number.MAX_SAFE_INTEGER : parsedHex;
+    }
+    const parsedDec = Number.parseInt(trimmed, 10);
+    return Number.isNaN(parsedDec) ? Number.MAX_SAFE_INTEGER : parsedDec;
+}
+
+function insertCardSortedById(container, card, id) {
+    const currentIdNum = normalizeFrameIdToNumber(id);
+    const existingCards = container.querySelectorAll('.card');
+
+    for (const existingCard of existingCards) {
+        const existingId = existingCard.id.startsWith('c-')
+            ? existingCard.id.slice(2)
+            : existingCard.id;
+        const existingIdNum = normalizeFrameIdToNumber(existingId);
+
+        if (currentIdNum < existingIdNum) {
+            container.insertBefore(card, existingCard);
+            return;
+        }
+    }
+
+    container.appendChild(card);
+}
+
 function enableInnerHTMLDiffing(el) {
     if (!el || el._diffingEnabled) return;
     let currentValue = "";
@@ -3181,11 +3097,6 @@ function createDynamicCard(id) {
     card.className = 'card';
     card.id = `c-${id}`;
     
-    // Jeśli ramka jest znana, dajemy jej zieloną obwódkę statusu
-    if (canDictionary[id]) {
-        card.classList.add('status-active');
-    }
-
     card.innerHTML = `
     <div class="id-label">${id}</div> <h2>${def.name}</h2>
     <span class="val">-- -- --</span>
@@ -3204,8 +3115,8 @@ function createDynamicCard(id) {
     // 4. Dodaj kliknięcie (Słownik - Modal)
     card.addEventListener('click', () => openModal(id));
 
-    // 5. Wstaw do DOM
-    container.appendChild(card);
+    // 5. Wstaw do DOM w stałej kolejności rosnącej po ID
+    insertCardSortedById(container, card, id);
     return card;
 }
 

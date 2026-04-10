@@ -89,14 +89,18 @@ Ponizszy standard jest obowiazujacy dla wszystkich dekoderow (`drive`, `comfort`
 - **Szary (brak klasy `active-*`)** - neutralne OFF/idle/brak akcji/oczekiwanie na dane oraz informacje permanentne (konfiguracja/kodowanie).
   - Przyklady: `PILOT: BRAK AKCJI`, `KIERUNKI WYL.`, `KLIMATYZACJA: WYL`, `HAMULEC ZWOLNIONY`, `ZAKODOWANO: ...`.
 
-### 7.1 Obramowanie kafelka (`cardElement.style.borderColor`)
+### 7.1 Obramowanie kafelka (globalna reguła CSS)
 
-- Domyslnie na poczatku dekodowania: `var(--border-color)` (reset).
-- Zmieniaj kolor obramowania tylko, gdy ramka ma wyrazny stan dominujacy:
-  - `--green`: globalny stan OK tej ramki,
-  - `--blue`: dominujacy stan informacyjny/telemetryczny,
-  - `--orange`: dominujace ostrzezenie,
-  - `--red`: dominujacy alarm/krytyczny blad.
+Kolor obramowania nie jest juz ustawiany inline w dekoderach.
+Wylicza go CSS na podstawie klas `.ind` w kafelku, z priorytetem:
+
+`ERROR > WARNING > INFO > OK > IDLE`
+
+- `active-error` / `active-red` -> `--red`
+- `active-orange` -> `--orange`
+- `active-blue` / `active` / `active-lock` -> `--accent`
+- `active-green` -> `--green`
+- brak `active-*` -> `--border`
 
 ### 7.2 Zasady praktyczne dla nowych stanow
 

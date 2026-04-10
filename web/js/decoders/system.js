@@ -37,8 +37,6 @@ export function decodeAirbagData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -63,10 +61,8 @@ export function decodeAirbagData(id, hexData, cardElement) {
     // Status systemu Airbag (uwzględniamy błąd systemu, lampkę i usterki serwisowe)
     if (fullData.AB1_AirbagLampe_ein === 1 || fullData.AB1_Systemfehler === 1 || fullData.AB1_KD_Fehler === 1) {
         html += `<div class="ind active-error full-width">BŁĄD SYSTEMU AIRBAG</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind active-green full-width">SYSTEM AIRBAG OK</div>`;
-        cardElement.style.borderColor = "var(--green)";
     }
 
     // Alarm zderzeniowy (jeśli jakakolwiek siła zderzenia jest > 0)
@@ -100,18 +96,14 @@ export function decodeGateway1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Wizualizacja Bieg Wsteczny / Światło Cofania ---
     if (fullData.GW1_Rueckfahrlicht === 1) {
         html += `<div class="ind active-orange full-width">ŚWIATŁO WSTECZNE (COFANIE)</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind full-width">BIEG WSTECZNY WYŁ.</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Prędkość pojazdu ---
@@ -169,8 +161,6 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -178,13 +168,10 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
     // Jeśli wskazanie usypiania i potwierdzenie są aktywne:
     if (fullData.NMGW_I_SleepInd === 1 && fullData.NMGW_I_SleepAck === 1) {
         html += `<div class="ind active-blue full-width">MAGISTRALA: USYPIANIE (SLEEP)</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     } else if (fullData.NMGW_I_SleepInd === 1 || fullData.NMGW_I_SleepAck === 1) {
         html += `<div class="ind active-orange full-width">MAGISTRALA: ŻĄDANIE UŚPIENIA</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind active-blue full-width">MAGISTRALA: AKTYWNA (AWAKE)</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     }
 
     // --- Przyczyny Wybudzenia (Weckursache) ---
@@ -290,8 +277,6 @@ export function decodeKDErrorData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
     let activeErrors = [];
@@ -321,10 +306,8 @@ export function decodeKDErrorData(id, hexData, cardElement) {
         
         // Wypisanie skróconej listy modułów z usterkami
         html += `<div class="ind active-error full-width">Moduły: ${activeErrors.join(', ')}</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind active-green full-width">SKANOWANIE OK - BRAK BŁĘDÓW</div>`;
-        cardElement.style.borderColor = "var(--green)";
     }
 
     gridContainer.innerHTML = html;
@@ -375,8 +358,6 @@ export function decodeSysteminfo1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -403,7 +384,6 @@ export function decodeSysteminfo1Data(id, hexData, cardElement) {
     // --- Alert Awaryjnego Hamowania ---
     if (fullData.SY1_Notbrems_Status === 1) {
         html += `<div class="ind active-error full-width blink-fast">UWAGA: AWARYJNE HAMOWANIE!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
 
     // --- Ostrzeżenia diagnostyczne ---
@@ -500,8 +480,6 @@ export function decodeSollverbauData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -521,10 +499,8 @@ export function decodeSollverbauData(id, hexData, cardElement) {
     // 1 = Sollverbau gleich Istverbau (Wszystko działa idealnie)
     if (fullData.VBN_Soll_Ist_OK === 0) {
         html += `<div class="ind active-error full-width blink">BŁĄD GATEWAY: BRAK ODPOWIEDZI STEROWNIKA (SOLL != IST)</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind active-green full-width">MAGISTRALA KOMPLETNA (SOLL = IST)</div>`;
-        cardElement.style.borderColor = "var(--green)";
     }
 
     // --- Krótki przegląd kluczowych modułów ---
@@ -597,8 +573,6 @@ export function decodeFzgIdentData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -621,14 +595,11 @@ export function decodeFzgIdentData(id, hexData, cardElement) {
     // Zabezpieczenie przed niewyuczonym immo (zgodnie z dokumentacją wyświetli X lub -)
     if (vinString.includes("XXX") || vinString.includes("---")) {
         html += `<div class="ind active-error full-width">BŁĄD WFS (IMMO) / VIN NIEZAKODOWANY!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else if (!isComplete) {
         html += `<div class="ind active-orange full-width blink">SKANOWANIE VIN: ${vinString}</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind active-blue full-width">${vinString}</div>`;
         html += `<div class="ind full-width">NUMER NADWOZIA ZWERYFIKOWANY</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     }
 
     gridContainer.innerHTML = html;

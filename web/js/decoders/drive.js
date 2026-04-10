@@ -48,8 +48,6 @@ export function decodeBremseGetriebeData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -57,10 +55,8 @@ export function decodeBremseGetriebeData(id, hexData, cardElement) {
     // Bierzemy pod uwagę światło stop, stabilizację przyczepy i hamulec EPB
     if (fullData.PLS_Bremsleuchte === 1 || fullData.GWB_TSP_aktiv === 1 || fullData.GWB_EPB_Bremslicht === 1) {
         html += `<div class="ind active-orange full-width">ŚWIATŁO STOP WŁĄCZONE</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind full-width">HAMULEC ZWOLNIONY</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- ABS / ESP / Nagłe hamowanie ---
@@ -129,8 +125,6 @@ export function decodeMotorData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -162,8 +156,6 @@ export function decodeMotorData(id, hexData, cardElement) {
     // Dokumentacja dla GRA: 0=wył, 1=aktywny, 2=nadpisany gazem (overridden)
     if (fullData.GWM_GRA_Status === 1) {
         html += `<div class="ind active-green">TEMPOMAT: AKTYWNY</div>`;
-        if (cardElement.style.borderColor === "var(--border-color)") {
-            cardElement.style.borderColor = "var(--green)";
         }
     } else if (fullData.GWM_GRA_Status === 2) {
         html += `<div class="ind active-orange">TEMPOMAT: +GAZ KIEROWCY</div>`;
@@ -180,11 +172,9 @@ export function decodeMotorData(id, hexData, cardElement) {
     // Zapala kafelek na czerwono w razie alarmu Heissleuchtenvorwarnung
     if (fullData.GWM_Heissl_Vorwarn === 1) {
         html += `<div class="ind active-error full-width blink-fast">ALARM: PRZEGRZANIE SILNIKA!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         // Resetowanie koloru, jeśli wszystko jest okej i silnik działa
         if (fullData.GWM_Motordrehzahl > 0 && fullData.GWM_Motordrehzahl < 16320) {
-            cardElement.style.borderColor = "var(--border-color)";
         }
     }
 
@@ -220,8 +210,6 @@ export function decodeLenkwinkelData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     // --- Kalkulacja prawdziwych wartości ze znakami (lewo/prawo) ---
     // Według dokumentacji: 0 = pozytywny (w lewo), 1 = negatywny (w prawo)
@@ -241,9 +229,7 @@ export function decodeLenkwinkelData(id, hexData, cardElement) {
         if (fullData.LW1_Int_Status === 3) errTxt = "BŁĄD TRWAŁY";
         
         html += `<div class="ind active-error full-width blink">STATUS: ${errTxt}</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
-        cardElement.style.borderColor = "var(--green)";
     }
 
     // --- Wizualizacja Kąta Skrętu ---
@@ -307,8 +293,6 @@ export function decodeMotor7Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -352,7 +336,6 @@ export function decodeMotor7Data(id, hexData, cardElement) {
         html += `<div class="ind active-green full-width">ALTERNATOR WŁĄCZONY (OBCIĄŻ. DFM: ${fullData.MO7_DFM.toFixed(1)}%)</div>`;
     } else {
         html += `<div class="ind active-error full-width">ALTERNATOR: WYŁĄCZONY!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
 
     gridContainer.innerHTML = html;
@@ -406,8 +389,6 @@ export function decodeBSG2Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -431,7 +412,6 @@ export function decodeBSG2Data(id, hexData, cardElement) {
     // --- Zarządzanie obciążeniem (Load Management) ---
     if (fullData.BS2_Lastman_aktiv === 1 || fullData.BS2_Verbr_ab_aktiv === 1) {
         html += `<div class="ind active-orange full-width">ZARZĄDZANIE ENERGIĄ: AKTYWNE</div>`;
-        cardElement.style.borderColor = "var(--orange)";
         
         // Zliczamy co BCM wyłączył, żeby ratować prąd
         let cutoffs = [];
@@ -448,16 +428,13 @@ export function decodeBSG2Data(id, hexData, cardElement) {
         }
     } else {
         html += `<div class="ind full-width">ZARZĄDZANIE ENERGIĄ: UŚPIONE</div>`;
-        // Powrót do zielonego lub szarego obramowania nastąpi z innych warunków, np. domyślnie:
         if (fullData.BS2_U_BATT < 17.7 && fullData.BS2_U_BATT >= 12.2) {
-            cardElement.style.borderColor = "var(--border-color)";
         }
     }
 
     // --- Status Linii Rozrusznika ---
     if (fullData.BS2_Zust_Start_Ltg === 1) {
         html += `<div class="ind active-error full-width blink">BŁĄD: ZWARCIE LINII ROZRUSZNIKA (MASA)</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
 
     gridContainer.innerHTML = html;
@@ -501,8 +478,6 @@ export function decodeKombiK1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -542,7 +517,6 @@ export function decodeKombiK1Data(id, hexData, cardElement) {
     
     if (alerts.length > 0) {
         html += `<div class="ind active-orange full-width">KONTROLKI: ${alerts.join(', ')}</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     }
 
     // --- Podświetlenie Wnętrza / Zegarów ---

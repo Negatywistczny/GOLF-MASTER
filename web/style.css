@@ -118,8 +118,33 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
 }
 
 .card:hover {
-    border-color: var(--accent);
     background: var(--surface-hover);
+}
+
+/* Hover podbija obramowanie tylko dla neutralnych kafelkow (IDLE). */
+.card:not(:has(.ind.active-error, .ind.active-red, .ind.active-orange, .ind.active-blue, .ind.active, .ind.active-lock, .ind.active-green)):hover {
+    border-color: var(--accent);
+}
+
+/* Globalna semantyka obramowania kafelka:
+   ERROR > WARNING > INFO > OK > IDLE */
+.card:has(.ind.active-error),
+.card:has(.ind.active-red) {
+    border-color: var(--red);
+}
+
+.card:has(.ind.active-orange) {
+    border-color: var(--orange);
+}
+
+.card:has(.ind.active-blue),
+.card:has(.ind.active),
+.card:has(.ind.active-lock) {
+    border-color: var(--accent);
+}
+
+.card:has(.ind.active-green) {
+    border-color: var(--green);
 }
 
 .card h2 {

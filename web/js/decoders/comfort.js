@@ -50,27 +50,20 @@ export function decodeZKEData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Akcje Pilota (z uwzględnieniem przycisku Panic, jeśli auto z USA) ---
     if (fullData.ZK1_Taste_Auf === 1) {
         html += `<div class="ind active-green full-width">PILOT: OTWÓRZ (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
-        cardElement.style.borderColor = "var(--green)";
     } else if (fullData.ZK1_Taste_Zu === 1) {
         html += `<div class="ind active-orange full-width">PILOT: ZAMKNIJ (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.ZK1_Taste_HDF === 1) {
         html += `<div class="ind active-orange full-width">PILOT: BAGAŻNIK (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.ZK1_Taste_Panik === 1) {
         html += `<div class="ind active-error full-width blink">PILOT: PANIC!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else {
         html += `<div class="ind full-width">PILOT: BRAK AKCJI</div>`;
-        cardElement.style.borderColor = "var(--border-color)"; 
     }
 
     // --- Status Leaving Home ---
@@ -152,21 +145,16 @@ export function decodeManetkiData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Kierunkowskazy ---
     if (fullData.LS1_Blk_links === 1) {
         html += `<div class="ind active-orange blink">&#8592; KIERUNEK LEWY</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.LS1_Blk_rechts === 1) {
         html += `<div class="ind active-orange blink">KIERUNEK PRAWY &#8594;</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind">KIERUNKI WYŁ.</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Klakson ---
@@ -237,8 +225,6 @@ export function decodeZASData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -246,19 +232,14 @@ export function decodeZASData(id, hexData, cardElement) {
     // Logika priorytetów: Rozrusznik -> Zapłon -> Akcesoria -> Kluczyk -> Brak
     if (fullData.ZS1_ZAS_Kl_50 === 1) {
         html += `<div class="ind active-orange full-width blink-fast">ROZRUSZNIK (KL. 50)</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.ZS1_ZAS_Kl_15 === 1) {
         html += `<div class="ind active-blue full-width">ZAPŁON WŁĄCZONY (KL. 15)</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     } else if (fullData.ZS1_ZAS_Kl_X === 1) {
         html += `<div class="ind active-blue full-width">AKCESORIA (KL. X)</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     } else if (fullData.ZS1_ZAS_Kl_S === 1) {
         html += `<div class="ind active-blue full-width">KLUCZYK W STACYJCE (KL. S)</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     } else {
         html += `<div class="ind full-width">BRAK KLUCZYKA</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     gridContainer.innerHTML = html;
@@ -302,21 +283,16 @@ export function decodeClima1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
     // --- Przycisk AC i stan kompresora ---
     if (fullData.CL1_Kompressor === 1) {
         html += `<div class="ind active-green full-width">KLIMATYZACJA (KOMPRESOR): WŁĄCZONA</div>`;
-        cardElement.style.borderColor = "var(--green)";
     } else if (fullData.CL1_AC_Schalter === 1) {
         html += `<div class="ind active-orange full-width">TRYB AC WŁ (KOMPRESOR ZATRZYMANY)</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind full-width">KLIMATYZACJA: WYŁ (AC OFF)</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Ciśnienie czynnika chłodniczego ---
@@ -393,8 +369,6 @@ export function decodeClima2Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -411,10 +385,8 @@ export function decodeClima2Data(id, hexData, cardElement) {
         let seatL = fullData.CL2_SitzH_links > 0 ? `L:${fullData.CL2_SitzH_links}` : `L:WYŁ`;
         let seatR = fullData.CL2_SitzH_rechts > 0 ? `P:${fullData.CL2_SitzH_rechts}` : `P:WYŁ`;
         html += `<div class="ind active-orange full-width">GRZANIE FOTELI - ${seatL} | ${seatR}</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind full-width">GRZANIE FOTELI: WYŁ</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- Obieg Zamknięty ---
@@ -503,8 +475,6 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -525,10 +495,8 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
 
     if (openDoors.length > 0) {
         html += `<div class="ind active-error full-width">OTWARTE DRZWI: ${openDoors.join(', ')}</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else if (fullData.BSK_MH_geoeffnet === 0 && fullData.BSK_HD_Hauptraste === 0) {
         html += `<div class="ind full-width">ZAMKNIĘTY (NADWOZIE OK)</div>`;
-        cardElement.style.borderColor = "var(--border-color)";
     }
 
     // --- KIERUNKOWSKAZY / AWARYJNE ---
@@ -567,7 +535,6 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
     // --- AKUMULATOR / ŁADOWANIE ---
     if (fullData.BSK_Ladekontrollampe === 1 || fullData.BSK_Unterspannung === 1) {
         html += `<div class="ind active-error full-width blink-fast">BRAK ŁADOWANIA / NISKIE NAPIĘCIE!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
 
     gridContainer.innerHTML = html;
@@ -621,8 +588,6 @@ export function decodeBSG3Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -631,13 +596,10 @@ export function decodeBSG3Data(id, hexData, cardElement) {
     let batStatus = "B/D";
     if (fullData.BS3_Bordnetzbatt === 0) {
         batStatus = `<div class="ind active-green full-width">KONDYCJA BATERII: OK</div>`;
-        cardElement.style.borderColor = "var(--green)";
     } else if (fullData.BS3_Bordnetzbatt === 1) {
         batStatus = `<div class="ind active-orange full-width">KONDYCJA BATERII: KRYTYCZNA!</div>`;
-        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.BS3_Bordnetzbatt === 2) {
         batStatus = `<div class="ind active-error full-width blink">BATERIA ROZŁADOWANA!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else if (fullData.BS3_Bordnetzbatt === 3) {
         batStatus = `<div class="ind active-error full-width">KONDYCJA BATERII: BŁĄD</div>`;
     }
@@ -645,7 +607,6 @@ export function decodeBSG3Data(id, hexData, cardElement) {
     // Jeśli auto zgłasza odpięcie akumulatora na CAN
     if (fullData.BS3_Ab_Batterie === 1) {
         batStatus = `<div class="ind active-error full-width">ODPIĘTO AKUMULATOR!</div>`;
-        cardElement.style.borderColor = "var(--red)";
     }
     
     html += batStatus;
@@ -710,8 +671,6 @@ export function decodeDimmungData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
-    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
-    cardElement.style.borderColor = "var(--border-color)";
 
     let html = ``;
 
@@ -732,12 +691,10 @@ export function decodeDimmungData(id, hexData, cardElement) {
     // --- Czujnik Światła Zewnętrznego ---
     if (fullData.DI1_Sensor === 255) {
         html += `<div class="ind active-error full-width">CZUJNIK ŚWIATŁA: BŁĄD</div>`;
-        cardElement.style.borderColor = "var(--red)";
     } else if (fullData.DI1_Sensor === 254) {
         html += `<div class="ind active-orange full-width">CZUJNIK ŚWIATŁA: INICJALIZACJA</div>`;
     } else {
         html += `<div class="ind active-blue full-width">CZUJNIK ŚWIATŁA: Wartość ${fullData.DI1_Sensor}</div>`;
-        cardElement.style.borderColor = "var(--blue)";
     }
 
     gridContainer.innerHTML = html;

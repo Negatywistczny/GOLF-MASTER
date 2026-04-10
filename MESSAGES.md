@@ -12,7 +12,9 @@ Komunikaty na porcie szeregowym (USB).
 ### System (SYS)
 
 - **`SYS:HW:READY`** — inicjalizacja MCP2515 zakończona; Arduino gotowe. Wysyłane raz w `setup`.
-- **`SYS:CAN:SLEEP_IND`** — Gateway (`0x42B`) ustawił flagę uśpienia (bajt 1, bit `0x10`). Pojazd wyłącza zasilanie magistrali Infotainment.
+- **`SYS:CAN:SLEEP_IND`** — Gateway (`0x42B`) ustawił flagę uśpienia (bajt 1, bit `0x10`, przy typie Alive w dolnym nibble). Watchdog traktuje ciszę jako dozwoloną podczas procedury uśpienia.
+- **`SYS:CAN:WAKE_START`** — w ramce Alive do `0x0B` pole `wakeCombo` (bajty 2–4) przeszło z zera na wartość niezerową (początek / wznowienie sygnalizacji przyczyn wybudzenia). Zwykle zaraz potem sniffer wyświetli zmienioną linię `0x42B: …`.
+- **`SYS:CAN:WAKE_END`** — `wakeCombo` wróciło do zera (brak przyczyn w tych bajtach według tej samej definicji).
 
 ### Błędy (ERR)
 

@@ -10,7 +10,7 @@ System łączy precyzję sprzętową mikrokontrolera z nowoczesnym interfejsem w
 
 Projekt składa się z trzech współpracujących warstw:
 
-1. **Hardware (Arduino + MCP2515 + TJA1055)** — fizyczny mostek wpięty w kable samochodu. Obsługuje niskopoziomowy protokół OSEK NM w **logice zero-jedynkowej**: odpowiedź `0x40B` i podtrzymanie radia (`0x661`) działają tylko, gdy Gateway w ramce Alive (`0x42B`) raportuje **Weckursache** (niezerowy bajt 2 — powody wybudzenia CAN / Wake / Timer). Po wygaśnięciu przyczyn Arduino celowo milknie, umożliwiając uśpienie magistrali. Szczegóły: [hardware/README.md](hardware/README.md).
+1. **Hardware (Arduino + MCP2515 + TJA1055)** — fizyczny mostek wpięty w kable samochodu. Obsługuje OSEK NM w **logice zero-jedynkowej**: odpowiedź `0x40B` i pompa radia (`0x661`) włączają się tylko, gdy w **ostatniej ramce Alive** Gatewaya (`0x42B` → `0x0B`) jest **bit `0x80` w bajcie 2** (okno Infotainment). Ramki **Ring** nie nadpisują tego stanu — inaczej niż w pierwszej wersji szkicu Fazy 4. Dodatkowo na Serialu są znaczniki **`SYS:CAN:WAKE_*`** (krawędź pól wybudzenia w bajtach 2–4) oraz log **`0x42B`** dla dashboardu. Szczegóły: [hardware/README.md](hardware/README.md).
 2. **Bridge (Python)** — asynchroniczny serwer zarządzający przepływem danych, obsługujący diagnostykę TP 2.0 oraz automatyczne zwalnianie portów.
 3. **Smart UI (Web)** — responsywny dashboard w czasie rzeczywistym oraz pełne skany DTC. Szczegóły: [web/README.md](web/README.md).
 

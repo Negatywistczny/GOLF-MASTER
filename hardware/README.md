@@ -52,12 +52,12 @@ W `loop()` ramka jest wypisywana tylko wtedy, gdy jej ID **nie** jest na liście
 | ID | Stała w kodzie | Powód pominięcia | Web UI |
 |----|----------------|------------------|--------|
 | `0x531` | `CAN_ID_SNIFFER_IGNORE_A` | Ramka komfortu **mLicht_1_alt** — bardzo częsta; bez filtra zalewałaby log. | Zarejestrowana i dekodowana (`LIA_*`), jeśli dane trafią z mostka / symulatora / innego źródła. |
-| `0x661` | `CAN_ID_RADIO_STATUS` | **Podtrzymanie radia** — tę ramkę co 150 ms **nadaje to samo Arduino** przy aktywnej Weckursache; w logu byłoby tylko echo własnego TX. | Brak dedykowanego dekodera w `frameRegistry` (ramka pochodzi z firmware, nie z obserwacji magistrali). |
+| `0x661` | `CAN_ID_RADIO_STATUS` | **Podtrzymanie radia** — co 150 ms **nadaje Arduino**, gdy w ostatnim Alive jest **bit `0x80` w bajcie 2**; w logu byłoby tylko echo własnego TX. | Brak dedykowanego dekodera w `frameRegistry` (ramka pochodzi z firmware, nie z obserwacji magistrali). |
 | `0x40B` | `NM_ARDUINO_ID` | **Odpowiedź NM węzła Arduino** (Ring / Alive) — własna ramka wysyłana przez `handleGatewayNm`; pominięcie utrzymuje czytelność sniffera. | Brak wpisu w `frameRegistry` (logika NM jest po stronie `0x42B` — **mNM_Gateway**). |
 
 **`0x42B` (Gateway)** — **nie** jest na liście pominięć: ramki trafiają na Serial (przy zmianie payloadu / diag), żeby **dashboard / aplikacja web** mogły pokazywać **mNM_Gateway**. Dodatkowo przy krawędzi `wakeCombo` wypisywane są **`SYS:CAN:WAKE_START`** / **`SYS:CAN:WAKE_END`** oraz przy uśpieniu **`SYS:CAN:SLEEP_IND`**.
 
-W szkicach testowych (`hardware/test/…`) bywają osobne formaty logu `0x42B` (np. Faza 4 — rozbudowany tekst); firmware produkcyjny używa standardowego formatu `0x[ID]: …` jak dla innych ramek.
+W szkicach testowych (`hardware/test/…`) bywają osobne formaty logu `0x42B` (np. Faza 4 — rozbudowany tekst); **Faza 4 po poprawce** trzyma okno aktywności tak jak produkcja (`lastAliveB2` tylko z Alive, nie z Ring). Firmware produkcyjny używa standardowego formatu `0x[ID]: …` jak dla innych ramek.
 
 ## 4. Format wyjścia (Serial)
 

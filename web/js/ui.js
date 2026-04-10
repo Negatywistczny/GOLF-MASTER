@@ -4,6 +4,36 @@ import { parseHexToBigInt, formatSignalValue } from "./utils.js";
 
 const __setInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
 
+function normalizeFrameIdToNumber(id) {
+    if (typeof id !== 'string') return Number.MAX_SAFE_INTEGER;
+    const trimmed = id.trim().toLowerCase();
+    if (trimmed.startsWith('0x')) {
+        const parsedHex = Number.parseInt(trimmed, 16);
+        return Number.isNaN(parsedHex) ? Number.MAX_SAFE_INTEGER : parsedHex;
+    }
+    const parsedDec = Number.parseInt(trimmed, 10);
+    return Number.isNaN(parsedDec) ? Number.MAX_SAFE_INTEGER : parsedDec;
+}
+
+function insertCardSortedById(container, card, id) {
+    const currentIdNum = normalizeFrameIdToNumber(id);
+    const existingCards = container.querySelectorAll('.card');
+
+    for (const existingCard of existingCards) {
+        const existingId = existingCard.id.startsWith('c-')
+            ? existingCard.id.slice(2)
+            : existingCard.id;
+        const existingIdNum = normalizeFrameIdToNumber(existingId);
+
+        if (currentIdNum < existingIdNum) {
+            container.insertBefore(card, existingCard);
+            return;
+        }
+    }
+
+    container.appendChild(card);
+}
+
 function enableInnerHTMLDiffing(el) {
     if (!el || el._diffingEnabled) return;
     let currentValue = "";
@@ -70,8 +100,8 @@ export function createDynamicCard(id) {
     // 4. Dodaj kliknięcie (Słownik - Modal)
     card.addEventListener('click', () => openModal(id));
 
-    // 5. Wstaw do DOM
-    container.appendChild(card);
+    // 5. Wstaw do DOM w stałej kolejności rosnącej po ID
+    insertCardSortedById(container, card, id);
     return card;
 }
 

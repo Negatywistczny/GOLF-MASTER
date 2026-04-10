@@ -1,5 +1,5 @@
 import { extractCANSignal } from "../utils.js";
-import { frameDataCache } from "../state.js";
+import { frameDataCache, signalMeta } from "../state.js";
 
 export function decodeGWKombiData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (14 sygnałów)
@@ -238,39 +238,11 @@ export function decodeGateway3Data(id, hexData, cardElement) {
     // --- Region i Język ---
     // Sprawdzamy czy dane nie są wartościami początkowymi (Initwert)
     if (fullData.GW3_Land_Sprach_empf === 1) {
-        let country = "NIEZNANY";
-        switch (fullData.GW3_Laendervariante) {
-            case 0: country = "NIEMCY"; break;
-            case 1: country = "EUROPA"; break;
-            case 2: country = "USA"; break;
-            case 3: country = "KANADA"; break;
-            case 4: country = "WIELKA BRYTANIA"; break; 
-            case 5: country = "JAPONIA"; break;
-            case 6: country = "ARABIA SAUDYJSKA"; break;
-            case 7: country = "AUSTRALIA"; break;
-        }
-
-        let lang = "NIEZNANY";
-        switch (fullData.GW3_Sprachvariante) {
-            case 0: lang = "BRAK"; break; 
-            case 1: lang = "NIEMIECKI"; break;
-            case 2: lang = "ANGIELSKI"; break;
-            case 3: lang = "FRANCUSKI"; break;
-            case 4: lang = "WŁOSKI"; break;
-            case 5: lang = "HISZPAŃSKI"; break;
-            case 6: lang = "PORTUGALSKI"; break;
-            case 8: lang = "CZESKI"; break;
-            case 9: lang = "CHIŃSKI"; break;
-            case 10: lang = "US-ANGIELSKI"; break;
-            case 11: lang = "HOLENDERSKI"; break;
-            case 12: lang = "JAPOŃSKI"; break;
-            case 13: lang = "ROSYJSKI"; break;
-            case 14: lang = "KOREAŃSKI"; break;
-            case 15: lang = "FRANCO-KANADYJSKI"; break;
-            case 16: lang = "SZWEDZKI"; break;
-            case 17: lang = "POLSKI"; break;
-            case 18: lang = "TURECKI"; break; 
-        }
+        const countryMeta = signalMeta.GW3_Laendervariante?.states || {};
+        const langMeta = signalMeta.GW3_Sprachvariante?.states || {};
+        const country = (countryMeta[fullData.GW3_Laendervariante] || "Nieznany").toUpperCase();
+        let lang = (langMeta[fullData.GW3_Sprachvariante] || "NIEZNANY").toUpperCase();
+        if (lang === "BRAK") lang = "BRAK";
         
         html += `<div class="ind active-blue full-width">REGION: ${country} | JĘZYK: ${lang}</div>`;
         cardElement.style.borderColor = "var(--blue)";

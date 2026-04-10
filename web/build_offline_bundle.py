@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 ENTRY = ROOT / "js" / "main.js"
-OUTPUT = ROOT / "js" / "app.offline.js"
+OUTPUT = ROOT / "script.bundle.js"
 
 IMPORT_RE = re.compile(r'^\s*import\s+.+?\s+from\s+["\'](.+?)["\']\s*;?\s*$')
 EXPORT_DECL_RE = re.compile(r"^\s*export\s+(?=(const|let|var|function|class)\b)")

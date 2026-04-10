@@ -7,37 +7,8 @@
 // ===== js/config.js =====
 const WS_URL = "ws://localhost:8765";
 
-const canDictionary = {
-    "0x151": { name: "AIRBAG (mAirbag_1)", zone: "system" },
-    "0x291": { name: "ZAMEK / KOMFORT (mZKE_1)", zone: "komfort" },
-    "0x2C1": { name: "MANETKI (mLSM_1)", zone: "komfort" },
-    "0x2C3": { name: "STACYJKA (mZAS_Status)", zone: "naped" },
-    "0x351": { name: "GATEWAY (mGateway_1)", zone: "system" },
-    "0x359": { name: "HAMULCE / BIEGI (mGW_Bremse)", zone: "naped" },
-    "0x35B": { name: "SILNIK (mGW_Motor)", zone: "naped" },
-    "0x3C3": { name: "KĄT SKRĘTU (mLenkwinkel)", zone: "naped" },
-    "0x3E1": { name: "CLIMATRONIC 1 (mClima_1)", zone: "komfort" },
-    "0x3E3": { name: "CLIMATRONIC 2 (mClima_2)", zone: "komfort" },
-    "0x42B": { name: "SLEEP / WAKE (mNM_Gateway)", zone: "system" },
-    "0x470": { name: "DRZWI / ŚWIATŁA (mBSG_Kombi)", zone: "komfort" },
-    "0x527": { name: "TEMP. ZEWN. (mGW_Kombi)", zone: "media" },
-    "0x555": { name: "TURBO / OLEJ (mMotor7)", zone: "naped" },
-    "0x557": { name: "BŁĘDY MODUŁÓW (mKD_Error)", zone: "system" },
-    "0x571": { name: "ZASILANIE / AKU (mBSG_2)", zone: "naped" },
-    "0x575": { name: "STATUS ŚWIATEŁ (mBSG_3)", zone: "komfort" },
-    "0x60E": { name: "JEDNOSTKI (mEinheiten)", zone: "media" },
-    "0x621": { name: "PALIWO / RĘCZNY (mKombi_K1)", zone: "naped" },
-    "0x62F": { name: "WYŚWIETLACZ MFA (mDisplay_1)", zone: "media" },
-    "0x635": { name: "ŚCIEMNIANIE DESKI (mDimmung)", zone: "komfort" },
-    "0x651": { name: "FLAGI SYSTEMU (mSysteminfo)", zone: "system" },
-    "0x653": { name: "REGION / JĘZYK (mGateway_3)", zone: "media" },
-    "0x655": { name: "LISTA MODUŁÓW (mVerbauliste)", zone: "system" },
-    "0x65D": { name: "CZAS / PRZEBIEG (mDiagnose_1)", zone: "media" },
-    "0x65F": { name: "VIN POJAZDU (mFzg_Ident)", zone: "system" }
-};
-
 // ===== js/state.js =====
-const signalMeta = {
+const signalMeta = Object.freeze({
 
     // ==========================================
     // 0x151 - PODUSZKI POWIETRZNE (mAirbag_1)
@@ -733,12 +704,12 @@ const signalMeta = {
     "FI1_VIN_15": { label: "Znak VIN (Znak 15)", unit: " (ASCII)" },
     "FI1_VIN_16": { label: "Znak VIN (Znak 16)", unit: " (ASCII)" },
     "FI1_VIN_17": { label: "Znak VIN (Znak 17)", unit: " (ASCII)" }
-};
+});
 
 
-const activeCards = {};
-const errorRegistry = {};
-const frameDataCache = {};
+const activeCards = Object.create(null);
+const errorRegistry = Object.create(null);
+const frameDataCache = Object.create(null);
 const terminalBuffer = [];
 const TERMINAL_MAX_LINES = 300;
 
@@ -1193,18 +1164,8 @@ function decodeSysteminfo1Data(id, hexData, cardElement) {
     let html = ``;
 
     // --- Tożsamość pojazdu (Marka i Nadwozie) ---
-    let brand = "NIEZNANA";
-    switch (fullData.SY1_Marke) {
-        case 0: brand = "VOLKSWAGEN"; break;
-        case 1: brand = "AUDI"; break;
-        case 2: brand = "SEAT"; break;
-        case 3: brand = "SKODA"; break;
-        case 4: brand = "VW NUTZFAHRZEUGE"; break;
-        case 5: brand = "BUGATTI"; break;
-        case 6: brand = "LAMBORGHINI"; break;
-        case 7: brand = "BENTLEY"; break;
-        case 15: brand = "PORSCHE"; break;
-    }
+    const brandMeta = signalMeta.SY1_Marke?.states || {};
+    const brand = (brandMeta[fullData.SY1_Marke] || "Nieznana").toUpperCase();
 
     let steering = fullData.SY1_Rechtslenker === 1 ? "RHD (Prawa)" : "LHD (Lewa)";
     let doors = fullData.SY1_Viertuerer === 1 ? "4/5 DRZWI" : "2/3 DRZWI";
@@ -2243,21 +2204,8 @@ function decodeBremseGetriebeData(id, hexData, cardElement) {
     }
 
     // --- Skrzynia Biegów (Waehlhebel) ---
-    let bieg = "NIEZNANY";
-    switch (fullData.GWB_Info_Waehlhebel) {
-        case 8: bieg = "P (PARK)"; break;
-        case 7: bieg = "R (REVERSE)"; break;
-        case 6: bieg = "N (NEUTRAL)"; break;
-        case 5: bieg = "D (DRIVE)"; break;
-        case 12: bieg = "S (SPORT)"; break;
-        case 14: bieg = "M (MANUAL/TIPTRONIC)"; break;
-        case 1: bieg = "BIEG 1"; break;
-        case 2: bieg = "BIEG 2"; break;
-        case 3: bieg = "BIEG 3"; break;
-        case 4: bieg = "BIEG 4"; break;
-        case 0: bieg = "ZMIANA BIEGU..."; break;
-        case 15: bieg = "BŁĄD SKRZYNI"; break;
-    }
+    const gearMeta = signalMeta.GWB_Info_Waehlhebel?.states || {};
+    let bieg = gearMeta[fullData.GWB_Info_Waehlhebel] || "NIEZNANY";
     
     // Dodajemy informacje o Shift Lock (zablokowany drążek)
     let shiftLockStr = (fullData.GWB_Shift_Lock === 1) ? " 🔒 (Zablokowany)" : "";
@@ -2970,39 +2918,11 @@ function decodeGateway3Data(id, hexData, cardElement) {
     // --- Region i Język ---
     // Sprawdzamy czy dane nie są wartościami początkowymi (Initwert)
     if (fullData.GW3_Land_Sprach_empf === 1) {
-        let country = "NIEZNANY";
-        switch (fullData.GW3_Laendervariante) {
-            case 0: country = "NIEMCY"; break;
-            case 1: country = "EUROPA"; break;
-            case 2: country = "USA"; break;
-            case 3: country = "KANADA"; break;
-            case 4: country = "WIELKA BRYTANIA"; break; 
-            case 5: country = "JAPONIA"; break;
-            case 6: country = "ARABIA SAUDYJSKA"; break;
-            case 7: country = "AUSTRALIA"; break;
-        }
-
-        let lang = "NIEZNANY";
-        switch (fullData.GW3_Sprachvariante) {
-            case 0: lang = "BRAK"; break; 
-            case 1: lang = "NIEMIECKI"; break;
-            case 2: lang = "ANGIELSKI"; break;
-            case 3: lang = "FRANCUSKI"; break;
-            case 4: lang = "WŁOSKI"; break;
-            case 5: lang = "HISZPAŃSKI"; break;
-            case 6: lang = "PORTUGALSKI"; break;
-            case 8: lang = "CZESKI"; break;
-            case 9: lang = "CHIŃSKI"; break;
-            case 10: lang = "US-ANGIELSKI"; break;
-            case 11: lang = "HOLENDERSKI"; break;
-            case 12: lang = "JAPOŃSKI"; break;
-            case 13: lang = "ROSYJSKI"; break;
-            case 14: lang = "KOREAŃSKI"; break;
-            case 15: lang = "FRANCO-KANADYJSKI"; break;
-            case 16: lang = "SZWEDZKI"; break;
-            case 17: lang = "POLSKI"; break;
-            case 18: lang = "TURECKI"; break; 
-        }
+        const countryMeta = signalMeta.GW3_Laendervariante?.states || {};
+        const langMeta = signalMeta.GW3_Sprachvariante?.states || {};
+        const country = (countryMeta[fullData.GW3_Laendervariante] || "Nieznany").toUpperCase();
+        let lang = (langMeta[fullData.GW3_Sprachvariante] || "NIEZNANY").toUpperCase();
+        if (lang === "BRAK") lang = "BRAK";
         
         html += `<div class="ind active-blue full-width">REGION: ${country} | JĘZYK: ${lang}</div>`;
         cardElement.style.borderColor = "var(--blue)";
@@ -3109,34 +3029,46 @@ function decodeDiagnose1Data(id, hexData, cardElement) {
 
 // ===== js/decoders/router.js =====
 
-const decoderRouter = {
-    "0x151": decodeAirbagData,
-    "0x291": decodeZKEData,
-    "0x2C1": decodeManetkiData,
-    "0x2C3": decodeZASData,
-    "0x351": decodeGateway1Data,
-    "0x359": decodeBremseGetriebeData,
-    "0x35B": decodeMotorData,
-    "0x3C3": decodeLenkwinkelData,
-    "0x3E1": decodeClima1Data,
-    "0x3E3": decodeClima2Data,
-    "0x42B": decodeNMGatewayIData,
-    "0x470": decodeBSGKombiData,
-    "0x527": decodeGWKombiData,
-    "0x555": decodeMotor7Data,
-    "0x557": decodeKDErrorData,
-    "0x571": decodeBSG2Data,
-    "0x575": decodeBSG3Data,
-    "0x60E": decodeEinheitenData,
-    "0x621": decodeKombiK1Data,
-    "0x62F": decodeDisplay1Data,
-    "0x635": decodeDimmungData,
-    "0x651": decodeSysteminfo1Data,
-    "0x653": decodeGateway3Data,
-    "0x655": decodeSollverbauData,
-    "0x65D": decodeDiagnose1Data,
-    "0x65F": decodeFzgIdentData,
-};
+const frameRegistry = Object.freeze({
+    "0x151": { name: "AIRBAG (mAirbag_1)", zone: "system", decoder: decodeAirbagData },
+    "0x291": { name: "ZAMEK / KOMFORT (mZKE_1)", zone: "komfort", decoder: decodeZKEData },
+    "0x2C1": { name: "MANETKI (mLSM_1)", zone: "komfort", decoder: decodeManetkiData },
+    "0x2C3": { name: "STACYJKA (mZAS_Status)", zone: "naped", decoder: decodeZASData },
+    "0x351": { name: "GATEWAY (mGateway_1)", zone: "system", decoder: decodeGateway1Data },
+    "0x359": { name: "HAMULCE / BIEGI (mGW_Bremse)", zone: "naped", decoder: decodeBremseGetriebeData },
+    "0x35B": { name: "SILNIK (mGW_Motor)", zone: "naped", decoder: decodeMotorData },
+    "0x3C3": { name: "KĄT SKRĘTU (mLenkwinkel)", zone: "naped", decoder: decodeLenkwinkelData },
+    "0x3E1": { name: "CLIMATRONIC 1 (mClima_1)", zone: "komfort", decoder: decodeClima1Data },
+    "0x3E3": { name: "CLIMATRONIC 2 (mClima_2)", zone: "komfort", decoder: decodeClima2Data },
+    "0x42B": { name: "SLEEP / WAKE (mNM_Gateway)", zone: "system", decoder: decodeNMGatewayIData },
+    "0x470": { name: "DRZWI / ŚWIATŁA (mBSG_Kombi)", zone: "komfort", decoder: decodeBSGKombiData },
+    "0x527": { name: "TEMP. ZEWN. (mGW_Kombi)", zone: "media", decoder: decodeGWKombiData },
+    "0x555": { name: "TURBO / OLEJ (mMotor7)", zone: "naped", decoder: decodeMotor7Data },
+    "0x557": { name: "BŁĘDY MODUŁÓW (mKD_Error)", zone: "system", decoder: decodeKDErrorData },
+    "0x571": { name: "ZASILANIE / AKU (mBSG_2)", zone: "naped", decoder: decodeBSG2Data },
+    "0x575": { name: "STATUS ŚWIATEŁ (mBSG_3)", zone: "komfort", decoder: decodeBSG3Data },
+    "0x60E": { name: "JEDNOSTKI (mEinheiten)", zone: "media", decoder: decodeEinheitenData },
+    "0x621": { name: "PALIWO / RĘCZNY (mKombi_K1)", zone: "naped", decoder: decodeKombiK1Data },
+    "0x62F": { name: "WYŚWIETLACZ MFA (mDisplay_1)", zone: "media", decoder: decodeDisplay1Data },
+    "0x635": { name: "ŚCIEMNIANIE DESKI (mDimmung)", zone: "komfort", decoder: decodeDimmungData },
+    "0x651": { name: "FLAGI SYSTEMU (mSysteminfo)", zone: "system", decoder: decodeSysteminfo1Data },
+    "0x653": { name: "REGION / JĘZYK (mGateway_3)", zone: "media", decoder: decodeGateway3Data },
+    "0x655": { name: "LISTA MODUŁÓW (mVerbauliste)", zone: "system", decoder: decodeSollverbauData },
+    "0x65D": { name: "CZAS / PRZEBIEG (mDiagnose_1)", zone: "media", decoder: decodeDiagnose1Data },
+    "0x65F": { name: "VIN POJAZDU (mFzg_Ident)", zone: "system", decoder: decodeFzgIdentData },
+});
+
+const canDictionary = Object.freeze(
+    Object.fromEntries(
+        Object.entries(frameRegistry).map(([id, def]) => [id, { name: def.name, zone: def.zone }])
+    )
+);
+
+const decoderRouter = Object.freeze(
+    Object.fromEntries(
+        Object.entries(frameRegistry).map(([id, def]) => [id, def.decoder])
+    )
+);
 
 // ===== js/ui.js =====
 

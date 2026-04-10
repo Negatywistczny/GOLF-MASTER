@@ -1,5 +1,5 @@
 import { extractCANSignal } from "../utils.js";
-import { frameDataCache } from "../state.js";
+import { frameDataCache, signalMeta } from "../state.js";
 
 export function decodeBremseGetriebeData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (29 sygnałów)
@@ -72,21 +72,8 @@ export function decodeBremseGetriebeData(id, hexData, cardElement) {
     }
 
     // --- Skrzynia Biegów (Waehlhebel) ---
-    let bieg = "NIEZNANY";
-    switch (fullData.GWB_Info_Waehlhebel) {
-        case 8: bieg = "P (PARK)"; break;
-        case 7: bieg = "R (REVERSE)"; break;
-        case 6: bieg = "N (NEUTRAL)"; break;
-        case 5: bieg = "D (DRIVE)"; break;
-        case 12: bieg = "S (SPORT)"; break;
-        case 14: bieg = "M (MANUAL/TIPTRONIC)"; break;
-        case 1: bieg = "BIEG 1"; break;
-        case 2: bieg = "BIEG 2"; break;
-        case 3: bieg = "BIEG 3"; break;
-        case 4: bieg = "BIEG 4"; break;
-        case 0: bieg = "ZMIANA BIEGU..."; break;
-        case 15: bieg = "BŁĄD SKRZYNI"; break;
-    }
+    const gearMeta = signalMeta.GWB_Info_Waehlhebel?.states || {};
+    let bieg = gearMeta[fullData.GWB_Info_Waehlhebel] || "NIEZNANY";
     
     // Dodajemy informacje o Shift Lock (zablokowany drążek)
     let shiftLockStr = (fullData.GWB_Shift_Lock === 1) ? " 🔒 (Zablokowany)" : "";

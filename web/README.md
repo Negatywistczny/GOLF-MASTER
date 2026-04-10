@@ -6,9 +6,9 @@ Folder `web` zawiera frontend typu SPA (Vanilla JS + WebSocket) do wizualizacji 
 ## 2. Architektura kodu (moduly z bundlowaniem offline)
 Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwera uzywany jest wygenerowany bundle:
 
-- `index.html` - punkt startowy UI, laduje gotowy plik `js/app.offline.js` (dziala z `file://`).
+- `index.html` - punkt startowy UI, laduje gotowy plik `script.bundle.js` (dziala z `file://`).
 - `js/main.js` - bootstrap aplikacji (inicjalizacja UI, podpiecie przyciskow, start WebSocket).
-- `js/config.js` - stale konfiguracyjne (`WS_URL`) i slownik `canDictionary`.
+- `js/config.js` - stale konfiguracyjne (`WS_URL`).
 - `js/state.js` - wspoldzielony stan runtime (`signalMeta`, cache ramek, socket, bufor terminala).
 - `js/utils.js` - funkcje narzedziowe (`extractCANSignal`, cache BigInt, formatowanie wartosci).
 - `js/ws.js` - warstwa transportu WebSocket (`connectWebSocket`, parser wejscia SYS/ERR/CAN).
@@ -18,8 +18,8 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
   - `comfort.js`
   - `media.js`
   - `system.js`
-- `js/decoders/router.js` - mapa `ID CAN -> funkcja decode...Data`.
-- `build_offline_bundle.py` - prosty bundler Python, scala modulowy kod do `js/app.offline.js`.
+- `js/decoders/router.js` - centralny rejestr ramek (`ID CAN -> name/zone/decoder`) oraz mapy kompatybilnosci: `canDictionary` i `decoderRouter`.
+- `build_offline_bundle.py` - prosty bundler Python, scala modulowy kod do `script.bundle.js`.
 
 ## 3. Kluczowe mechanizmy runtime
 
@@ -67,6 +67,5 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 ## 6. Rozszerzanie dekoderow
 
 Przy dodawaniu nowej ramki CAN:
-1. Dodaj definicje w `js/config.js` (`canDictionary`).
-2. Dodaj dekoder w odpowiednim `js/decoders/*.js`.
-3. Podepnij funkcje w `js/decoders/router.js`.
+1. Dodaj dekoder w odpowiednim `js/decoders/*.js`.
+2. Dodaj wpis ramki do `js/decoders/router.js` (`frameRegistry`).

@@ -1,4 +1,4 @@
-const signalMeta = {
+const signalMeta = Object.freeze({
 
     // ==========================================
     // 0x151 - PODUSZKI POWIETRZNE (mAirbag_1)
@@ -694,12 +694,12 @@ const signalMeta = {
     "FI1_VIN_15": { label: "Znak VIN (Znak 15)", unit: " (ASCII)" },
     "FI1_VIN_16": { label: "Znak VIN (Znak 16)", unit: " (ASCII)" },
     "FI1_VIN_17": { label: "Znak VIN (Znak 17)", unit: " (ASCII)" }
-};
+});
 
 
-const activeCards = {};
-const errorRegistry = {};
-const frameDataCache = {};
+const activeCards = Object.create(null);
+const errorRegistry = Object.create(null);
+const frameDataCache = Object.create(null);
 const terminalBuffer = [];
 const TERMINAL_MAX_LINES = 300;
 

@@ -1,6 +1,5 @@
-import { canDictionary } from "./config.js";
 import { signalMeta, activeCards, errorRegistry, frameDataCache, terminalBuffer, TERMINAL_MAX_LINES, getCachedFrameHex, setCachedFrame, getSocket } from "./state.js";
-import { decoderRouter } from "./decoders/router.js";
+import { canDictionary, decoderRouter } from "./decoders/router.js";
 import { parseHexToBigInt, formatSignalValue } from "./utils.js";
 
 const __setInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;

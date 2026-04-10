@@ -29,10 +29,10 @@ Każdy folder zawiera dedykowaną dokumentację techniczną:
 ### Struktura Frontendu (aktualna)
 Warstwa Web UI jest rozwijana w modułach ES6 (`web/js/`), a uruchamiana lokalnie przez wygenerowany bundle offline:
 
-* `web/index.html` – punkt wejścia, ładuje `js/app.offline.js` (działa z `file://`).
+* `web/index.html` – punkt wejścia, ładuje `script.bundle.js` (działa z `file://`).
 * `web/js/` – moduły aplikacji (`main.js`, `ws.js`, `ui.js`, `state.js`, `config.js`, `utils.js`).
 * `web/js/decoders/` – dekodery ramek CAN oraz router dekoderów.
-* `web/build_offline_bundle.py` – skrypt generujący `web/js/app.offline.js` z modułów.
+* `web/build_offline_bundle.py` – skrypt generujący `web/script.bundle.js` z modułów.
 
 ---
 
@@ -49,7 +49,7 @@ Projekt ma dwa skrypty startowe:
    * `1` - realny bridge (`bridge/bridge.py`)
    * `2` - symulacja (`bridge/test_simulation.py`)
 3. Skrypt automatycznie:
-   * przebuduje `web/js/app.offline.js`,
+   * przebuduje `web/script.bundle.js`,
    * uruchomi wybrany bridge,
    * otworzy `web/index.html` lokalnie (`file://`).
 

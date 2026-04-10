@@ -1,5 +1,5 @@
 import { extractCANSignal } from "../utils.js";
-import { frameDataCache } from "../state.js";
+import { frameDataCache, signalMeta } from "../state.js";
 
 export function decodeAirbagData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
@@ -366,18 +366,8 @@ export function decodeSysteminfo1Data(id, hexData, cardElement) {
     let html = ``;
 
     // --- Tożsamość pojazdu (Marka i Nadwozie) ---
-    let brand = "NIEZNANA";
-    switch (fullData.SY1_Marke) {
-        case 0: brand = "VOLKSWAGEN"; break;
-        case 1: brand = "AUDI"; break;
-        case 2: brand = "SEAT"; break;
-        case 3: brand = "SKODA"; break;
-        case 4: brand = "VW NUTZFAHRZEUGE"; break;
-        case 5: brand = "BUGATTI"; break;
-        case 6: brand = "LAMBORGHINI"; break;
-        case 7: brand = "BENTLEY"; break;
-        case 15: brand = "PORSCHE"; break;
-    }
+    const brandMeta = signalMeta.SY1_Marke?.states || {};
+    const brand = (brandMeta[fullData.SY1_Marke] || "Nieznana").toUpperCase();
 
     let steering = fullData.SY1_Rechtslenker === 1 ? "RHD (Prawa)" : "LHD (Lewa)";
     let doors = fullData.SY1_Viertuerer === 1 ? "4/5 DRZWI" : "2/3 DRZWI";

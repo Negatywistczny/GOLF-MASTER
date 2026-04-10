@@ -21,7 +21,7 @@ echo.
 echo [1/3] Budowanie offline bundle...
 python "%~dp0web\build_offline_bundle.py"
 if errorlevel 1 (
-    echo Blad: nie udalo sie zbudowac web/js/app.offline.js
+    echo Blad: nie udalo sie zbudowac web/script.bundle.js
     pause
     exit /b 1
 )

@@ -1,7 +1,37 @@
-import { decodeAirbagData, decodeGateway1Data, decodeNMGatewayIData, decodeKDErrorData, decodeSysteminfo1Data, decodeSollverbauData, decodeFzgIdentData } from "./system.js";
-import { decodeZKEData, decodeManetkiData, decodeZASData, decodeClima1Data, decodeClima2Data, decodeBSGKombiData, decodeBSG3Data, decodeDimmungData } from "./comfort.js";
-import { decodeBremseGetriebeData, decodeMotorData, decodeLenkwinkelData, decodeMotor7Data, decodeBSG2Data, decodeKombiK1Data } from "./drive.js";
-import { decodeGWKombiData, decodeEinheitenData, decodeDisplay1Data, decodeGateway3Data, decodeDiagnose1Data } from "./media.js";
+import {
+    decodeAirbagData,
+    decodeGateway1Data,
+    decodeNMGatewayIData,
+    decodeKDErrorData,
+    decodeSysteminfo1Data,
+    decodeSollverbauData,
+    decodeFzgIdentData
+} from "../decoders/system.js";
+import {
+    decodeZKEData,
+    decodeManetkiData,
+    decodeZASData,
+    decodeClima1Data,
+    decodeClima2Data,
+    decodeBSGKombiData,
+    decodeBSG3Data,
+    decodeDimmungData
+} from "../decoders/comfort.js";
+import {
+    decodeBremseGetriebeData,
+    decodeMotorData,
+    decodeLenkwinkelData,
+    decodeMotor7Data,
+    decodeBSG2Data,
+    decodeKombiK1Data
+} from "../decoders/drive.js";
+import {
+    decodeGWKombiData,
+    decodeEinheitenData,
+    decodeDisplay1Data,
+    decodeGateway3Data,
+    decodeDiagnose1Data
+} from "../decoders/media.js";
 
 const frameRegistry = Object.freeze({
     "0x151": { name: "AIRBAG (mAirbag_1)", zone: "system", decoder: decodeAirbagData },
@@ -29,19 +59,15 @@ const frameRegistry = Object.freeze({
     "0x653": { name: "REGION / JĘZYK (mGateway_3)", zone: "media", decoder: decodeGateway3Data },
     "0x655": { name: "LISTA MODUŁÓW (mVerbauliste)", zone: "system", decoder: decodeSollverbauData },
     "0x65D": { name: "CZAS / PRZEBIEG (mDiagnose_1)", zone: "media", decoder: decodeDiagnose1Data },
-    "0x65F": { name: "VIN POJAZDU (mFzg_Ident)", zone: "system", decoder: decodeFzgIdentData },
+    "0x65F": { name: "VIN POJAZDU (mFzg_Ident)", zone: "system", decoder: decodeFzgIdentData }
 });
 
 const canDictionary = Object.freeze(
-    Object.fromEntries(
-        Object.entries(frameRegistry).map(([id, def]) => [id, { name: def.name, zone: def.zone }])
-    )
+    Object.fromEntries(Object.entries(frameRegistry).map(([id, def]) => [id, { name: def.name, zone: def.zone }]))
 );
 
 const decoderRouter = Object.freeze(
-    Object.fromEntries(
-        Object.entries(frameRegistry).map(([id, def]) => [id, def.decoder])
-    )
+    Object.fromEntries(Object.entries(frameRegistry).map(([id, def]) => [id, def.decoder]))
 );
 
 export { frameRegistry, canDictionary, decoderRouter };

@@ -48,7 +48,7 @@ Komunikaty generowane przez skrypt pośredniczący, wysyłane do konsoli oraz pr
 
 ---
 
-## 3. WARSTWA INTERFEJSU (Frontend - ES Modules: main.js / ws.js / ui.js)
+## 3. WARSTWA INTERFEJSU (Frontend - ES Modules: `app/main.js`, `app/bootstrap.js`, `app/transport/ws.js`, `ui/index.js`; bundle: `script.bundle.js`)
 Komunikaty generowane w konsoli przeglądarki lub wyświetlane bezpośrednio użytkownikowi w UI.
 
 ### Statusy Połączenia (Logi UI)

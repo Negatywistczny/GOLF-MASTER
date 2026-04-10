@@ -696,36 +696,4 @@ const signalMeta = Object.freeze({
     "FI1_VIN_17": { label: "Znak VIN (Znak 17)", unit: " (ASCII)" }
 });
 
-
-const activeCards = Object.create(null);
-const errorRegistry = Object.create(null);
-const frameDataCache = Object.create(null);
-const terminalBuffer = [];
-const TERMINAL_MAX_LINES = 300;
-
-let socket = null;
-let __cachedFrameHex = null;
-let __cachedFrameBigInt = 0n;
-
-function getSocket() {
-    return socket;
-}
-
-function setSocket(nextSocket) {
-    socket = nextSocket;
-}
-
-function getCachedFrameHex() {
-    return __cachedFrameHex;
-}
-
-function getCachedFrameBigInt() {
-    return __cachedFrameBigInt;
-}
-
-function setCachedFrame(hex, dataBigInt) {
-    __cachedFrameHex = hex;
-    __cachedFrameBigInt = dataBigInt;
-}
-
-export { signalMeta, activeCards, errorRegistry, frameDataCache, terminalBuffer, TERMINAL_MAX_LINES, getSocket, setSocket, getCachedFrameHex, getCachedFrameBigInt, setCachedFrame };
+export { signalMeta };

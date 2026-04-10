@@ -30,7 +30,7 @@ Każdy folder zawiera dedykowaną dokumentację techniczną:
 Warstwa Web UI jest rozwijana w modułach ES6 (`web/js/`), a uruchamiana lokalnie przez wygenerowany bundle offline:
 
 * `web/index.html` – punkt wejścia, ładuje `script.bundle.js` (działa z `file://`).
-* `web/js/` – moduły aplikacji (`main.js`, `ws.js`, `ui.js`, `state.js`, `config.js`, `utils.js`).
+* `web/js/` – moduły aplikacji: `app/` (wejście, bootstrap, WebSocket), `ui/` (dashboard, modal, `index.js`), `state/` (`signalMeta`, `runtimeState`), `can/`, `shared/`, `decoders/` (szczegóły: [web/README.md](./web/README.md)).
 * `web/js/decoders/` – dekodery ramek CAN oraz router dekoderów.
 * `web/build_offline_bundle.py` – skrypt generujący `web/script.bundle.js` z modułów.
 

@@ -1,7 +1,7 @@
 # DOKUMENTACJA FOLDERU DATA (KNOWLEDGE BASE) - GOLF MASTER
 
 ## 1. ROLA W SYSTEMIE
-Folder `/data` stanowi bazę wiedzy protokołu CAN dla platformy VAG PQ35. Przechowywane są tutaj definicje ramek, sygnałów oraz narzędzia do ich wybiórczego eksportowania. Jest to "słownik", na podstawie którego powstała logika dekodująca w modułach frontendu (`web/decoders/*.js`, `web/config.js`, `web/state.js`).
+Folder `/data` stanowi bazę wiedzy protokołu CAN dla platformy VAG PQ35. Przechowywane są tutaj definicje ramek, sygnałów oraz narzędzia do ich wybiórczego eksportowania. Jest to "słownik", na podstawie którego powstała logika dekodująca w modułach frontendu (`web/js/decoders/*.js`, `web/js/can/frameRegistry.js`, `web/js/state/signalMeta.js`).
 
 ## 2. ZAWARTOŚĆ I PLIKI
 
@@ -27,9 +27,9 @@ Jeśli chcesz dodać nowy wskaźnik do Dashboardu (Web UI):
 1. Szukasz nazwy interesującej Cię funkcji w `ID_po_adresach.txt`.
 2. Używasz `info_o_ramce.py` lub zaglądasz do `IDramek.txt`, aby poznać **StartBit** i **Długość (Length)** sygnału.
 3. Kopiujesz te parametry do odpowiednich modułów w `web/`:
-   - słownik ramek: `web/config.js` (`canDictionary`),
-   - dekodowanie bitów: `web/decoders/*.js`,
-   - opisy sygnałów i stany: `web/state.js` (`signalMeta`).
+   - słownik ramek: `web/js/can/frameRegistry.js` (`canDictionary` / `decoderRouter`),
+   - dekodowanie bitów: `web/js/decoders/*.js`,
+   - opisy sygnałów i stany: `web/js/state/signalMeta.js` (`signalMeta`).
 
 ## 4. UWAGI TECHNICZNE
 * Wszystkie definicje w tej bazie oparte są o kolejność bajtów **Intel (Little-endian)**, która jest standardem dla platformy PQ35.

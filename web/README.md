@@ -7,19 +7,36 @@ Folder `web` zawiera frontend typu SPA (Vanilla JS + WebSocket) do wizualizacji 
 Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwera uzywany jest wygenerowany bundle:
 
 - `index.html` - punkt startowy UI, laduje gotowy plik `script.bundle.js` (dziala z `file://`).
-- `js/main.js` - bootstrap aplikacji (inicjalizacja UI, podpiecie przyciskow, start WebSocket).
-- `js/config.js` - stale konfiguracyjne (`WS_URL`).
-- `js/state.js` - wspoldzielony stan runtime (`signalMeta`, cache ramek, socket, bufor terminala).
-- `js/utils.js` - funkcje narzedziowe (`extractCANSignal`, cache BigInt, formatowanie wartosci).
-- `js/ws.js` - warstwa transportu WebSocket (`connectWebSocket`, parser wejscia SYS/ERR/CAN).
-- `js/ui.js` - logika DOM (kafelki, modal, status, terminal, snapshot, logi).
+- `js/app/main.js` - punkt wejscia bundlera (importuje `js/app/bootstrap.js`).
+- `js/app/bootstrap.js` - inicjalizacja UI po `DOMContentLoaded`, podpiecie przyciskow, start WebSocket.
+- `js/app/transport/ws.js` - warstwa transportu WebSocket (`connectWebSocket`, parser SYS/ERR/CAN, stala `WS_URL`).
+- `js/ui/index.js` - fasada publicznego API UI (re-export modulow z `js/ui/*.js`).
+- `js/state/signalMeta.js` - metadane sygnalow CAN (`signalMeta`).
+- `js/state/runtimeState.js` - runtime state (cache ramek, socket, bufor terminala, cache BigInt).
+- `js/state/index.js` - opcjonalny barrel (re-export `signalMeta` + runtime).
+- `js/shared/canUtils.js` - funkcje narzedziowe CAN (`extractCANSignal`, cache BigInt, formatowanie wartosci).
+- `js/ui/core.js` - rdzeń dashboardu (obsługa ramek, tworzenie kafelków, routing dekoderów).
+- `js/ui/modal.js` - logika okna szczegółów ramki.
+- `js/ui/statusLogs.js` - status LIVE, logowanie błędów i terminal.
+- `js/ui/actions.js` - akcje użytkownika (snapshot, pełny skan DTC, eksport logów).
+- `js/ui/modalColors/modalColorRules.js` - klasyfikacja kolorow wartosci w modalu (logika + odczyt `signalMeta.states`).
+- `js/ui/modalColors/modalColorOverrides.js` - jawne wyjatki per `ramka -> sygnal -> wartosc`.
 - `js/decoders/*.js` - dekodery ramek CAN podzielone strefowo:
   - `drive.js`
   - `comfort.js`
   - `media.js`
   - `system.js`
-- `js/decoders/router.js` - centralny rejestr ramek (`ID CAN -> name/zone/decoder`) oraz mapy kompatybilnosci: `canDictionary` i `decoderRouter`.
-- `build_offline_bundle.py` - prosty bundler Python, scala modulowy kod do `script.bundle.js`.
+- `js/can/frameRegistry.js` - centralny rejestr ramek (`ID CAN -> name/zone/decoder`) oraz mapy `canDictionary` i `decoderRouter`.
+- `build_offline_bundle.py` - prosty bundler Python, scala modulowy kod do `script.bundle.js` (punkt wejscia: `js/app/main.js`).
+
+### 2.1. Uklad katalogu `js/`
+
+- `app/` - wejscie (`main.js`), bootstrap DOM, transport WebSocket (`transport/ws.js`).
+- `ui/` - dashboard (`core`, `statusLogs`, `actions`, `modal`), `index.js` jako API, `modalColors/` - kolory wartosci w modalu.
+- `state/` - `signalMeta.js` (dane), `runtimeState.js` (runtime), `index.js` (barrel).
+- `can/` - `frameRegistry.js` (rejestr ramek i dekoderow).
+- `shared/` - `canUtils.js` (parsowanie sygnalow, formatowanie).
+- `decoders/` - dekodery per strefa (`drive`, `comfort`, `media`, `system`).
 
 ## 3. Kluczowe mechanizmy runtime
 
@@ -34,7 +51,7 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 1. Uruchom warstwe bridge (`bridge/bridge.py` lub `bridge/test_simulation.py`) i upewnij sie, ze nasluchuje na `ws://localhost:8765`.
 2. Otworz `web/index.html` bezposrednio (double-click, adres `file://...`).
 3. Sprawdz pasek statusu LIVE - po polaczeniu powinien zmienic kolor na zielony.
-4. Po zmianach w plikach `web/js/*.js` przebuduj bundle:
+4. Po zmianach w modulach `web/js/**/*.js` przebuduj bundle:
    - `python3 web/build_offline_bundle.py`
 
 ## 5. Smoke-Test checklist (lokalnie, przed testami w aucie)
@@ -68,7 +85,7 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 
 Przy dodawaniu nowej ramki CAN:
 1. Dodaj dekoder w odpowiednim `js/decoders/*.js`.
-2. Dodaj wpis ramki do `js/decoders/router.js` (`frameRegistry`).
+2. Dodaj wpis ramki do `js/can/frameRegistry.js` (`frameRegistry`).
 
 ## 7. Standard kolorow (UI)
 
@@ -108,3 +125,24 @@ Wylicza go CSS na podstawie klas `.ind` w kafelku, z priorytetem:
 2. Dopiero potem wybierz klase koloru zgodnie ze standardem powyzej.
 3. Dla "IDLE/OFF" preferuj szary (`ind` bez `active-*`).
 4. Miganie (`blink`, `blink-fast`) stosuj tylko dla stanów wymagajacych uwagi.
+
+## 8. Kolory w modalu (source of truth)
+
+Kolorowanie wartosci w tabeli modala (`.m-value`) dziala warstwowo:
+
+1. **Wyjatek per ramka/sygnal** (`js/ui/modalColors/modalColorOverrides.js` -> `FRAME_SIGNAL_COLOR_OVERRIDES`).
+2. **Domyslnie z `signalMeta.states`** (`js/state/signalMeta.js`) przez klasyfikator w `js/ui/modalColors/modalColorRules.js`.
+3. **Fallback z `displayVal`** gdy sygnal nie ma mapy `states`.
+
+Zasada utrzymaniowa:
+- nowe stany najpierw dopisuj w `signalMeta`,
+- override dopisuj tylko, gdy semantyka jest niejednoznaczna lub ma byc inna niz domyslna.
+
+Mapowanie tagow -> klasy CSS (`.m-value--*`):
+- `missing` / `idle` - szary (`--text-dim`): brak danych, OFF, nieaktywny, standby.
+- `info` - niebieski (`--accent`): informacje i telemetria bez alarmu.
+- `enabled` - zielony (`--green`): wlaczony / aktywny.
+- `warning` - pomaranczowy (`--orange`): ostrzezenie / uwaga.
+- `error` - czerwony (`--red`): blad / awaria.
+
+ID ramki w override jest normalizowane do postaci `0x...` (np. `151` -> `0x151`).

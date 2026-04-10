@@ -364,6 +364,13 @@ td { padding: 8px; border-bottom: 1px solid var(--border); }
     font-family: monospace;
 }
 
+.m-value--missing { color: var(--text-dim); }
+.m-value--idle { color: var(--text-dim); }
+.m-value--error { color: var(--red); }
+.m-value--warning { color: var(--orange); }
+.m-value--enabled { color: var(--green); }
+.m-value--info { color: var(--accent); }
+
 /* --- ANIMACJE I UTILS --- */
 .hidden-val { display: none !important; }
 

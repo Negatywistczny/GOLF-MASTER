@@ -6,12 +6,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
-ENTRY = ROOT / "js" / "main.js"
+ENTRY = ROOT / "js" / "app" / "main.js"
 OUTPUT = ROOT / "script.bundle.js"
 
-IMPORT_RE = re.compile(r'^\s*import\s+.+?\s+from\s+["\'](.+?)["\']\s*;?\s*$')
 EXPORT_DECL_RE = re.compile(r"^\s*export\s+(?=(const|let|var|function|class)\b)")
-EXPORT_LIST_RE = re.compile(r"^\s*export\s*\{[^}]*\}\s*;?\s*$")
 
 
 def normalize_import_path(current_file: Path, rel_path: str) -> Path:
@@ -20,17 +18,24 @@ def normalize_import_path(current_file: Path, rel_path: str) -> Path:
     return (current_file.parent / rel_path).resolve()
 
 
+def iter_relative_import_paths(content: str) -> list[str]:
+    paths: list[str] = []
+    for m in re.finditer(r"import\s+[\s\S]*?\s+from\s+[\"']([^\"']+)[\"']", content):
+        paths.append(m.group(1))
+    for m in re.finditer(r"export\s*\{[\s\S]*?\}\s*from\s+[\"']([^\"']+)[\"']", content):
+        paths.append(m.group(1))
+    for m in re.finditer(r"^\s*import\s+[\"']([^\"']+)[\"']\s*;?", content, re.MULTILINE):
+        paths.append(m.group(1))
+    return paths
+
+
 def collect_graph(file_path: Path, ordered: list[Path], seen: set[Path]) -> None:
     if file_path in seen:
         return
     seen.add(file_path)
 
     content = file_path.read_text(encoding="utf-8")
-    for line in content.splitlines():
-        match = IMPORT_RE.match(line)
-        if not match:
-            continue
-        dep = match.group(1)
+    for dep in iter_relative_import_paths(content):
         if not dep.startswith("."):
             raise RuntimeError(f"Only relative imports are supported in offline bundle: {dep}")
         dep_path = normalize_import_path(file_path, dep)
@@ -40,12 +45,13 @@ def collect_graph(file_path: Path, ordered: list[Path], seen: set[Path]) -> None
 
 
 def transform_module(content: str) -> str:
+    content = re.sub(r"export\s*\{[\s\S]*?\}\s*from\s+[\"'][^\"']+[\"']\s*;?", "", content)
+    content = re.sub(r"import\s+[\s\S]*?\s+from\s+[\"'][^\"']+[\"']\s*;?", "", content)
+    content = re.sub(r"^\s*import\s+[\"'][^\"']+[\"']\s*;?\s*$", "", content, flags=re.MULTILINE)
+    content = re.sub(r"^\s*export\s*\{[^}]*\}\s*;?\s*$", "", content, flags=re.MULTILINE)
+
     output_lines: list[str] = []
     for line in content.splitlines():
-        if IMPORT_RE.match(line):
-            continue
-        if EXPORT_LIST_RE.match(line):
-            continue
         line = EXPORT_DECL_RE.sub("", line)
         output_lines.append(line)
     return "\n".join(output_lines).rstrip() + "\n"
@@ -59,7 +65,7 @@ def main() -> None:
     bundle_parts.append(
         "/*\n"
         " * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY.\n"
-        " * Source of truth: web/js/*.js modules.\n"
+        " * Source of truth: web/js/**/*.js modules (entry: js/app/main.js).\n"
         " * Regenerate with: python3 web/build_offline_bundle.py\n"
         " */\n\n"
     )

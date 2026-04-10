@@ -1,5 +1,5 @@
-import { extractCANSignal } from "../utils.js";
-import { frameDataCache } from "../state.js";
+import { extractCANSignal } from "../shared/canUtils.js";
+import { frameDataCache } from "../state/runtimeState.js";
 
 export function decodeZKEData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI

@@ -5,7 +5,7 @@ import {
 } from "../state/index.js";
 import { canDictionary, decoderRouter } from "../can/frameRegistry.js";
 import { parseHexToBigInt } from "../shared/canUtils.js";
-import { openModal } from "./modal.js";
+import { openModal, notifyModalFrameUpdated } from "./modal.js";
 
 // WebKit: własny deskryptor `innerHTML` jest na HTMLElement, nie na Element.
 const _innerHTMLDesc =
@@ -105,6 +105,7 @@ function decodeSpecificFrame(id, hexData, cardElement) {
     }
     const decoder = decoderRouter[id];
     if (decoder) decoder(id, hexData, cardElement);
+    notifyModalFrameUpdated(id);
 }
 
 function handleCANFrame(id, data) {

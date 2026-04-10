@@ -14,10 +14,10 @@ Folder `data` to baza wiedzy protokołu CAN dla platformy VAG PQ35: definicje ra
 
 Czytelne zestawienia bez narzędzi DBC:
 
-- **`IDramek.txt`** — opisy kluczowych ramek (VIN, Airbag, Gateway), tablice wartości (bity).
-- **`IDramek-tylko-radio.txt`** — sygnały multimediów, BAP, audio.
-- **`ID_po_adresach.txt`** — ramki pogrupowane po końcówkach adresów (OSEK NM).
-- **`ID_po_adresach_tylko_pq35.txt`** — ramki specyficzne dla Gatewaya PQ35.
+- **`id_ramek.txt`** — opisy kluczowych ramek (VIN, Airbag, Gateway), tablice wartości (bity).
+- **`id_ramek_tylko_radio.txt`** — sygnały multimediów, BAP, audio.
+- **`id_po_adresach.txt`** — ramki pogrupowane po końcówkach adresów (OSEK NM).
+- **`id_po_adresach_tylko_pq35.txt`** — ramki specyficzne dla Gatewaya PQ35.
 
 ### C. Narzędzia
 
@@ -25,8 +25,8 @@ Czytelne zestawienia bez narzędzi DBC:
 
 ## 3. Przepływ pracy (dodawanie wskaźnika)
 
-1. Znajdź funkcję w `ID_po_adresach.txt`.
-2. Użyj `info_o_ramce.py` lub `IDramek.txt`, aby ustalić **StartBit** i **długość** sygnału.
+1. Znajdź funkcję w `id_po_adresach.txt`.
+2. Użyj `info_o_ramce.py` lub `id_ramek.txt`, aby ustalić **StartBit** i **długość** sygnału.
 3. Przenieś parametry do `web/`:
    - rejestr ramek: `web/js/can/frameRegistry.js` (`canDictionary` / `decoderRouter`);
    - dekodowanie: `web/js/can/decoders/*.js`;

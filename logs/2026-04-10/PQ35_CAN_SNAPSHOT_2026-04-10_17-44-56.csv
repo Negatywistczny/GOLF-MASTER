@@ -1,0 +1,560 @@
+﻿ID RAMKI;NAZWA RAMKI;SYGNAŁ (ID);OPIS SYGNAŁU;WARTOŚĆ
+0x151;AIRBAG (mAirbag_1);AB1_AirbagLampe_ein;Kontrolka poduszki powietrznej;Wyłączona
+0x151;AIRBAG (mAirbag_1);AB1_Airbag_deaktiviert;System Airbag;Aktywny
+0x151;AIRBAG (mAirbag_1);AB1_BF_Anschnall;Ostrzeżenie o pasie pasażera;Brak ostrzeżenia
+0x151;AIRBAG (mAirbag_1);AB1_Beif_Airbag_deaktiviert;Poduszka pasażera;Aktywna
+0x151;AIRBAG (mAirbag_1);AB1_Bf_Gurt;Zapięcie pasa pasażera;Zapięty
+0x151;AIRBAG (mAirbag_1);AB1_CrashStaerke;Siła zderzenia;Brak zderzenia
+0x151;AIRBAG (mAirbag_1);AB1_Crash_BT;Zderzenie boczne (Pasażer);Brak
+0x151;AIRBAG (mAirbag_1);AB1_Crash_FT;Zderzenie boczne (Kierowca);Brak
+0x151;AIRBAG (mAirbag_1);AB1_Diagnose;Tryb diagnostyki Airbag;Nieaktywny
+0x151;AIRBAG (mAirbag_1);AB1_Fa_Gurt;Zapięcie pasa kierowcy;Zapięty
+0x151;AIRBAG (mAirbag_1);AB1_FrontCrash;Zderzenie czołowe;Brak
+0x151;AIRBAG (mAirbag_1);AB1_HeckCrash;Zderzenie tylne;Brak
+0x151;AIRBAG (mAirbag_1);AB1_KD_Fehler;Błąd diagnostyczny w pamięci;ZAPISANY BŁĄD
+0x151;AIRBAG (mAirbag_1);AB1_MessageZaehler;Licznik wiadomości (Alive-Counter);5
+0x151;AIRBAG (mAirbag_1);AB1_Pruefsumme;Suma kontrolna ramki;168
+0x151;AIRBAG (mAirbag_1);AB1_Rollover;Rolowanie (Dachowanie);Brak
+0x151;AIRBAG (mAirbag_1);AB1_Stellglied;Test elementów wykonawczych;Nieaktywny
+0x151;AIRBAG (mAirbag_1);AB1_Systemfehler;Błąd systemu Airbag;System OK
+0x2C1;MANETKI (mLSM_1);LS1_BC_Down_Cursor;MFA Przycisk: W dół;Puszczony
+0x2C1;MANETKI (mLSM_1);LS1_BC_Reset;MFA Przycisk: Reset / OK;Puszczony
+0x2C1;MANETKI (mLSM_1);LS1_BC_Up_Cursor;MFA Przycisk: W górę;Puszczony
+0x2C1;MANETKI (mLSM_1);LS1_Bew_Frontwaschen;Analiza spryskiwacza przód;Brak
+0x2C1;MANETKI (mLSM_1);LS1_Blk_links;Kierunkowskaz lewy;Wyłączony
+0x2C1;MANETKI (mLSM_1);LS1_Blk_rechts;Kierunkowskaz prawy;Wyłączony
+0x2C1;MANETKI (mLSM_1);LS1_ELV_enable;Sterowanie blokadą (ELV);Odblokuj
+0x2C1;MANETKI (mLSM_1);LS1_Easy_Entry_LS;Kierownica Easy Entry;Wyłączona
+0x2C1;MANETKI (mLSM_1);LS1_FAS_Taster;Przycisk asystentów jazdy;Puszczony
+0x2C1;MANETKI (mLSM_1);LS1_Fehler_FAS_Taster;Usterka przycisku asystentów;OK
+0x2C1;MANETKI (mLSM_1);LS1_Fehler_Vibration;Usterka wibracji kierownicy;OK
+0x2C1;MANETKI (mLSM_1);LS1_Fernlicht;Światła drogowe (Długie);Wyłączone
+0x2C1;MANETKI (mLSM_1);LS1_Frontwaschen;Spryskiwacz przód;Wyłączony
+0x2C1;MANETKI (mLSM_1);LS1_Heckintervall;Wycieraczka tył (Interwał);Wyłączona
+0x2C1;MANETKI (mLSM_1);LS1_Heckwaschen;Spryskiwacz tył;Wyłączony
+0x2C1;MANETKI (mLSM_1);LS1_Intervall;Wycieraczki przód (Interwał/Auto);Wyłączone
+0x2C1;MANETKI (mLSM_1);LS1_Intervallstufen;Czułość wycieraczek (0-15);0
+0x2C1;MANETKI (mLSM_1);LS1_KD_Fehler;Błąd modułu kierownicy;⚠️ ZAPISANO BŁĄD
+0x2C1;MANETKI (mLSM_1);LS1_LHeizung_aktiv;Podgrzewanie kierownicy;Wyłączone
+0x2C1;MANETKI (mLSM_1);LS1_LSY_oben;Regulacja kolumny Y+;Zwolniona
+0x2C1;MANETKI (mLSM_1);LS1_LSY_unten;Regulacja kolumny Y-;Zwolniona
+0x2C1;MANETKI (mLSM_1);LS1_LSZ_vor;Regulacja kolumny Z+;Zwolniona
+0x2C1;MANETKI (mLSM_1);LS1_LSZ_zurueck;Regulacja kolumny Z-;Zwolniona
+0x2C1;MANETKI (mLSM_1);LS1_Lichthupe;Blinda (Mruganie długimi);Nieaktywna
+0x2C1;MANETKI (mLSM_1);LS1_MFA_Tasten;Ilość przycisków MFA;3 przyciski
+0x2C1;MANETKI (mLSM_1);LS1_MFA_vorhanden;Przyciski komputera (MFA);Brak
+0x2C1;MANETKI (mLSM_1);LS1_MFL_Typ;Generacja multifunkcji;Stary typ (Low)
+0x2C1;MANETKI (mLSM_1);LS1_MFL_vorhanden;Obecność multifunkcji (MFL);Brak
+0x2C1;MANETKI (mLSM_1);LS1_P_verriegelt;Blokada wyjęcia kluczyka (P);Skrzynia w P (OK)
+0x2C1;MANETKI (mLSM_1);LS1_Parklicht_links;Światła postojowe lewe;Wyłączone
+0x2C1;MANETKI (mLSM_1);LS1_Parklicht_rechts;Światła postojowe prawe;Wyłączone
+0x2C1;MANETKI (mLSM_1);LS1_Servicestellung;Wycieraczki: Tryb serwisowy;Wyłączony
+0x2C1;MANETKI (mLSM_1);LS1_Signalhorn;Klakson;Cisza
+0x2C1;MANETKI (mLSM_1);LS1_Tipwischen;Pojedyncze przetarcie szyby;Brak
+0x2C1;MANETKI (mLSM_1);LS1_Winterstellung;Wycieraczki: Tryb zimowy;Wyłączony
+0x2C1;MANETKI (mLSM_1);LS1_WischenStufe_1;Wycieraczki przód (Bieg 1);Wyłączone
+0x2C1;MANETKI (mLSM_1);LS1_WischenStufe_2;Wycieraczki przód (Bieg 2);Wyłączone
+0x2C1;MANETKI (mLSM_1);LS1_def_ELV_Enable;Diagnostyka przewodu ELV;System OK
+0x2C1;MANETKI (mLSM_1);LS1_def_P_Verriegelt;Diagnostyka czujnika Park;System OK
+0x2C3;STACYJKA (mZAS_Status);ZS1_ZAS_Kl_15;Zacisk 15 (Zapłon);WŁĄCZONY
+0x2C3;STACYJKA (mZAS_Status);ZS1_ZAS_Kl_50;Zacisk 50 (Rozrusznik);Wyłączony
+0x2C3;STACYJKA (mZAS_Status);ZS1_ZAS_Kl_P;Zacisk P (Światła postojowe);Wyłączone
+0x2C3;STACYJKA (mZAS_Status);ZS1_ZAS_Kl_S;Styk S (Obecność kluczyka);KLUCZYK WŁOŻONY
+0x2C3;STACYJKA (mZAS_Status);ZS1_ZAS_Kl_X;Zacisk X (Przekaźnik odciążający);NAPIĘCIE OBECNE
+0x351;GATEWAY (mGateway_1);GW1_FhzgGeschw_alt;Przestarzała ramka: Prędkość pojazdu;Aktualna
+0x351;GATEWAY (mGateway_1);GW1_FzgGeschw;Prędkość pojazdu;0 km/h
+0x351;GATEWAY (mGateway_1);GW1_Rueckfahrlicht;Światło wsteczne;Wyłączone
+0x351;GATEWAY (mGateway_1);KKO_alt_mBSG_Kombi;Przestarzała ramka: mBSG_Kombi;Aktualna
+0x359;HAMULCE / BIEGI (mGW_Bremse);ANB_Teilbremsung_Freigabe;Zezwolenie na hamowanie częściowe;Brak zezwolenia
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_ABS_Bremsung;Praca systemu ABS;Brak interwencji
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_1_Bremse;Przestarzała ramka: Bremse 1;Aktualna
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_1_EPB;Przestarzała ramka: EPB 1;Aktualna
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_1_Getriebe;Przestarzała ramka: Getriebe 1;Przestarzała
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_2_Bremse;Przestarzała ramka: Bremse 2;Aktualna
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_2_Getriebe;Przestarzała ramka: Getriebe 2;Przestarzała
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_5_Bremse;Przestarzała ramka: Bremse 5;Aktualna
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_AWV_X;Przestarzała ramka: AWV X;Aktualna
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_FzgGeschw;Przestarzała ramka: Prędkość;Aktualna
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Alt_PLA_Status;Przestarzała ramka: Status PLA;Aktualna
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_EPB_Bremslicht;Światło hamowania z EPB;Wyłączone
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_EPB_Status;Hamulec postojowy (EPB);Zwolniony
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_ESP_Eingriff;Interwencja systemu ESP;Brak interwencji
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_FzgGeschw;Prędkość pojazdu;0 km/h
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_FzgGeschw_Quelle;Źródło prędkości pojazdu;Czujniki ABS
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Geschw_Ersatz;Prędkość zastępcza (Błąd czujnika);OK
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Impulszahl;Ilość zębów wieńca impulsatora;43
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Info_Waehlhebel;Pozycja dźwigni zmiany biegów;Pozycja pośrednia
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Notbremsung;Awaryjne hamowanie;Brak
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Schaltvorgang;Zmiana biegu w toku;Brak zmiany
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Schlechtweg;Wykrycie złej nawierzchni (Wyboje);Brak
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Schlechtweg_Fehler;Błąd wykrywania złej nawierzchni;Ważne
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Shift_Lock;Blokada dźwigni zmiany biegów;Odblokowana
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_TSP_aktiv;Stabilizacja toru jazdy przyczepy;Brak interwencji
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Wegimpuls_Status;Status licznika impulsów drogi;Brak przepełnienia
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Wegimpulse;Impulsy przebytej drogi (Oś przednia);1
+0x359;HAMULCE / BIEGI (mGW_Bremse);GWB_Wegimpulse_Fehler;Błąd czujników ABS (Oś przednia);OK
+0x359;HAMULCE / BIEGI (mGW_Bremse);PLS_Bremsleuchte;Żądanie świateł hamowania (Asystent);Wyłączone
+0x35B;SILNIK (mGW_Motor);GWM_Alt_1_Motor;Przestarzała ramka: Motor 1;Aktualna
+0x35B;SILNIK (mGW_Motor);GWM_Alt_2_Motor;Przestarzała ramka: Motor 2;Aktualna
+0x35B;SILNIK (mGW_Motor);GWM_Alt_5_Motor;Przestarzała ramka: Motor 5;Aktualna
+0x35B;SILNIK (mGW_Motor);GWM_Alt_Motor_Bremse;Przestarzała ramka: Motor Bremse;Aktualna
+0x35B;SILNIK (mGW_Motor);GWM_Anl_Ausspuren;Odcięcie pracy rozrusznika;Praca w toku / Niestabilny
+0x35B;SILNIK (mGW_Motor);GWM_Anl_Freigabe;Zezwolenie na start (Rozrusznik);START DOZWOLONY
+0x35B;SILNIK (mGW_Motor);GWM_Bremslicht_Schalter;Czujnik pedału hamulca (BLS);Puszczony
+0x35B;SILNIK (mGW_Motor);GWM_Bremstest_Schalter;Styk testowy hamulca (BTS);Puszczony
+0x35B;SILNIK (mGW_Motor);GWM_Fehl_KmittelTemp;Błąd czujnika temp. płynu;OK
+0x35B;SILNIK (mGW_Motor);GWM_Freig_Bremsanforderung;Zezwolenie na żądanie hamowania;Brak zezwolenia
+0x35B;SILNIK (mGW_Motor);GWM_GRA_Status;Status tempomatu (GRA);Wyłączony
+0x35B;SILNIK (mGW_Motor);GWM_Heissl_Vorwarn;Ostrzeżenie o przegrzaniu silnika;OK
+0x35B;SILNIK (mGW_Motor);GWM_Interlock;Wymóg wciśnięcia sprzęgła do startu;Brak wymogu
+0x35B;SILNIK (mGW_Motor);GWM_KLuefter;Wysterowanie wentylatora chłodnicy;10 %
+0x35B;SILNIK (mGW_Motor);GWM_KVerbrauch;Chwilowe zużycie paliwa;0 µl/cykl
+0x35B;SILNIK (mGW_Motor);GWM_Kennfeldkuehlung;Aktywne chłodzenie mapowe;Nie
+0x35B;SILNIK (mGW_Motor);GWM_Klimaabschaltung;Odłączenie kompresora klimatyzacji;KOMPRESOR WYŁĄCZONY
+0x35B;SILNIK (mGW_Motor);GWM_Komp_Leist_red;Redukcja mocy kompresora;Nie
+0x35B;SILNIK (mGW_Motor);GWM_KuehlmittelTemp;Temperatura płynu chłodzącego;61.50 °C
+0x35B;SILNIK (mGW_Motor);GWM_Kuppl_Schalter;Czujnik pedału sprzęgła;Wciśnięty (Rozsprzęglony)
+0x35B;SILNIK (mGW_Motor);GWM_Motordrehzahl;Obroty silnika;0 obr/min
+0x35B;SILNIK (mGW_Motor);GWM_RME_Gehalt;Zawartość biopaliwa (RME);0 %
+0x35B;SILNIK (mGW_Motor);GWM_TypStartSteu;Typ sterowania rozruchem;Kluczyk / Kessy
+0x35B;SILNIK (mGW_Motor);GWM_Ueberl_KV;Przepełnienie licznika zużycia paliwa;Brak
+0x35B;SILNIK (mGW_Motor);GWM_Vorgluehen;Świece żarowe / Kontrolka silnika;Wyłączona
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_CRC8CHK;Suma kontrolna CRC8;0
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_Geschw_Vorzeichen;Kierunek prędkości obrotu;Prawo (Pozytywna)
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_Geschwindigkeit;Prędkość obrotu kierownicy;0 °/s
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_ID;ID kalibracji czujnika kąta;Skalibrowany
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_Int_Status;Status pomiaru kąta;OK
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_KL30_Ausfall;Status po zaniku Klemme 30 (Zasilanie);OK
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_Lenkradwinkel;Kąt skrętu kierownicy;28.35 °
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_Pruefsumme;Suma kontrolna ramki;53
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_Quelle_Init;Źródło inicjalizacji czujnika;Bremse 3 (ABS)
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_Vorzeichen;Kierunek skrętu;Lewo (Negatywny)
+0x3C3;KĄT SKRĘTU (mLenkwinkel);LW1_Zaehler;Licznik wiadomości (Alive-Counter);12
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_AC_Schalter;Przycisk AC na panelu;Wyłączony
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_AussenTemp;Temperatura powietrza zasysanego (Surowa);-50 °C
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_Drehzahlanhebung;Żądanie podwyższenia obrotów (Klima);Brak żądania
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_Geblaeselast;Wysterowanie dmuchawy nawiewu;0 %
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_Heizung_aus;Żądanie braku grzania (Temp. na MIN);BRAK GRZANIA
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_HzgFrontscheibe;Ogrzewanie przedniej szyby (Zasilanie);Wyłączone
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_HzgHeckscheibe;Ogrzewanie tylnej szyby (Zasilanie);Wyłączone
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_KD_Fehler;Błąd systemu klimatyzacji;Brak błędów
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_KaeltemittelDruck;Ciśnienie czynnika chłodniczego;4 bar
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_Kaeltemitteldruck_alt;Przestarzała ramka: Ciśnienie czynnika;Aktualna
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_Kompressor;Zezwolenie na start kompresora;Brak zezwolenia
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_Kompressormoment_alt;Przestarzała ramka: Moment kompresora;Aktualna
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_Last_Kompressor;Moment obrotowy pobierany przez kompresor;0 Nm
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_PTC_Clima;Moc dogrzewacza elektrycznego PTC (Klima);0%
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_Restwaerme;Funkcja ciepła resztkowego (REST);Nieaktywna
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_Strg_Kluefter;Żądanie wentylatora chłodnicy z klimy;0 %
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_Temp_in_F;Jednostka wyświetlana na panelu Climatronic;°C
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_WAPU_Zuschaltung;Dodatkowa pompa wody obiegu ogrzewania;WŁĄCZONA
+0x3E1;CLIMATRONIC 1 (mClima_1);CL1_Zuheizer;Żądanie dogrzewacza (PTC/Webasto);Wyłączony
+0x3E1;CLIMATRONIC 1 (mClima_1);KL_Thermomanagement;Status zarządzania termicznego silnika;Brak zezwolenia
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_Geblaese_plus;Zwiększenie nawiewu (Ogrzewanie postojowe);Brak
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_InnenTemp;Temperatura wewnątrz pojazdu;-50 °C
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_SH;Ogrzewanie postojowe (Webasto);Wyłączone
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_SL_LED;Kontrolka wentylacji postojowej;Wyłączona
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_SitzH_links;Podgrzewanie fotela kierowcy (Poziom);0
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_SitzH_rechts;Podgrzewanie fotela pasażera (Poziom);0
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_Solltemperatur;Temperatura docelowa zadana na panelu;Klima OFF
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_Sonne_links;Czujnik nasłonecznienia (Lewa strona);0 W/m²
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_Sonne_rechts;Czujnik nasłonecznienia (Prawa strona);0 W/m²
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_StSt_Info;Status systemu Start-Stop dla Klimatyzacji;Silnik włączony
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_Umluft_Taste;Przycisk obiegu zamkniętego (Umluft);Puszczony
+0x3E3;CLIMATRONIC 2 (mClima_2);CL2_Vorgabe_KWTemp;Żądana temperatura płynu chłodniczego;-48 °C
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_CAN;Wybudzenie: Ruch na CAN;Nie
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_CmdAlive;Wiadomość typu Alive;Brak
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_CmdLimpHome;Tryb awaryjny (Limp Home);Brak
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_CmdRing;Wiadomość typu Ring;Aktywna
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_Diag_CAN;Wybudzenie przez: CAN Diagnostyka;Nie
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_Fkt_Nachlauf;Wybudzenie: Zakończenie pracy timera;Nie
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_Info_CAN;Wybudzenie przez: CAN Infotainment;Nie
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_Kl_15;Wybudzenie przez: Zacisk 15 (Zapłon);Nie
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_Kl_30_Reset;Wybudzenie: Reset zacisku 30;Nie
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_Komfort_CAN;Wybudzenie przez: CAN Komfort;Nie
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_LIN1;Wybudzenie przez: LIN 1;Nie
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_LIN2;Wybudzenie przez: LIN 2;Nie
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_NWake;Wybudzenie: Wejście NWake;Nie
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_Receiver;Adres odbiorcy (SG_Adresse);11
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_SleepAck;Potwierdzenie uśpienia;Brak
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_SleepInd;Wskazanie uśpienia magistrali;Brak
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_WakeUp2;Wybudzenie: Rezerwa 2;0
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_WakeUp3;Wybudzenie: Rezerwa 3;0
+0x42B;SLEEP / WAKE (mNM_Gateway);NMGW_I_Wake_Up_Ltg;Wybudzenie: Linia Wake-Up licznika;Nie
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BCM_Remotestart_Betrieb;Zdalny rozruch;Nieaktywny
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_AFL_defekt;Automatyczne światła (AFL);OK
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Abblendlicht;Światła mijania (Zacisk 56b);Wyłączone
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Anhaenger;Kierunkowskaz przyczepy (kontrolka);Wyłączona
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_BSG_defekt;Moduł Bordnetz (BSG);OK
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_BT_geoeffnet;Drzwi pasażera;Zamknięte
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Blk_links;Kierunkowskaz lewy (kontrolka);Wyłączona
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Blk_rechts;Kierunkowskaz prawy (kontrolka);Wyłączona
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Buzzer;Sygnał dźwiękowy (Gong);Cisza
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_DWA_Akku;Bateria syreny alarmu (DWA);OK
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Def_Lampe;Awaria żarówki (Kontrolka);System OK
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Display;Podświetlenie wskaźników (Dimm);0 %
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Display_def;Usterka zacisku 58d (Dimm);OK
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_FFB_Bat;Bateria pilota (Info);OK
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_FLA_Defekt;Usterka systemu FLA;OK
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_FLA_Sensor_blockiert;Kamera FLA (Czujnik);OK
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_FLA_Soft_LED;Asystent świateł (FLA);Nieaktywny
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_FT_geoeffnet;Drzwi kierowcy;Zamknięte
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Fernlicht;Światła drogowe (Zacisk 56a);Wyłączone
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_HD_Hauptraste;Bagażnik (Zamek główny);Zamknięty
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_HD_Vorraste;Bagażnik (Zamek wstępny);Zamknięty
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_HL_geoeffnet;Drzwi tył-lewe;Zamknięte
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_HR_geoeffnet;Drzwi tył-prawe;Zamknięte
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Heckscheibenhzg;Ogrzewanie tylnej szyby;Wyłączone
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Interlock;Kontrolka wciśnięcia sprzęgła;Wyłączona
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Klemme_58t;Podświetlenie lokalizacyjne (58t);0 %
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Klemme_58t_def;Usterka zacisku 58t;OK
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Ladekontrollampe;Kontrolka ładowania (Zacisk L);BRAK ŁADOWANIA
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_MH_geoeffnet;Maska silnika;OTWARTA
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_NSL_LED_Pfad;Sterowanie kontrolką p. mgielną;Przewód
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Nebellicht;Światła przeciwmgielne przód;Wyłączone
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Nebelschlusslicht;Światło przeciwmgielne tył;Wyłączone
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Parklicht_links;Światło parkingowe lewe;Wyłączone
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Parklicht_rechts;Światło parkingowe prawe;Wyłączone
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Rueckfahrlicht;Światło wsteczne;Wyłączone
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Ruecks_HL_verriegelt;Oparcie kanapy tył-lewe;Zablokowane
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Ruecks_HR_verriegelt;Oparcie kanapy tył-prawe;Zablokowane
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Ruhespannung;Napięcie spoczynkowe;10.50 V
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Sammelfehler_AKI;Zbiorczy błąd sterowników;Brak błędów
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Standlicht;Światła postojowe (Zacisk 58);Wyłączone
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Tagfahrlicht;Światła do jazdy dziennej (DRL);Wyłączone
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Tankklappe;Klapka wlewu paliwa;Zamknięta
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Unterspannung;Napięcie systemu;OK
+0x470;DRZWI / ŚWIATŁA (mBSG_Kombi);BSK_Warnblinker;Światła awaryjne (status);Wyłączone
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_Alt_1_Kombi;Status danych licznika (Kombi 1);Aktualne
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_Alt_2_Kombi;Status danych licznika (Kombi 2);Aktualne
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_Alt_3_Kombi;Status danych licznika (Kombi 3);Aktualne
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_AussenTemp_Fehler;Czujnik temp. zewnętrznej;OK
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_AussenTemp_gefiltert;Temperatura zewnętrzna (FIS);8.50 °C
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_AussenTemp_ungefiltert;Temperatura zewnętrzna (Surowa);9.50 °C
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_FzgGeschw;Prędkość pojazdu (Wyświetlana);0 km/h
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_FzgGeschw_Quelle;Źródło prędkości pojazdu;Czujniki ABS
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_Passiv_Autolock;Ryglowanie drzwi po ruszeniu;Nieaktywne
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_Reifenumfang_empf;Odbiór parametru obwodu opony;Odebrano
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_Umfang_Reifen;Obwód opony (zakodowany);1958 mm
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_WFS_Schl_Ort;Lokalizacja kluczyka (Immo);Keyless
+0x527;TEMP. ZEWN. (mGW_Kombi);GWK_Warn_Heiss;Ostrzeżenie o przegrzaniu silnika;Brak
+0x527;TEMP. ZEWN. (mGW_Kombi);KB1_Lenkh_Lampe;Kontrolka wspomagania kierownicy;Wyłączona
+0x555;TURBO / OLEJ (mMotor7);MO7_DFM;Sygnał DFM alternatora (Obciążenie);23.60 %
+0x555;TURBO / OLEJ (mMotor7);MO7_Ein_Generator;Włączenie alternatora po starcie;Wyłączony
+0x555;TURBO / OLEJ (mMotor7);MO7_FehlerSp;Błąd zapisany w pamięci (Silnik);ZAPISANO BŁĄD
+0x555;TURBO / OLEJ (mMotor7);MO7_Fehler_Oel_Temp;Status czujnika temperatury oleju;Sprawny (OK)
+0x555;TURBO / OLEJ (mMotor7);MO7_GenLoadResp;Czas reakcji alternatora (Load Response);0 s
+0x555;TURBO / OLEJ (mMotor7);MO7_Gradient_Drehz;Gradient obrotów silnika;0 obr/min
+0x555;TURBO / OLEJ (mMotor7);MO7_Gradient_Vorz;Kierunek gradientu obrotów;Rosnące (+)
+0x555;TURBO / OLEJ (mMotor7);MO7_Hoeheninfo;Współczynnik korekty wysokości (Atmosf.);0.98
+0x555;TURBO / OLEJ (mMotor7);MO7_LL_Status;Podwyższone obroty jałowe (Stupeń 1);Brak żądania
+0x555;TURBO / OLEJ (mMotor7);MO7_Ladedruckneu;Ciśnienie doładowania (Turbo);1.96 bar
+0x555;TURBO / OLEJ (mMotor7);MO7_Last_abwurf;Żądanie redukcji napięcia alternatora;Brak redukcji
+0x555;TURBO / OLEJ (mMotor7);MO7_Lastabwurf_Heiz;Zezwolenie na systemy grzewcze po starcie;Odcięcie (Brak ładowania)
+0x555;TURBO / OLEJ (mMotor7);MO7_Mot_weckfaehig;Wybudzanie silnika przez CAN;Brak wybudzania
+0x555;TURBO / OLEJ (mMotor7);MO7_Oeltemperatur;Temperatura oleju silnikowego;58 °C
+0x555;TURBO / OLEJ (mMotor7);MO7_PTC;Status wyłączenia dogrzewacza PTC / Świec;7
+0x555;TURBO / OLEJ (mMotor7);MO7_PTC_bereit;Gotowość 3-stopniowej grzałki PTC;Brak grzałki PTC w pojeździe
+0x555;TURBO / OLEJ (mMotor7);MO7_Rueck_LLDz;Podwyższone obroty jałowe (Stupeń 2);Brak żądania
+0x555;TURBO / OLEJ (mMotor7);MO7_Sleep_Ind;Gotowość do uśpienia sieci (Silnik);Praca na CAN
+0x555;TURBO / OLEJ (mMotor7);MO7_Stat_Gluehk;Status podgrzewania komory (Świece żarowe);0 %
+0x555;TURBO / OLEJ (mMotor7);MO7_V_Begr_akt;Aktywne ograniczenie prędkości;Nieaktywne
+0x555;TURBO / OLEJ (mMotor7);MO7_V_Begrenz;Możliwość ograniczenia prędkości;Brak możliwości
+0x555;TURBO / OLEJ (mMotor7);MO7_Zus_Kuehl;Dodatkowe chłodzenie (Bypass układu);Nie
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_AAG_K;Błąd: Sterownik przyczepy;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_ADR_Sensor_A;Błąd: Radar odstępu (ACC/ADR);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_ADR_getrennt;Status fizyczny radaru ADR;Podłączony
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_APS_K;Błąd: Czujniki parkowania (APS);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Airbag_A;Błąd: Sterownik Airbag;ZAPISANY BŁĄD
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Allrad_A;Błąd: Napęd na cztery koła;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_BSG_K;Błąd: Bordnetz (Centralna elektryka);ZAPISANY BŁĄD
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Bremse_A;Błąd: Sterownik hamulców (ABS/ESP);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Clima_K;Błąd: Klimatyzacja (Climatronic);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_DAB_I;Błąd: Tuner cyfrowy (DAB/SDARS);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_DSP_I;Błąd: Wzmacniacz cyfrowy (DSP);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Dachmodul_K;Błąd: Moduł dachu;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Daempfer_A;Błąd: Regulacja amortyzatorów (DCC);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_EZS_A;Błąd: Elektroniczna stacyjka;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Easy_Entry_VB;Błąd: Easy-Entry Pasażera;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Easy_Entry_VF;Błąd: Easy-Entry Kierowcy;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_GSM_Pager_I;Błąd: Moduł GSM / Pager;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Gateway_K;Błąd: Gateway (Rozdzielacz CAN);ZAPISANY BŁĄD
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Getriebe_A;Błąd: Skrzynia biegów;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Heckdeckel_K;Błąd: Sterownik pokrywy bagażnika;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_KSG_K;Błąd: Moduł komfortu;ZAPISANY BŁĄD
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Kombi_A;Błąd: Zestaw wskaźników;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Kombi_KBI;Błąd: Zestaw wskaźników (Kombi 2);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Kompass_I;Błąd: Kompas;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_LDW_A;Błąd: Asystent pasa ruchu (LDW);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_LSM_A;Błąd: Czujnik kąta skrętu kierownicy;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Lenkhilfe_A;Błąd: Wspomaganie kierownicy;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_MDI_I;Błąd: Moduł MDI;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Mem_BF_K;Błąd: Pamięć fotela pasażera;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Memory_K;Błąd: Moduł pamięci foteli;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Motor_A;Błąd: Sterownik silnika;ZAPISANY BŁĄD
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Motor_Slave_A;Błąd: Sterownik silnika 2 (Slave);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Navigation_I;Błąd: Nawigacja;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Neigungsmodul;Błąd: Moduł przechyłu pojazdu;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Niveau_A;Błąd: Niveauregulierung (Zawieszenie);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_PLA_A;Błąd: Asystent parkowania (PLA);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_PTC_Heizung_K;Błąd: Dogrzewacz PTC;ZAPISANY BŁĄD
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Parkbremse_A;Błąd: Hamulec postojowy (EPB);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Quersperre;Błąd: Blokada mechanizmu różnicowego;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_RDK_K;Błąd: Reifendruck (RDK);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_RKA_Plus_A;Błąd: System monitorowania opon (RKA);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_RSE_I;Błąd: Rear Seat Entertainment;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Radio_I;Błąd: Radio;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Rearview_I;Błąd: Kamera cofania;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_SMLS_K;Błąd: Moduł kolumny kierownicy;ZAPISANY BŁĄD
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_SWA_A;Błąd: Asystent zmiany pasa (SWA);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Sonderfahrzeug_SG_K;Błąd: Pojazd specjalny (Taxi);Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Standhzg_K;Błąd: Ogrzewanie postojowe;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_TSG_BT_K;Błąd: Moduł drzwi pasażera;ZAPISANY BŁĄD
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_TSG_FT_K;Błąd: Moduł drzwi kierowcy;ZAPISANY BŁĄD
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_TSG_HL_K;Błąd: Moduł drzwi tył-lewe;ZAPISANY BŁĄD
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_TSG_HR_K;Błąd: Moduł drzwi tył-prawe;ZAPISANY BŁĄD
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_TV_Tuner_I;Błąd: Tuner TV;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Tastenmodul_I;Błąd: Moduł klawiatury;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Telefon_I;Błąd: Telefon;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Telematik_I;Błąd: Telematyka;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_VSG_K;Błąd: Sterownik dachu składanego;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_WFS_K;Błąd: Immobilizer;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_WFS_KBI;Błąd: Immobilizer w liczniku;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Wischer_K;Błąd: Moduł wycieraczek;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_Zentralelektrik_II_K;Błąd: Centralna elektryka II;Brak błędów
+0x557;BŁĘDY MODUŁÓW (mKD_Error);EKD_dyn_LWR_A;Błąd: Poziomowanie świateł (LWR/AFS);Brak błędów
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Aussenspiegel_aus;Żądanie wyłączenia ogrz. lusterek;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Frontscheibe_aus;Żądanie wyłączenia ogrz. szyby przód;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Heckscheibe_aus;Żądanie wyłączenia ogrz. szyby tył;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_KlimaLeistRed;Zażądano redukcji mocy klimatyzacji;Brak redukcji
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Klimaanlage_aus;Żądanie wyłączenia / redukcji klimy;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Lastman_aktiv;Zarządzanie obciążeniem włączone;Nie
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Mess_Start_Ltg;Pomiar przewodu rozrusznika;Zakończony
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Notstart;Start awaryjny pojazdu;Nie
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Sitzheizung_aus;Żądanie wyłączenia ogrz. foteli;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_U_BATT;Napięcie akumulatora (Bordnetz);12.30 V
+0x571;ZASILANIE / AKU (mBSG_2);BS2_U_Start_BATT;Napięcie akumulatora rozruchowego;5 V
+0x571;ZASILANIE / AKU (mBSG_2);BS2_VB_2_Battarie;Zakodowano drugi akumulator;Pojedynczy akumulator
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Verbr_ab_aktiv;Wyłączenie odbiorników aktywne;Nie
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Wake_Up_ACAN;Wymuszenie wybudzenia CAN Napęd;Brak wybudzania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Warn_Infotainment;Ostrzeżenie przed wył. Infotainment;Brak
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Warn_Steckdosen;Ostrzeżenie przed wyłączeniem gniazd;Brak
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Warn_Zusatz;Ostrzeżenie przed wył. u. dodatkowych;Brak
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Weckursache_ACAN;Przyczyna wybudzenia sieci;Normalny start (Brak pre-pompy)
+0x571;ZASILANIE / AKU (mBSG_2);BS2_Zust_Start_Ltg;Stan przewodu rozrusznika;Przewód sprawny
+0x571;ZASILANIE / AKU (mBSG_2);BS2_aus_Ablage_Wischer;Wyłączenie podgrz. piór wycieraczek;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_aus_Infotainment;Żądanie redukcji mocy Infotainment;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_aus_Innen_Bel;Wyłączenie / redukcja ośw. wnętrza;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_aus_Lenkradheizung;Żądanie wyłączenia ogrz. kierownicy;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_aus_PTC_Clima;Redukcja grzałki elektrycznej PTC;0% Redukcji
+0x571;ZASILANIE / AKU (mBSG_2);BS2_aus_Sitzhzg_H;Żądanie wyłączenia ogrz. kanapy z tyłu;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_aus_Sitzlueftung;Żądanie wyłączenia wentylacji foteli;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_aus_Steckdosen;Żądanie wyłączenia gniazd (12V);Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_aus_Wischwasserhzg;Żądanie wyłączenia ogrz. spryskiwaczy;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_aus_Zusatz_Verbr;Żądanie wyłączenia dod. urządzeń;Brak żądania
+0x571;ZASILANIE / AKU (mBSG_2);BS2_red_Heckscheibe;Ograniczenie mocy ogrzewania szyby tył;Brak
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_2_Drehzahl;Żądanie podwyższonych obrotów (Stupeń 2);Brak
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Ab_Batterie;Odłączenie akumulatora (Wykrycie);Podłączony
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Bordnetzbatt;Stan akumulatora sieci pokładowej;OK
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Coming_Home;Funkcja Coming Home;Nieaktywna
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Drehzahlanhebung;Żądanie podwyższonych obrotów (Stupeń 1);Brak
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Haubenkontakt;Czujnik maski silnika;OTWARTA
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_IRUE_Taster;Przycisk nadzoru wnętrza;Puszczony
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_KD_Fehler;Błąd diagnostyczny w pamięci;ZAPISANY BŁĄD
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_K_Luefter_ein;Wymuszenie wentylatora chłodnicy;Brak żądania
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Klemme_15;Zacisk 15 (Zapłon);WŁĄCZONY
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Klemme_15_Motorraum;Zacisk 15 (Komora silnika);WŁĄCZONY
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Klemme_50;Zacisk 50 (Rozrusznik);Wyłączony
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Klemme_P;Zacisk P (Światła postojowe);Wyłączony
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Klemme_S;Styk S (Kluczyk w stacyjce);WŁOŻONY
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Klemme_X;Zacisk X (Odciążenie);WŁĄCZONY
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_LED_Aussenspiegel;Dioda: Podgrzewanie lusterek;Wyłączona
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_LED_Frontscheibe;Dioda: Ogrzewanie przedniej szyby;Wyłączona
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_LED_Heckscheibe;Dioda: Ogrzewanie tylnej szyby;Wyłączona
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_LED_Sitze;Dioda: Podgrzewanie foteli;Wyłączona
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_LWR_Fehler;Błąd systemu poziomowania świateł;OK
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Ladekontrollampe;Kontrolka ładowania (Bordnetz);WŁĄCZONA
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Leaving_Home;Funkcja Leaving Home;Nieaktywna
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_PDC_Taster;Przycisk asystenta parkowania (PDC);Puszczony
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Starterbatt;Stan akumulatora rozruchowego;OK
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Starterlaubnis;Zezwolenie na rozruch;START DOZWOLONY
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_VB_Coming_Home;Dostępność Coming Home;Brak
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_VB_Fussraumleuchten;Dostępność oświetlenia przestrzeni nóg;Brak
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_VB_Tagesfahrlicht;Dostępność świateł dziennych;Brak
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_VP_Taste;Przycisk Valet Parking;Puszczony
+0x575;STATUS ŚWIATEŁ (mBSG_3);BS3_Verglasung_zu;Zamykanie szyb (Czujnik deszczu);Brak akcji
+0x60E;JEDNOSTKI (mEinheiten);EH1_Datum_Anzeige;Format daty;DD-MM-RRRR
+0x60E;JEDNOSTKI (mEinheiten);EH1_Einh_Druck;Jednostka ciśnienia;bar
+0x60E;JEDNOSTKI (mEinheiten);EH1_Einh_Strck;Jednostka dystansu;km
+0x60E;JEDNOSTKI (mEinheiten);EH1_Einh_Temp;Jednostka temperatury;°C
+0x60E;JEDNOSTKI (mEinheiten);EH1_Einh_Verbr;Format spalania;Objętość/Dystans (np. l/100km)
+0x60E;JEDNOSTKI (mEinheiten);EH1_Einh_Vol;Jednostka objętości;Litry
+0x60E;JEDNOSTKI (mEinheiten);EH1_Profil;Numer profilu użytkownika;0
+0x60E;JEDNOSTKI (mEinheiten);EH1_Uhr_Anzeige;Format czasu;24h
+0x60E;JEDNOSTKI (mEinheiten);EH1_Verstellung_Strck;Możliwość zmiany jednostki dystansu;Zablokowana
+0x60E;JEDNOSTKI (mEinheiten);EH1_Wochentag;Dzień tygodnia;Brak ust.
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_AFL;Przełącznik świateł w pozycji AUTO;Nie
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Bel_Displ;Siła podświetlenia wskaźników;0 %
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_FT_geoeffnet;Drzwi kierowcy (Info licznika);Zamknięte
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Fernlicht;Kontrolka świateł drogowych;Wyłączona
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Freigabe_Zuheizer;Dogrzewacz (Z menu licznika);WŁĄCZONY
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Handbremse;Hamulec postojowy;Zwolniony
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_KD_Fehler_WFS;Błąd immobilizera w pamięci;Brak
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Klemme_L;Kontrolka ładowania (Licznik);Wyłączona
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Lichtsensor;Odczyt czujnika światła;0
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_MFA_vorhanden;Obecność przycisków MFA;Brak
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_MH_Kontakt;Maska silnika (Info licznika);Zamknięta
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Sta_Displ;Status obwodu podświetlenia;OK
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Standzeit;Czas postoju pojazdu;50260 s
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Standzeit_Fehler;Błąd pomiaru czasu postoju;Czas prawidłowy
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Tankinhalt;Poziom paliwa;10 L
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Tankstop;Wykrycie tankowania;Brak
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Tankwarnlampe;Kontrolka rezerwy paliwa;Wyłączona
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_Tankwarnung;Ostrzeżenie o rezerwie (Diagnostyka);OK
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_WFS_Schluessel;Numer kluczyka (Immo);2
+0x621;PALIWO / RĘCZNY (mKombi_K1);KO1_WaschWasser;Poziom płynu spryskiwaczy;OK
+0x62F;WYŚWIETLACZ MFA (mDisplay_1);DY1_Bereich1;Obszar wyświetlacza 1 (Priorytet);0
+0x62F;WYŚWIETLACZ MFA (mDisplay_1);DY1_Bereich2;Obszar wyświetlacza 2 (Priorytet);0
+0x62F;WYŚWIETLACZ MFA (mDisplay_1);DY1_Bereich3;Obszar wyświetlacza 3 (Priorytet);0
+0x62F;WYŚWIETLACZ MFA (mDisplay_1);DY1_Display_OK;Gotowość wyświetlacza (Zacisk 15);Oczekuje
+0x62F;WYŚWIETLACZ MFA (mDisplay_1);DY1_Global_Reset;Globalny reset sieci DDP;Brak
+0x62F;WYŚWIETLACZ MFA (mDisplay_1);DY1_MFA_Down;Przycisk MFA: W dół;Puszczony
+0x62F;WYŚWIETLACZ MFA (mDisplay_1);DY1_MFA_Reset;Przycisk MFA: Reset / OK;Puszczony
+0x62F;WYŚWIETLACZ MFA (mDisplay_1);DY1_MFA_Up;Przycisk MFA: W górę;Puszczony
+0x62F;WYŚWIETLACZ MFA (mDisplay_1);DY1_MFA_WippeLang;Przycisk MFA: Przytrzymany (> 2s);Brak
+0x62F;WYŚWIETLACZ MFA (mDisplay_1);DY1_Reset;Zresetowanie wyświetlacza;Brak
+0x635;ŚCIEMNIANIE DESKI (mDimmung);DI1_Display;Jasność podświetlenia wyświetlacza;0 %
+0x635;ŚCIEMNIANIE DESKI (mDimmung);DI1_Display_def;Usterka obwodu wyświetlacza (58d);OK
+0x635;ŚCIEMNIANIE DESKI (mDimmung);DI1_Schalter;Jasność podświetlenia przycisków;0 %
+0x635;ŚCIEMNIANIE DESKI (mDimmung);DI1_Schalter_def;Usterka obwodu przycisków (58s);OK
+0x635;ŚCIEMNIANIE DESKI (mDimmung);DI1_Sensor;Czujnik zmierzchu (Dimmung);0
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_CAN_Extern;CAN zewnętrzny (Diagnostyka);Odłączony
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Derivat;Typ nadwozia;Inne
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Diag_Antrieb;Diagnostyka sieci CAN-Napęd;Brak
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Diag_Infotainment;Diagnostyka sieci CAN-Infot.;Brak
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Diag_Komfort;Diagnostyka sieci CAN-Komfort;Brak
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_ELV_Lock_Supply;Zezwolenie blokady kierownicy (ELV);Zablokowane
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Erweiterung;Rozszerzenie konstrukcji;Nieznane
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Generation;Generacja pojazdu;5
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Infotainment;Separacja fizyczna Infotainment;Połączone
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_KD_Fehler;Błąd modułu Gateway w pamięci;ZAPISANY BŁĄD
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Klasse;Klasa pojazdu;A
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Marke;Marka pojazdu;Volkswagen
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_NWDF;Zezwolenie na diagnostykę sieci;Zablokowana
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_NWDF_gueltig;Wsparcie dla diagnostyki sieci;Brak wsparcia
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Notbrems_Status;Status hamowania awaryjnego;Normalny
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_QRS_Messmodus;Szybki pomiar prądu (QRS);Wyłączony
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Rechtslenker;Układ kierowniczy;Lewostronny (LHD)
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Relais_FAS_Zweig;Przekaźnik asystentów jazdy (FAS);Zamknięty (OK)
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Sleep_Infotainment;Uśpienie sieci CAN-Infotainment;Aktywna
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Sleep_Komfort;Uśpienie sieci CAN-Komfort;Aktywna
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Transportmode;Tryb transportowy;Nieaktywny
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Verbauliste_gueltig;Lista wyposażenia (Sollverbau);WAŻNA
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_VersHighCAN_Antrieb;Wersja CAN Napęd (High);4
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_VersHighCAN_Komfort;Wersja CAN Komfort (High);2
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_VersLowCAN_Antrieb;Wersja CAN Napęd (Low);8
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_VersLowCAN_Komfort;Wersja CAN Komfort (Low);9
+0x651;FLAGI SYSTEMU (mSysteminfo);SY1_Viertuerer;Ilość drzwi;4 lub więcej
+0x653;REGION / JĘZYK (mGateway_3);GW3_Alt_3_Kombi;Status danych z licznika (Kombi_3);Aktualne
+0x653;REGION / JĘZYK (mGateway_3);GW3_Alt_5_Motor;Status danych z silnika (Motor_5);Aktualne
+0x653;REGION / JĘZYK (mGateway_3);GW3_Laendervariante;Wersja krajowa (Region);Europa
+0x653;REGION / JĘZYK (mGateway_3);GW3_Land_Sprach_empf;Odbiór kodowania języka/regionu;Odebrano
+0x653;REGION / JĘZYK (mGateway_3);GW3_Motortyp;Kod ilości cylindrów silnika;36
+0x653;REGION / JĘZYK (mGateway_3);GW3_Motortyp_empf;Odbiór typu silnika;Odebrano
+0x653;REGION / JĘZYK (mGateway_3);GW3_Sprachvariante;Wersja językowa;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_AAG_K;Moduł przyczepy;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_ADR_Sensor_A;Radar ACC;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_ADR_getrennt;Rozłączenie sprzętowe radaru;Podłączony
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_APS_K;Czujniki parkowania (PDC);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Airbag_A;System Airbag;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Allrad_A;Napęd na cztery koła (AWD);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_BSG_K;Centralna elektryka (Bordnetz);ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Bremse_A;Sterownik ABS / ESP;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Clima_K;Klimatyzacja (Climatronic);ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_DAB_I;Tuner cyfrowy (DAB/SDARS);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_DSP_I;Wzmacniacz dźwięku (DSP);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Dachmodul_K;Moduł dachu;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Daempfer_A;Regulacja amortyzatorów (DCC);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_EZS_A;Elektroniczna stacyjka (EZS);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Easy_Entry_VB;System Easy-Entry pasażera;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Easy_Entry_VF;System Easy-Entry kierowcy;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_GSM_Pager_I;Moduł Pager GSM;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Gateway_K;Moduł Gateway;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Getriebe_A;Skrzynia biegów;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Heckdeckel_K;Sterownik pokrywy bagażnika;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_InfoElektronik;Elektronika informacyjna (Cockpit);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_KSG_K;Moduł komfortu;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Kombi_A;Zestaw wskaźników (Antrieb);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Kombi_KBI;Zestaw wskaźników (Komfort);ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Kompass_I;Kompas elektroniczny;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_LDW_A;Asystent pasa ruchu (Lane Assist);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_LSM_A;Czujnik kąta skrętu;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Lenkhilfe_A;Wspomaganie kierownicy;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_MDI_I;Interfejs multimedialny (MDI);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Mem_BF_K;Pamięć fotela pasażera;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Memory_K;Pamięć fotela;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Motor_A;Sterownik silnika;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Motor_Slave_A;Sterownik silnika 2 (Slave);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Navigation_I;Moduł Nawigacji;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Neigungsmodul_I;Czujnik przechyłu (Alarm);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Niveau_A;Zawieszenie pneumatyczne;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_PLA_A;Asystent parkowania (PLA);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_PTC_Heizung_K;Dogrzewacz elektryczny (PTC);ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Parkbremse_A;Hamulec postojowy (EPB);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Quersperre;Blokada mechanizmu różnicowego;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_RDK_K;Czujniki ciśnienia (TPMS/RDK);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_RKA_Plus_A;Kontrola ciśnienia opon (RKA);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_RSE_I;Zestaw multimedialny tył (RSE);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Radio_I;Moduł Radia;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Rearview_I;Kamera cofania;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_SMLS_K;Moduł kolumny kierownicy;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_SWA_A;Asystent zmiany pasa (SWA);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Soll_Ist_OK;Porównanie wyposażenia (Soll=Ist);PRAWIDŁOWA
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Sonderfahrzeug_SG_K;Moduł pojazdu specjalnego (Taxi);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Standhzg_K;Ogrzewanie postojowe (Webasto);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_TSG_BT_K;Moduł drzwi pasażera;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_TSG_FT_K;Moduł drzwi kierowcy;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_TSG_HL_K;Moduł drzwi tył-lewe;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_TSG_HR_K;Moduł drzwi tył-prawe;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_TV_Tuner_I;Tuner TV;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Tastenmodul_I;Moduł klawiatury (Infotainment);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Telefon_I;Moduł Telefonu;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Telematik_I;Moduł Telematyki;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_VSG_K;Moduł dachu składanego (Cabrio);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_WFS_K;Immobilizer (Gateway);Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_WFS_KBI;Immobilizer w liczniku;ZAKODOWANO
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Wischer_K;Moduł wycieraczek;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_Zentralelektrik_II_K;Centralna elektryka II;Brak
+0x655;LISTA MODUŁÓW (mVerbauliste);VBN_dyn_LWR_A;Poziomowanie reflektorów (AFS);Brak
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_Jahr;Data: Rok;2000
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_KM_Stand;Przebieg całkowity pojazdu;292967 km
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_Minute;Czas: Minuta;44
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_Monat;Data: Miesiąc;0
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_Sekunde;Czas: Sekunda;30
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_Stunde;Czas: Godzina;19
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_Tag;Data: Dzień;0
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_Verlernzaehler;Licznik cykli weryfikacji błędów;190
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_alt_Kilometerstand;Wiarygodność przebiegu;Aktualny
+0x65D;CZAS / PRZEBIEG (mDiagnose_1);DN1_alt_Zeit;Wiarygodność czasu;Aktualny
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_Geheimnis_1;Ukryty kod bezpieczeństwa 1;0
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_Geheimnis_2;Ukryty kod bezpieczeństwa 2;0
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_Geheimnis_3;Ukryty kod bezpieczeństwa 3;0
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_Geheimnis_4;Ukryty kod bezpieczeństwa 4;0
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_MUX;Indeks multipleksera (MUX);2
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_1;Znak VIN (Znak 1);87 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_10;Znak VIN (Znak 10);54 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_11;Znak VIN (Znak 11);87 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_12;Znak VIN (Znak 12);53 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_13;Znak VIN (Znak 13);51 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_14;Znak VIN (Znak 14);49 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_15;Znak VIN (Znak 15);49 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_16;Znak VIN (Znak 16);51 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_17;Znak VIN (Znak 17);53 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_2;Znak VIN (Znak 2);86 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_3;Znak VIN (Znak 3);87 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_4;Znak VIN (Znak 4);90 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_5;Znak VIN (Znak 5);90 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_6;Znak VIN (Znak 6);90 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_7;Znak VIN (Znak 7);49 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_8;Znak VIN (Znak 8);75 (ASCII)
+0x65F;VIN POJAZDU (mFzg_Ident);FI1_VIN_9;Znak VIN (Znak 9);90 (ASCII)

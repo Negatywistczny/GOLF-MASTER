@@ -1,0 +1,10 @@
+UWAGA! Niektóre opisy w snapshotach mogą być błędnie zinterpretowane.
+
+Logi i snapshoty wykonywano parami podczas jednej sesji jazdy samochodem.
+(w nazwach logów są dwie godziny różnicy czasu od rzeczywistego)
+
+19:44 - samochód zaparkowany, chwilę po włączeniu zapłonu
+19:46 - silnik uruchomiony, chwilę przed ruszeniem
+19:49, 20:01, 20:14 - w trakcie jazdy
+20:22 - chwila po zatrzymaniu w miejscu docelowym (silnik włączony)
+20:24 - chwila po wyjęciu kluczyka

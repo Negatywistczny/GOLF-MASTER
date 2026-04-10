@@ -8,7 +8,20 @@ const signalMeta = Object.freeze({
     "AB1_Crash_FT": { label: "Zderzenie boczne (Kierowca)", states: { 0: "Brak", 1: "WYKRYTO ZDERZENIE" } },
     "AB1_Crash_BT": { label: "Zderzenie boczne (Pasażer)", states: { 0: "Brak", 1: "WYKRYTO ZDERZENIE" } },
     "AB1_Rollover": { label: "Rolowanie (Dachowanie)", states: { 0: "Brak", 1: "WYKRYTO DACHOWANIE" } },
-    "AB1_CrashStaerke": { label: "Siła zderzenia", states: { 0: "Brak zderzenia", 1: "Napinacze pasów", 2: "Próg US (Niski)", 3: "Próg US (Wysoki)", 4: "Próg RoW", 5: "Próg RoW", 6: "Próg RoW", 7: "Odcięcie paliwa" } },
+    // Value table jak w data/id_ramek.txt (mAirbag_1 / AB1_CrashStaerke): 0 kein_Crash; 1 Gurtstraffer; 2–3 US; 4–7 RDW
+    "AB1_CrashStaerke": {
+        label: "Siła zderzenia (próg)",
+        states: {
+            0: "Brak zderzenia",
+            1: "Przekroczono próg napinaczy pasów",
+            2: "Przekroczono próg US",
+            3: "Przekroczono próg US",
+            4: "Przekroczono próg RDW",
+            5: "Przekroczono próg RDW",
+            6: "Przekroczono próg RDW",
+            7: "Przekroczono próg RDW"
+        }
+    },
     "AB1_AirbagLampe_ein": { label: "Kontrolka poduszki powietrznej", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
     "AB1_Airbag_deaktiviert": { label: "System Airbag", states: { 0: "Aktywny", 1: "DEZAKTYWOWANY" } },
     "AB1_Beif_Airbag_deaktiviert": { label: "Poduszka pasażera", states: { 0: "Aktywna", 1: "WYŁĄCZONA Z KLUCZYKA" } },
@@ -45,10 +58,15 @@ const signalMeta = Object.freeze({
     "ZK1_HD_entriegeln": { label: "Odblokuj bagażnik", states: { 0: "Brak", 1: "ODBLOKUJ" } },
     "ZK1_HD_oeffnen": { label: "Otwórz bagażnik", states: { 0: "Brak", 1: "OTWÓRZ" } },
     "ZK1_HD_schliessen": { label: "Zamknij bagażnik", states: { 0: "Brak", 1: "ZAMKNIJ" } },
-    "ZK1_LED_Steuerung": { label: "Dioda LED w drzwiach (Safe)", states: { 0: "Wyłączona", 1: "MIGA (AKTYWNA)" } },
+    // id_ramek: 1 = LED an, 0 = LED aus (niekoniecznie „miganie”)
+    "ZK1_LED_Steuerung": { label: "Sterowanie LED w drzwiach", states: { 0: "Wyłączona", 1: "Włączona" } },
     "ZK1_LED_Uebernahme": { label: "Przejęcie sterowania LED", states: { 0: "Brak", 1: "PRZEJĘTE" } },
     "ZK1_Dongle_Nr": { label: "Numer modułu dachu (Dongle)", unit: "" },
-    "ZK1_Dongle_Freq": { label: "Częstotliwość dachu", states: { 0: "315 MHz", 1: "433 MHz" } },
+    // id_ramek: 00=315 MHz, 01=433 MHz; pozostałe kombinacje 2b — nienazwane w DB
+    "ZK1_Dongle_Freq": {
+        label: "Częstotliwość dachu (dongle)",
+        states: { 0: "315 MHz", 1: "433 MHz", 2: "(zastrzeżone)", 3: "(zastrzeżone)" }
+    },
     "ZK1_Verdeck_auf": { label: "Otwieranie dachu", states: { 0: "Brak", 1: "OTWÓRZ" } },
     "ZK1_Verdeck_zu": { label: "Zamykanie dachu", states: { 0: "Brak", 1: "ZAMKNIJ" } },
     "ZK1_LeaveHome_aktiv": { label: "Funkcja Leaving Home", states: { 0: "Nieaktywna", 1: "AKTYWNA" } },
@@ -75,7 +93,8 @@ const signalMeta = Object.freeze({
     "LS1_Bew_Frontwaschen": { label: "Analiza spryskiwacza przód", states: { 0: "Brak", 1: "POTWIERDZONE" } },
     "LS1_Heckintervall": { label: "Wycieraczka tył (Interwał)", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
     "LS1_Heckwaschen": { label: "Spryskiwacz tył", states: { 0: "Wyłączony", 1: "WŁĄCZONY" } },
-    "LS1_Intervallstufen": { label: "Czułość wycieraczek (0-15)", unit: "" },
+    // id_ramek: Intervallgeschwindigkeit / Regensensorempfindlichkeit (1=długie przerwy … 15=krótkie)
+    "LS1_Intervallstufen": { label: "Czułość interwału / deszczu (0–15)", unit: "" },
     "LS1_BC_Down_Cursor": { label: "MFA Przycisk: W dół", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } },
     "LS1_BC_Up_Cursor": { label: "MFA Przycisk: W górę", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } },
     "LS1_BC_Reset": { label: "MFA Przycisk: Reset / OK", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } },
@@ -105,16 +124,26 @@ const signalMeta = Object.freeze({
     // ==========================================
     "ZS1_ZAS_Kl_S": { label: "Styk S (Obecność kluczyka)", states: { 0: "Brak kluczyka", 1: "KLUCZYK WŁOŻONY" } },
     "ZS1_ZAS_Kl_15": { label: "Zacisk 15 (Zapłon)", states: { 0: "Wyłączony", 1: "WŁĄCZONY" } },
-    "ZS1_ZAS_Kl_X": { label: "Zacisk X (Przekaźnik odciążający)", states: { 0: "Brak napięcia", 1: "NAPIĘCIE OBECNE" } },
+    // id_ramek: Kl.X (Startvorgang); 1 = napięcie (jak Kl.15 poza rozruchem wg opisu VW)
+    "ZS1_ZAS_Kl_X": { label: "Zacisk X (napięcie obwodów)", states: { 0: "Brak napięcia", 1: "NAPIĘCIE OBECNE" } },
     "ZS1_ZAS_Kl_50": { label: "Zacisk 50 (Rozrusznik)", states: { 0: "Wyłączony", 1: "START (PRACA)" } },
-    "ZS1_ZAS_Kl_P": { label: "Zacisk P (Światła postojowe)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    // VW: 1 = Klemme P ein (Parklichtstellung) — obwód P, nie „pozycja 0” zapłonu; przy wyjętym kluczu może być 1
+    "ZS1_ZAS_Kl_P": {
+        label: "Zacisk P (Parklichtstellung)",
+        states: { 0: "Obwód P wyłączony", 1: "Obwód P załączony (poz. postojowa stacyjki)" }
+    },
 
     // ==========================================
     // 0x351 - GATEWAY GŁÓWNY (mGateway_1)
     // ==========================================
     "GW1_FhzgGeschw_alt": { label: "Przestarzała ramka: Prędkość pojazdu", states: { 0: "Aktualna", 1: "Przestarzała" } },
     "GW1_Rueckfahrlicht": { label: "Światło wsteczne", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
-    "GW1_FzgGeschw": { label: "Prędkość pojazdu", unit: " km/h", states: { 32708: "Inicjalizacja", 32725: "Zbyt niskie napięcie", 32742: "Błąd czujnika" } },
+    // Stany specjalne: surowy 15-bit × 0,01 → 327.08 / 327.25 / 327.42 km/h (formatSignalValue mapuje z powrotem)
+    "GW1_FzgGeschw": {
+        label: "Prędkość pojazdu",
+        unit: " km/h",
+        states: { 32708: "Inicjalizacja (Init PQ)", 32725: "Zbyt niskie napięcie", 32742: "Błąd czujnika" }
+    },
     "KKO_alt_mBSG_Kombi": { label: "Przestarzała ramka: mBSG_Kombi", states: { 0: "Aktualna", 1: "Przestarzała" } },
 
     // ==========================================
@@ -128,8 +157,13 @@ const signalMeta = Object.freeze({
     "GWB_Alt_1_EPB": { label: "Przestarzała ramka: EPB 1", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
     "GWB_Alt_5_Bremse": { label: "Przestarzała ramka: Bremse 5", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
     "GWB_Alt_AWV_X": { label: "Przestarzała ramka: AWV X", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
-    "GWB_FzgGeschw_Quelle": { label: "Źródło prędkości pojazdu", states: { 0: "Impulsator (Skrzynia)", 1: "Czujniki ABS" } }, 
-    "GWB_FzgGeschw": { label: "Prędkość pojazdu", unit: " km/h" }, 
+    // id_ramek: 1 = ABS-Signal, 0 = kein_ABS
+    "GWB_FzgGeschw_Quelle": { label: "Źródło prędkości pojazdu", states: { 0: "Bez ABS (inne źródło)", 1: "Z ABS" } },
+    "GWB_FzgGeschw": {
+        label: "Prędkość pojazdu",
+        unit: " km/h",
+        states: { 32708: "Inicjalizacja (Init PQ)", 32725: "Zbyt niskie napięcie", 32742: "Błąd czujnika" }
+    },
     "GWB_Wegimpulse": { label: "Impulsy przebytej drogi (Oś przednia)", unit: "" }, 
     "GWB_Wegimpuls_Status": { label: "Status licznika impulsów drogi", states: { 0: "Brak przepełnienia", 1: "Przepełniony (Reset)" } }, 
     "GWB_Wegimpulse_Fehler": { label: "Błąd czujników ABS (Oś przednia)", states: { 0: "OK", 1: "BŁĄD" } }, 
@@ -142,7 +176,8 @@ const signalMeta = Object.freeze({
     "GWB_EPB_Status": { label: "Hamulec postojowy (EPB)", states: { 0: "Zwolniony", 1: "ZACIĄGNIĘTY" } }, 
     "GWB_EPB_Bremslicht": { label: "Światło hamowania z EPB", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } }, 
     "GWB_Schlechtweg": { label: "Wykrycie złej nawierzchni (Wyboje)", states: { 0: "Brak", 1: "ZŁA DROGA" } }, 
-    "GWB_Schlechtweg_Fehler": { label: "Błąd wykrywania złej nawierzchni", states: { 0: "Ważne", 1: "Nieważne/Błąd" } }, 
+    // id_ramek: 0 = gültig, 1 = ungültig (ESP-Fehler)
+    "GWB_Schlechtweg_Fehler": { label: "Status sygnału „zła droga”", states: { 0: "Wartość ważna", 1: "Nieważna (ESP/błąd)" } },
     "GWB_Geschw_Ersatz": { label: "Prędkość zastępcza (Błąd czujnika)", states: { 0: "OK", 1: "WARTOŚĆ ZASTĘPCZA" } }, 
     "GWB_Schaltvorgang": { label: "Zmiana biegu w toku", states: { 0: "Brak zmiany", 1: "ZMIANA BIEGU" } }, 
     "ANB_Teilbremsung_Freigabe": { label: "Zezwolenie na hamowanie częściowe", states: { 0: "Brak zezwolenia", 1: "ZEZWOLONO" } }, 
@@ -157,9 +192,16 @@ const signalMeta = Object.freeze({
     "GWM_Alt_2_Motor": { label: "Przestarzała ramka: Motor 2", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
     "GWM_Alt_5_Motor": { label: "Przestarzała ramka: Motor 5", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
     "GWM_Alt_Motor_Bremse": { label: "Przestarzała ramka: Motor Bremse", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
-    "GWM_RME_Gehalt": { label: "Zawartość biopaliwa (RME)", unit: " %", states: { 7: "BŁĄD" } }, 
-    "GWM_Motordrehzahl": { label: "Obroty silnika", unit: " obr/min", states: { 65280: "BŁĄD CZUJNIKA" } }, 
-    "GWM_KuehlmittelTemp": { label: "Temperatura płynu chłodzącego", unit: " °C", states: { 0: "Inicjalizacja", 255: "BŁĄD" } }, 
+    // surowe 7 × 12,5 = 87,5% — „Fehler” w DB
+    "GWM_RME_Gehalt": { label: "Zawartość biopaliwa (RME)", unit: " %", states: { 87.5: "Błąd" } },
+    // 65280 × 0,25 = 16320 obr/min — wartość błędu po dekodowaniu
+    "GWM_Motordrehzahl": { label: "Obroty silnika", unit: " obr/min", states: { 16320: "Błąd czujnika obrotów" } },
+    // surowe 0 → -48 °C (Init), 255 → 143,25 °C (Fehler)
+    "GWM_KuehlmittelTemp": {
+        label: "Temperatura płynu chłodzącego",
+        unit: " °C",
+        states: { [-48]: "Inicjalizacja", 143.25: "Błąd czujnika" }
+    },
     "GWM_Bremslicht_Schalter": { label: "Czujnik pedału hamulca (BLS)", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } }, 
     "GWM_Bremstest_Schalter": { label: "Styk testowy hamulca (BTS)", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } }, 
     "GWM_Fehl_KmittelTemp": { label: "Błąd czujnika temp. płynu", states: { 0: "OK", 1: "BŁĄD CZUJNIKA" } }, 
@@ -168,14 +210,24 @@ const signalMeta = Object.freeze({
     "GWM_Klimaabschaltung": { label: "Odłączenie kompresora klimatyzacji", states: { 0: "Praca dozwolona", 1: "KOMPRESOR WYŁĄCZONY" } }, 
     "GWM_Kennfeldkuehlung": { label: "Aktywne chłodzenie mapowe", states: { 0: "Nie", 1: "TAK" } }, 
     "GWM_Komp_Leist_red": { label: "Redukcja mocy kompresora", states: { 0: "Nie", 1: "TAK" } }, 
-    "GWM_KLuefter": { label: "Wysterowanie wentylatora chłodnicy", unit: " %", states: { 0: "Wyłączony", 255: "BŁĄD" } }, 
+    // surowe 255 × 0,4 = 102% — „Fehler” w DB
+    "GWM_KLuefter": { label: "Wysterowanie wentylatora chłodnicy", unit: " %", states: { 0: "Wyłączony", 102: "Błąd" } },
     "GWM_Anl_Freigabe": { label: "Zezwolenie na start (Rozrusznik)", states: { 0: "Brak zezwolenia", 1: "START DOZWOLONY" } }, 
     "GWM_Anl_Ausspuren": { label: "Odcięcie pracy rozrusznika", states: { 0: "Praca w toku / Niestabilny", 1: "ODCIĘCIE ROZRUSZNIKA" } }, 
     "GWM_Interlock": { label: "Wymóg wciśnięcia sprzęgła do startu", states: { 0: "Brak wymogu", 1: "SPRZĘGŁO WCIŚNIĘTE" } }, 
     "GWM_TypStartSteu": { label: "Typ sterowania rozruchem", states: { 0: "Kluczyk / Kessy", 1: "AUTOMATYCZNY START" } }, 
     "GWM_Freig_Bremsanforderung": { label: "Zezwolenie na żądanie hamowania", states: { 0: "Brak zezwolenia", 1: "ZEZWOLONO" } }, 
     "GWM_Vorgluehen": { label: "Świece żarowe / Kontrolka silnika", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } }, 
-    "GWM_GRA_Status": { label: "Status tempomatu (GRA)", states: { 0: "Wyłączony", 1: "AKTYWNY", 2: "Przyspieszanie z pedału", 3: "Brak zezwolenia" } }, 
+    // id_ramek: 0 ADR/GRA aus, 1 aktiviert, 2 übersteuert, 3 Fehler/timeout
+    "GWM_GRA_Status": {
+        label: "Status tempomatu (GRA)",
+        states: {
+            0: "Wyłączony",
+            1: "Aktywny (regulacja)",
+            2: "Nadpisanie gazem",
+            3: "Błąd / brak zezwolenia (ADR)"
+        }
+    },
     "GWM_KVerbrauch": { label: "Chwilowe zużycie paliwa", unit: " µl/cykl" }, 
     "GWM_Ueberl_KV": { label: "Przepełnienie licznika zużycia paliwa", states: { 0: "Brak", 1: "PRZEPEŁNIONY" } }, 
 
@@ -183,9 +235,10 @@ const signalMeta = Object.freeze({
     // 0x3C3 - KĄT SKRĘTU KIEROWNICY (mLenkwinkel_1)
     // ==========================================
     "LW1_Lenkradwinkel": { label: "Kąt skrętu kierownicy", unit: " °" }, //
-    "LW1_Vorzeichen": { label: "Kierunek skrętu", states: { 0: "Prawo (Pozytywny)", 1: "Lewo (Negatywny)" } }, //
-    "LW1_Geschwindigkeit": { label: "Prędkość obrotu kierownicy", unit: " °/s" }, //
-    "LW1_Geschw_Vorzeichen": { label: "Kierunek prędkości obrotu", states: { 0: "Prawo (Pozytywna)", 1: "Lewo (Negatywna)" } }, //
+    // id_ramek: 0 = positiv = nach links; 1 = negativ = nach rechts
+    "LW1_Vorzeichen": { label: "Znak kąta (Vorzeichen)", states: { 0: "Lewo (pozytywny)", 1: "Prawo (negatywny)" } },
+    "LW1_Geschwindigkeit": { label: "Prędkość obrotu kierownicy", unit: " °/s" },
+    "LW1_Geschw_Vorzeichen": { label: "Znak prędkości obrotu", states: { 0: "Lewo (pozytywna)", 1: "Prawo (negatywna)" } },
     "LW1_ID": { label: "ID kalibracji czujnika kąta", states: { 0: "Brak kalibracji", 128: "Skalibrowany" } }, //
     "LW1_Quelle_Init": { label: "Źródło inicjalizacji czujnika", states: { 0: "Bremse 3 (ABS)", 1: "EPS_Bit" } }, //
     "LW1_Int_Status": { label: "Status pomiaru kąta", states: { 0: "OK", 1: "Brak inicjalizacji", 2: "Błąd sporadyczny", 3: "Błąd trwały" } }, //
@@ -205,11 +258,12 @@ const signalMeta = Object.freeze({
     "CL1_Heizung_aus": { label: "Żądanie braku grzania (Temp. na MIN)", states: { 0: "Grzanie aktywne", 1: "BRAK GRZANIA" } }, //
     "CL1_Kompressormoment_alt": { label: "Przestarzała ramka: Moment kompresora", states: { 0: "Aktualna", 1: "Przestarzała (Brak danych)" } }, //
     "CL1_Kaeltemitteldruck_alt": { label: "Przestarzała ramka: Ciśnienie czynnika", states: { 0: "Aktualna", 1: "Przestarzała (Kl. 15 OFF)" } }, //
-    "CL1_AussenTemp": { label: "Temperatura powietrza zasysanego (Surowa)", unit: " °C", states: { 255: "BŁĄD SENSORA" } }, //
-    "CL1_KaeltemittelDruck": { label: "Ciśnienie czynnika chłodniczego", unit: " bar", states: { 255: "BŁĄD SENSORA" } }, //
-    "CL1_Last_Kompressor": { label: "Moment obrotowy pobierany przez kompresor", unit: " Nm", states: { 255: "BŁĄD" } }, //
-    "CL1_Geblaeselast": { label: "Wysterowanie dmuchawy nawiewu", unit: " %", states: { 255: "BŁĄD" } }, //
-    "CL1_Strg_Kluefter": { label: "Żądanie wentylatora chłodnicy z klimy", unit: " %", states: { 255: "BŁĄD" } }, //
+    // FF (255) = Fehler w DB; w UI wartość jest już × skala (+ offset) — mapujemy też przeskalowany wynik
+    "CL1_AussenTemp": { label: "Temperatura powietrza zasysanego (Surowa)", unit: " °C", states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" } }, //
+    "CL1_KaeltemittelDruck": { label: "Ciśnienie czynnika chłodniczego", unit: " bar", states: { 255: "BŁĄD SENSORA", 51: "BŁĄD SENSORA" } }, //
+    "CL1_Last_Kompressor": { label: "Moment obrotowy pobierany przez kompresor", unit: " Nm", states: { 255: "BŁĄD", 63.75: "BŁĄD" } }, //
+    "CL1_Geblaeselast": { label: "Wysterowanie dmuchawy nawiewu", unit: " %", states: { 255: "BŁĄD", 102: "BŁĄD" } }, //
+    "CL1_Strg_Kluefter": { label: "Żądanie wentylatora chłodnicy z klimy", unit: " %", states: { 255: "BŁĄD", 102: "BŁĄD" } }, //
     "CL1_Temp_in_F": { label: "Jednostka wyświetlana na panelu Climatronic", states: { 0: "°C", 1: "°F" } }, //
     "CL1_AC_Schalter": { label: "Przycisk AC na panelu", states: { 0: "Wyłączony", 1: "WCIŚNIĘTY (AC ON)" } }, //
     "CL1_WAPU_Zuschaltung": { label: "Dodatkowa pompa wody obiegu ogrzewania", states: { 0: "WŁĄCZONA", 1: "WYŁĄCZONA" } }, //
@@ -221,9 +275,9 @@ const signalMeta = Object.freeze({
     // ==========================================
     // 0x3E3 - KLIMATYZACJA PARAMETRY 2 (mClima_2)
     // ==========================================
-    "CL2_Sonne_links": { label: "Czujnik nasłonecznienia (Lewa strona)", unit: " W/m²", states: { 255: "BŁĄD" } }, //
-    "CL2_Sonne_rechts": { label: "Czujnik nasłonecznienia (Prawa strona)", unit: " W/m²", states: { 255: "BŁĄD" } }, //
-    "CL2_InnenTemp": { label: "Temperatura wewnątrz pojazdu", unit: " °C", states: { 255: "BŁĄD SENSORA" } }, //
+    "CL2_Sonne_links": { label: "Czujnik nasłonecznienia (Lewa strona)", unit: " W/m²", states: { 255: "BŁĄD", 1020: "BŁĄD" } }, //
+    "CL2_Sonne_rechts": { label: "Czujnik nasłonecznienia (Prawa strona)", unit: " W/m²", states: { 255: "BŁĄD", 1020: "BŁĄD" } }, //
+    "CL2_InnenTemp": { label: "Temperatura wewnątrz pojazdu", unit: " °C", states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" } }, //
     "CL2_SitzH_links": { label: "Podgrzewanie fotela kierowcy (Poziom)", unit: "" }, //
     "CL2_SitzH_rechts": { label: "Podgrzewanie fotela pasażera (Poziom)", unit: "" }, //
     "CL2_StSt_Info": { label: "Status systemu Start-Stop dla Klimatyzacji", states: { 0: "Silnik włączony", 1: "Zakaz wyłączenia silnika", 2: "Wymuszenie uruchomienia silnika", 3: "Błąd systemu" } }, //
@@ -232,7 +286,7 @@ const signalMeta = Object.freeze({
     "CL2_Geblaese_plus": { label: "Zwiększenie nawiewu (Ogrzewanie postojowe)", states: { 0: "Brak", 1: "AKTYWNE" } }, //
     "CL2_Umluft_Taste": { label: "Przycisk obiegu zamkniętego (Umluft)", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } }, //
     "CL2_Solltemperatur": { label: "Temperatura docelowa zadana na panelu", unit: "", states: { 0: "Klima OFF", 255: "Błąd danych" } }, //
-    "CL2_Vorgabe_KWTemp": { label: "Żądana temperatura płynu chłodniczego", unit: " °C", states: { 255: "BŁĄD DANYCH" } }, //
+    "CL2_Vorgabe_KWTemp": { label: "Żądana temperatura płynu chłodniczego", unit: " °C", states: { 255: "BŁĄD DANYCH", 143.25: "BŁĄD DANYCH" } }, //
 
     // ==========================================
     // 0x42B - ZARZĄDZANIE SIECIĄ INFOTAINMENT (mNM_Gateway_I)
@@ -276,9 +330,9 @@ const signalMeta = Object.freeze({
     "BSK_HD_Hauptraste": { label: "Bagażnik (Zamek główny)", states: { 0: "Zamknięty", 1: "OTWARTY" } },
     "BSK_HD_Vorraste": { label: "Bagażnik (Zamek wstępny)", states: { 0: "Zamknięty", 1: "OTWARTY" } },
     "BSK_Unterspannung": { label: "Napięcie systemu", states: { 0: "OK", 1: "NAPIĘCIE KRYTYCZNE" } },
-    "BSK_Display": { label: "Podświetlenie wskaźników (Dimm)", unit: " %" },
+    "BSK_Display": { label: "Podświetlenie wskaźników (Dimm)", unit: " %", states: { 127: "BŁĄD" } },
     "BSK_Display_def": { label: "Usterka zacisku 58d (Dimm)", states: { 0: "OK", 1: "BŁĄD" } },
-    "BSK_Klemme_58t": { label: "Podświetlenie lokalizacyjne (58t)", unit: " %" },
+    "BSK_Klemme_58t": { label: "Podświetlenie lokalizacyjne (58t)", unit: " %", states: { 127: "BŁĄD" } },
     "BSK_Klemme_58t_def": { label: "Usterka zacisku 58t", states: { 0: "OK", 1: "BŁĄD" } },
     "BSK_Interlock": { label: "Kontrolka wciśnięcia sprzęgła", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
     "BSK_Buzzer": { label: "Sygnał dźwiękowy (Gong)", states: { 0: "Cisza", 1: "AKTYWNY" } },
@@ -300,10 +354,36 @@ const signalMeta = Object.freeze({
     "BSK_FLA_Sensor_blockiert": { label: "Kamera FLA (Czujnik)", states: { 0: "OK", 1: "ZASŁONIĘTY/BRUDNY" } },
     "BSK_FLA_Defekt": { label: "Usterka systemu FLA", states: { 0: "OK", 1: "BŁĄD" } },
     "BCM_Remotestart_Betrieb": { label: "Zdalny rozruch", states: { 0: "Nieaktywny", 1: "AKTYWNY" } },
-    "BSK_Ruhespannung": { label: "Napięcie spoczynkowe", unit: " V" },
+    "BSK_Ruhespannung": { label: "Napięcie spoczynkowe", unit: " V", states: { 10.5: "Init", 13.6: "BŁĄD" } },
     "BSK_Nebelschlusslicht": { label: "Światło przeciwmgielne tył", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
     "BSK_Fernlicht": { label: "Światła drogowe (Zacisk 56a)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
     "BSK_Tagfahrlicht": { label: "Światła do jazdy dziennej (DRL)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+
+    // ==========================================
+    // 0x531 - STATUS ŚWIATEŁ DLA LICZNIKA (mLicht_1_alt, Gateway)
+    // ==========================================
+    "LIA_Standlicht": { label: "Światła postojowe (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Abblendlicht": { label: "Światła mijania (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Fernlicht": { label: "Światła drogowe (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Nebellicht": { label: "Przeciwmgielne przód (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Nebelschluss": { label: "Przeciwmgielne tył (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Rueckfahrlicht": { label: "Światło wsteczne (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Parklicht_links": { label: "Światło parkingowe lewe", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Parklicht_rechts": { label: "Światło parkingowe prawe", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Blk_links": { label: "Kierunkowskaz lewy (do kombi)", states: { 0: "Wyłączony", 1: "WŁĄCZONY" } },
+    "LIA_Blk_rechts": { label: "Kierunkowskaz prawy (do kombi)", states: { 0: "Wyłączony", 1: "WŁĄCZONY" } },
+    "LIA_Anhaenger": { label: "Kontrolka przyczepy", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
+    "LIA_Warnblink": { label: "Światła awaryjne (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_BLK_Frequenz": { label: "Częstotliwość migania kierunkowskazów", states: { 0: "Standard", 1: "Alternatywna" } },
+    "LIA_AFL_Schalter": { label: "Przełącznik AFL / AUTO", states: { 0: "Nie", 1: "TAK" } },
+    "LIA_Bremslicht": { label: "Światło hamowania (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Tagesfahrlicht": { label: "Światła dzienne DRL (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Blk_L_Kontrolle": { label: "Kontrolka kierunkowskazu lewego", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
+    "LIA_Blk_R_Kontrolle": { label: "Kontrolka kierunkowskazu prawego", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
+    "LIA_Kurv_Licht": { label: "Światło doświetlające zakręty", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Warnblk_Status": { label: "Status trybu awaryjnych", states: { 0: "Nieaktywny", 1: "AKTYWNY" } },
+    "LIA_Zaehler": { label: "Licznik ramki (alive)", unit: "" },
+    "LIA_Pruefsumme": { label: "Suma kontrolna ramki", unit: "" },
 
     // ==========================================
     // 0x527 - KOMUNIKACJA LICZNIKÓW (mGW_Kombi)
@@ -315,8 +395,8 @@ const signalMeta = Object.freeze({
     "GWK_FzgGeschw_Quelle": { label: "Źródło prędkości pojazdu", states: { 0: "Impulsator skrzyni", 1: "Czujniki ABS" } },
     "GWK_FzgGeschw": { label: "Prędkość pojazdu (Wyświetlana)", unit: " km/h" },
     "GWK_Umfang_Reifen": { label: "Obwód opony (zakodowany)", unit: " mm" },
-    "GWK_AussenTemp_gefiltert": { label: "Temperatura zewnętrzna (FIS)", unit: " °C" },
-    "GWK_AussenTemp_ungefiltert": { label: "Temperatura zewnętrzna (Surowa)", unit: " °C" },
+    "GWK_AussenTemp_gefiltert": { label: "Temperatura zewnętrzna (FIS)", unit: " °C", states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" } },
+    "GWK_AussenTemp_ungefiltert": { label: "Temperatura zewnętrzna (Surowa)", unit: " °C", states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" } },
     "GWK_AussenTemp_Fehler": { label: "Czujnik temp. zewnętrznej", states: { 0: "OK", 1: "BŁĄD" } },
     "GWK_Warn_Heiss": { label: "Ostrzeżenie o przegrzaniu silnika", states: { 0: "Brak", 1: "OSTRZEŻENIE!" } },
     "GWK_Passiv_Autolock": { label: "Ryglowanie drzwi po ruszeniu", states: { 0: "Nieaktywne", 1: "AKTYWNE" } },
@@ -332,11 +412,11 @@ const signalMeta = Object.freeze({
     "MO7_FehlerSp": { label: "Błąd zapisany w pamięci (Silnik)", states: { 0: "Brak błędów", 1: "ZAPISANO BŁĄD" } }, 
     "MO7_Fehler_Oel_Temp": { label: "Status czujnika temperatury oleju", states: { 0: "Sprawny (OK)", 1: "BŁĄD CZUJNIKA" } }, 
     "MO7_PTC": { label: "Status wyłączenia dogrzewacza PTC / Świec", unit: "" }, 
-    "MO7_DFM": { label: "Sygnał DFM alternatora (Obciążenie)", unit: " %", states: { 255: "BŁĄD" } }, 
-    "MO7_Hoeheninfo": { label: "Współczynnik korekty wysokości (Atmosf.)", unit: "", states: { 255: "BŁĄD" } }, 
+    "MO7_DFM": { label: "Sygnał DFM alternatora (Obciążenie)", unit: " %", states: { 255: "BŁĄD", 102: "BŁĄD" } },
+    "MO7_Hoeheninfo": { label: "Współczynnik korekty wysokości (Atmosf.)", unit: "", states: { 255: "BŁĄD", 1.9921875: "BŁĄD" } },
     "MO7_Gradient_Drehz": { label: "Gradient obrotów silnika", unit: " obr/min", states: { 127: "Powyżej limitu (>127)" } }, 
     "MO7_Gradient_Vorz": { label: "Kierunek gradientu obrotów", states: { 0: "Rosnące (+)", 1: "Malejące (-)" } }, 
-    "MO7_Ladedruckneu": { label: "Ciśnienie doładowania (Turbo)", unit: " bar", states: { 255: "BŁĄD" } }, 
+    "MO7_Ladedruckneu": { label: "Ciśnienie doładowania (Turbo)", unit: " bar", states: { 255: "BŁĄD", 5.1: "BŁĄD" } }, 
     "MO7_GenLoadResp": { label: "Czas reakcji alternatora (Load Response)", unit: " s" }, 
     "MO7_PTC_bereit": { label: "Gotowość 3-stopniowej grzałki PTC", states: { 0: "Brak grzałki PTC w pojeździe" } }, 
     "MO7_Mot_weckfaehig": { label: "Wybudzanie silnika przez CAN", states: { 0: "Brak wybudzania", 1: "WYMAGANE WYBUDZENIE" } }, 
@@ -346,8 +426,8 @@ const signalMeta = Object.freeze({
     "MO7_Last_abwurf": { label: "Żądanie redukcji napięcia alternatora", states: { 0: "Brak redukcji", 1: "Stupeń 1 (13.3 V)", 2: "Stupeń 2 (12.6 V)", 3: "Stupeń 3 (11.8 V)" } }, 
     "MO7_Ein_Generator": { label: "Włączenie alternatora po starcie", states: { 0: "Wyłączony", 1: "WŁĄCZONY" } }, 
     "MO7_Lastabwurf_Heiz": { label: "Zezwolenie na systemy grzewcze po starcie", states: { 0: "Odcięcie (Brak ładowania)", 1: "Dozwolone praca" } }, 
-    "MO7_Stat_Gluehk": { label: "Status podgrzewania komory (Świece żarowe)", unit: " %", states: { 15: "BŁĄD" } }, 
-    "MO7_Oeltemperatur": { label: "Temperatura oleju silnikowego", unit: " °C", states: { 0: "Brak czujnika", 1: "Inicjalizacja", 255: "BŁĄD CZUJNIKA" } },
+    "MO7_Stat_Gluehk": { label: "Status podgrzewania komory (Świece żarowe)", unit: " %", states: { 15: "BŁĄD", 120: "BŁĄD" } },
+    "MO7_Oeltemperatur": { label: "Temperatura oleju silnikowego", unit: " °C", states: { 0: "Brak czujnika", 1: "Inicjalizacja", 255: "BŁĄD CZUJNIKA", 195: "BŁĄD CZUJNIKA" } },
 
     // ==========================================
     // 0x557 - BŁĘDY MODUŁÓW W SYSTEMIE (mKD_Error)
@@ -510,16 +590,16 @@ const signalMeta = Object.freeze({
     "KO1_Klemme_L": { label: "Kontrolka ładowania (Licznik)", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
     "KO1_Standzeit": { label: "Czas postoju pojazdu", unit: " s" },
     "KO1_Standzeit_Fehler": { label: "Błąd pomiaru czasu postoju", states: { 0: "Czas prawidłowy", 1: "BŁĄD ZASILANIA (Kl. 30)" } },
-    "KO1_Tankinhalt": { label: "Poziom paliwa", unit: " L" },
+    "KO1_Tankinhalt": { label: "Poziom paliwa", unit: " L", states: { 127: "BŁĄD DANYCH" } },
     "KO1_Tankwarnung": { label: "Ostrzeżenie o rezerwie (Diagnostyka)", states: { 0: "OK", 1: "REZERWA" } },
     "KO1_WFS_Schluessel": { label: "Numer kluczyka (Immo)", unit: "" },
     "KO1_KD_Fehler_WFS": { label: "Błąd immobilizera w pamięci", states: { 0: "Brak", 1: "ZAPISANY BŁĄD" } },
     "KO1_Fernlicht": { label: "Kontrolka świateł drogowych", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
     "KO1_Freigabe_Zuheizer": { label: "Dogrzewacz (Z menu licznika)", states: { 0: "WŁĄCZONY", 1: "WYŁĄCZONY" } },
     "KO1_MFA_vorhanden": { label: "Obecność przycisków MFA", states: { 0: "Brak", 1: "ZAMONTOWANE" } },
-    "KO1_Bel_Displ": { label: "Siła podświetlenia wskaźników", unit: " %" },
+    "KO1_Bel_Displ": { label: "Siła podświetlenia wskaźników", unit: " %", states: { 127: "Brak zamiennika" } },
     "KO1_Sta_Displ": { label: "Status obwodu podświetlenia", states: { 0: "OK", 1: "USTERKA KL. 58d" } },
-    "KO1_Lichtsensor": { label: "Odczyt czujnika światła", unit: "" },
+    "KO1_Lichtsensor": { label: "Odczyt czujnika światła", unit: "", states: { 254: "INICJALIZACJA", 255: "BŁĄD DANYCH" } },
 
     // ==========================================
     // 0x62F - WYŚWIETLACZ MFA / FIS (mDisplay_1)

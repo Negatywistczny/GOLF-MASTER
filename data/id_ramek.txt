@@ -3682,7 +3682,22 @@ Besonderheit Initwerte Temperaturen (bei VW und Audi ???):
       0 = Lampe_aus
    ........................................
 
-0x551 (1361) -> Niezidentyfikowana [Ramka specyficzna, często powiązana ze statusem układu kierowniczego lub napędu]
+0x551 (1361) -> [Niezidentyfikowana — brak wpisu BO_ 1361 w dołączonym DBC]
+
+==================================================
+=== INFORMACJE O RAMCE: 0x551 ===
+==================================================
+ID (Dziesiętne):  1361
+ID (Szesnastkowe): 0x551
+Długość (DLC):    zmienna (w logach często 1 bajt, np. 00)
+Nadawca (Tx):     typowo Gateway_PQ35, Gateway_PQ46
+Czas cyklu:       nie ustalono w tym repozytorium
+Opis (Komentarz): W pliku id_po_adresach.txt ramki z tą samą końcówką hex „…51” to m.in. 0x151 (mAirbag_1), 0x351 (mGateway_1), 0x651 (mSysteminfo_1); 0x551 należy do tej samej rodziny adresowej, lecz bez potwierdzonej nazwy VAG w DBC tutaj. Starsza notatka o „kierownicy/napędzie” pozostaje hipotezą.
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+   (brak zaufanej mapy bitów w repozytorium — dekoder UI pokazuje tylko surowe bajty)
 
 0x555 (1365) -> mMotor7 (Dodatkowa ramka silnika: ciśnienie doładowania, temp. oleju)
 
@@ -8103,6 +8118,242 @@ WFS nicht angelernt: Ausgabe 'X' (0x58) oder '-' (0x2D)
 17. Stelle der Fahrgestellnummer
 WFS nicht angelernt: Ausgabe 'X' (0x58) oder '-' (0x2D)
    Startbit:       56
+   Długość:        8 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 255
+   Jednostka:      Brak
+   ........................................
+
+0x531 (1329) -> mLicht_1_alt (Status świateł / kontrolkek dla licznika — Gateway; mapa: data/PQ35_46_ICAN_V3_6_9_F_20081104_ASR_V1_2.dbc BO_ 1329)
+
+==================================================
+=== INFORMACJE O RAMCE: mLicht_1_alt ===
+==================================================
+ID (Dziesiętne):  1329
+ID (Szesnastkowe): 0x531
+Długość (DLC):    4 bajtów
+Nadawca (Tx):     Gateway_PQ35, Gateway_PQ46
+Czas cyklu:       ~50 ms (DBC GenMsgCycleTime)
+Opis (Komentarz): Ramka informacyjna dla kombi: stan oświetlenia zewnętrznego i kontrolki (LIA_*)
+
+==================================================
+=== SYGNAŁY W TEJ RAMCE ===
+==================================================
+-> SYGNAŁ: LIA_Standlicht
+   Opis:           Światła postojowe (informacja dla licznika)
+   Startbit:       0
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Abblendlicht
+   Opis:           Światła mijania
+   Startbit:       1
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Fernlicht
+   Opis:           Światła drogowe
+   Startbit:       2
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Nebellicht
+   Opis:           Przeciwmgielne przód
+   Startbit:       3
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Nebelschluss
+   Opis:           Przeciwmgielne tył
+   Startbit:       4
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Rueckfahrlicht
+   Opis:           Światło wsteczne
+   Startbit:       5
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Parklicht_links
+   Opis:           Światło parkingowe lewe
+   Startbit:       6
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Parklicht_rechts
+   Opis:           Światło parkingowe prawe
+   Startbit:       7
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Blk_links
+   Opis:           Kierunkowskaz lewy
+   Startbit:       8
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Blk_rechts
+   Opis:           Kierunkowskaz prawy
+   Startbit:       9
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Anhaenger
+   Opis:           Kontrolka przyczepy
+   Startbit:       10
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Warnblink
+   Opis:           Światła awaryjne
+   Startbit:       11
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_BLK_Frequenz
+   Opis:           Częstotliwość migania kierunkowskazów
+   Startbit:       12
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_AFL_Schalter
+   Opis:           Przełącznik w pozycji AFL / auto
+   Startbit:       13
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Bremslicht
+   Opis:           Światło hamowania
+   Startbit:       14
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Tagesfahrlicht
+   Opis:           Światła dzienne (DRL)
+   Startbit:       15
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Blk_L_Kontrolle
+   Opis:           Kontrolka kierunkowskazu lewego
+   Startbit:       16
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Blk_R_Kontrolle
+   Opis:           Kontrolka kierunkowskazu prawego
+   Startbit:       17
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Kurv_Licht
+   Opis:           Światło doświetlające zakręty
+   Startbit:       18
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Warnblk_Status
+   Opis:           Status trybu świateł awaryjnych
+   Startbit:       19
+   Długość:        1 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 1
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Zaehler
+   Opis:           Licznik ramki (alive), 0–15
+   Startbit:       20
+   Długość:        4 bitów
+   Kolejność bajtów:Intel (Little-endian)
+   Typ:            Bez znaku (Unsigned)
+   Przelicznik:    Wartość = (Dane x 1) + (0)
+   Zakres fizyczny:0 do 15
+   Jednostka:      Brak
+   ........................................
+-> SYGNAŁ: LIA_Pruefsumme
+   Opis:           Suma kontrolna (wg specyfikacji VW)
+   Startbit:       24
    Długość:        8 bitów
    Kolejność bajtów:Intel (Little-endian)
    Typ:            Bez znaku (Unsigned)

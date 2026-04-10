@@ -64,6 +64,12 @@ function stateTextForRaw(states, rawValue) {
     if (typeof rawValue === "number" && Number.isInteger(rawValue)) {
         candidates.push(String(rawValue));
     }
+    if (typeof rawValue === "number" && Number.isFinite(rawValue)) {
+        candidates.push(Math.round(rawValue * 100));
+        candidates.push(String(Math.round(rawValue * 100)));
+        candidates.push(Math.round(rawValue * 100) / 100);
+        candidates.push(Math.round(rawValue * 10) / 10);
+    }
     for (const c of candidates) {
         if (c === undefined || c === null) continue;
         if (Object.prototype.hasOwnProperty.call(states, c)) return states[c];
@@ -80,6 +86,10 @@ function getOverrideTag(frameId, signalKey, rawValue, displayVal) {
 
     const normalizedDisplay = normalizeStatusText(displayVal);
     const candidates = [rawValue, String(rawValue), displayVal, normalizedDisplay];
+    if (typeof rawValue === "number" && Number.isFinite(rawValue)) {
+        candidates.push(Math.round(rawValue * 100));
+        candidates.push(String(Math.round(rawValue * 100)));
+    }
 
     for (const candidate of candidates) {
         if (candidate === undefined || candidate === null) continue;

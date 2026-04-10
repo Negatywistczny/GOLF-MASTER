@@ -513,6 +513,11 @@ KOŃCÓWKA ADRESU: 51
      Urządzenia: Gateway_PQ35, Gateway_PQ46
      Opis:       Brak opisu
   ----------------------------------------------------------------------------
+  -> Pełne ID:   0x551
+     Nazwa ramki:[niezidentyfikowana]
+     Urządzenia: Gateway_PQ35, Gateway_PQ46 (typowo; brak BO_ 1361 w dołączonym DBC)
+     Opis:       Końcówka hex …51 jak 0x151 / 0x351 / 0x651; szczegóły w id_ramek.txt; DLC często 1 B w logach
+  ----------------------------------------------------------------------------
   -> Pełne ID:   0x651
      Nazwa ramki:mSysteminfo_1
      Urządzenia: Gateway_PQ35, Gateway_PQ46

@@ -45,6 +45,18 @@ Filtr dynamiczny — do 60 śledzonych ID; `true` przy pierwszym wystąpieniu lu
 
 Bez `delay`: `processSerial()`, odbiór CAN (przerwanie), `handleGatewayNm()`, sniffer (z pominięciem m.in. `0x531`, `0x661`, `0x40B`), watchdog `ERR:CAN:HANG` (>2 s bez ramki przy braku uśpienia), pompa `0x661` co 150 ms przy aktywnej Weckursache, `checkHardwareErrors()` co 1000 ms.
 
+### Pominięcia sniffera na Serialu
+
+W `loop()` ramka jest wypisywana tylko wtedy, gdy jej ID **nie** jest na liście poniżej (warunek w kodzie przed `isDiagFrame` / `isDelta`). To **nie** wyłącza odbioru CAN — tylko logowanie na Serial.
+
+| ID | Stała w kodzie | Powód pominięcia | Web UI |
+|----|----------------|------------------|--------|
+| `0x531` | `CAN_ID_SNIFFER_IGNORE_A` | Ramka komfortu **mLicht_1_alt** — bardzo częsta; bez filtra zalewałaby log. | Zarejestrowana i dekodowana (`LIA_*`), jeśli dane trafią z mostka / symulatora / innego źródła. |
+| `0x661` | `CAN_ID_RADIO_STATUS` | **Podtrzymanie radia** — tę ramkę co 150 ms **nadaje to samo Arduino** przy aktywnej Weckursache; w logu byłoby tylko echo własnego TX. | Brak dedykowanego dekodera w `frameRegistry` (ramka pochodzi z firmware, nie z obserwacji magistrali). |
+| `0x40B` | `NM_ARDUINO_ID` | **Odpowiedź NM węzła Arduino** (Ring / Alive) — własna ramka wysyłana przez `handleGatewayNm`; pominięcie utrzymuje czytelność sniffera. | Brak wpisu w `frameRegistry` (logika NM jest po stronie `0x42B` — **mNM_Gateway**). |
+
+W szkicach testowych (`hardware/test/…`) mogą być dodatkowe wykluczenia (np. `0x42B` w Fazie 4) — tam cel jest ten sam: ograniczyć szum w logach do potrzeb danego eksperymentu.
+
 ## 4. Format wyjścia (Serial)
 
 - **Ramki:** `0x[ID_HEX]: [B1] [B2] …`

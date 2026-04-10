@@ -15,7 +15,20 @@ const signalMeta = Object.freeze({
     "AB1_Crash_FT": { label: "Zderzenie boczne (Kierowca)", states: { 0: "Brak", 1: "WYKRYTO ZDERZENIE" } },
     "AB1_Crash_BT": { label: "Zderzenie boczne (Pasażer)", states: { 0: "Brak", 1: "WYKRYTO ZDERZENIE" } },
     "AB1_Rollover": { label: "Rolowanie (Dachowanie)", states: { 0: "Brak", 1: "WYKRYTO DACHOWANIE" } },
-    "AB1_CrashStaerke": { label: "Siła zderzenia", states: { 0: "Brak zderzenia", 1: "Napinacze pasów", 2: "Próg US (Niski)", 3: "Próg US (Wysoki)", 4: "Próg RoW", 5: "Próg RoW", 6: "Próg RoW", 7: "Odcięcie paliwa" } },
+    // Value table jak w data/id_ramek.txt (mAirbag_1 / AB1_CrashStaerke): 0 kein_Crash; 1 Gurtstraffer; 2–3 US; 4–7 RDW
+    "AB1_CrashStaerke": {
+        label: "Siła zderzenia (próg)",
+        states: {
+            0: "Brak zderzenia",
+            1: "Przekroczono próg napinaczy pasów",
+            2: "Przekroczono próg US",
+            3: "Przekroczono próg US",
+            4: "Przekroczono próg RDW",
+            5: "Przekroczono próg RDW",
+            6: "Przekroczono próg RDW",
+            7: "Przekroczono próg RDW"
+        }
+    },
     "AB1_AirbagLampe_ein": { label: "Kontrolka poduszki powietrznej", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
     "AB1_Airbag_deaktiviert": { label: "System Airbag", states: { 0: "Aktywny", 1: "DEZAKTYWOWANY" } },
     "AB1_Beif_Airbag_deaktiviert": { label: "Poduszka pasażera", states: { 0: "Aktywna", 1: "WYŁĄCZONA Z KLUCZYKA" } },
@@ -52,10 +65,15 @@ const signalMeta = Object.freeze({
     "ZK1_HD_entriegeln": { label: "Odblokuj bagażnik", states: { 0: "Brak", 1: "ODBLOKUJ" } },
     "ZK1_HD_oeffnen": { label: "Otwórz bagażnik", states: { 0: "Brak", 1: "OTWÓRZ" } },
     "ZK1_HD_schliessen": { label: "Zamknij bagażnik", states: { 0: "Brak", 1: "ZAMKNIJ" } },
-    "ZK1_LED_Steuerung": { label: "Dioda LED w drzwiach (Safe)", states: { 0: "Wyłączona", 1: "MIGA (AKTYWNA)" } },
+    // id_ramek: 1 = LED an, 0 = LED aus (niekoniecznie „miganie”)
+    "ZK1_LED_Steuerung": { label: "Sterowanie LED w drzwiach", states: { 0: "Wyłączona", 1: "Włączona" } },
     "ZK1_LED_Uebernahme": { label: "Przejęcie sterowania LED", states: { 0: "Brak", 1: "PRZEJĘTE" } },
     "ZK1_Dongle_Nr": { label: "Numer modułu dachu (Dongle)", unit: "" },
-    "ZK1_Dongle_Freq": { label: "Częstotliwość dachu", states: { 0: "315 MHz", 1: "433 MHz" } },
+    // id_ramek: 00=315 MHz, 01=433 MHz; pozostałe kombinacje 2b — nienazwane w DB
+    "ZK1_Dongle_Freq": {
+        label: "Częstotliwość dachu (dongle)",
+        states: { 0: "315 MHz", 1: "433 MHz", 2: "(zastrzeżone)", 3: "(zastrzeżone)" }
+    },
     "ZK1_Verdeck_auf": { label: "Otwieranie dachu", states: { 0: "Brak", 1: "OTWÓRZ" } },
     "ZK1_Verdeck_zu": { label: "Zamykanie dachu", states: { 0: "Brak", 1: "ZAMKNIJ" } },
     "ZK1_LeaveHome_aktiv": { label: "Funkcja Leaving Home", states: { 0: "Nieaktywna", 1: "AKTYWNA" } },
@@ -82,7 +100,8 @@ const signalMeta = Object.freeze({
     "LS1_Bew_Frontwaschen": { label: "Analiza spryskiwacza przód", states: { 0: "Brak", 1: "POTWIERDZONE" } },
     "LS1_Heckintervall": { label: "Wycieraczka tył (Interwał)", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
     "LS1_Heckwaschen": { label: "Spryskiwacz tył", states: { 0: "Wyłączony", 1: "WŁĄCZONY" } },
-    "LS1_Intervallstufen": { label: "Czułość wycieraczek (0-15)", unit: "" },
+    // id_ramek: Intervallgeschwindigkeit / Regensensorempfindlichkeit (1=długie przerwy … 15=krótkie)
+    "LS1_Intervallstufen": { label: "Czułość interwału / deszczu (0–15)", unit: "" },
     "LS1_BC_Down_Cursor": { label: "MFA Przycisk: W dół", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } },
     "LS1_BC_Up_Cursor": { label: "MFA Przycisk: W górę", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } },
     "LS1_BC_Reset": { label: "MFA Przycisk: Reset / OK", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } },
@@ -112,16 +131,26 @@ const signalMeta = Object.freeze({
     // ==========================================
     "ZS1_ZAS_Kl_S": { label: "Styk S (Obecność kluczyka)", states: { 0: "Brak kluczyka", 1: "KLUCZYK WŁOŻONY" } },
     "ZS1_ZAS_Kl_15": { label: "Zacisk 15 (Zapłon)", states: { 0: "Wyłączony", 1: "WŁĄCZONY" } },
-    "ZS1_ZAS_Kl_X": { label: "Zacisk X (Przekaźnik odciążający)", states: { 0: "Brak napięcia", 1: "NAPIĘCIE OBECNE" } },
+    // id_ramek: Kl.X (Startvorgang); 1 = napięcie (jak Kl.15 poza rozruchem wg opisu VW)
+    "ZS1_ZAS_Kl_X": { label: "Zacisk X (napięcie obwodów)", states: { 0: "Brak napięcia", 1: "NAPIĘCIE OBECNE" } },
     "ZS1_ZAS_Kl_50": { label: "Zacisk 50 (Rozrusznik)", states: { 0: "Wyłączony", 1: "START (PRACA)" } },
-    "ZS1_ZAS_Kl_P": { label: "Zacisk P (Światła postojowe)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    // VW: 1 = Klemme P ein (Parklichtstellung) — obwód P, nie „pozycja 0” zapłonu; przy wyjętym kluczu może być 1
+    "ZS1_ZAS_Kl_P": {
+        label: "Zacisk P (Parklichtstellung)",
+        states: { 0: "Obwód P wyłączony", 1: "Obwód P załączony (poz. postojowa stacyjki)" }
+    },
 
     // ==========================================
     // 0x351 - GATEWAY GŁÓWNY (mGateway_1)
     // ==========================================
     "GW1_FhzgGeschw_alt": { label: "Przestarzała ramka: Prędkość pojazdu", states: { 0: "Aktualna", 1: "Przestarzała" } },
     "GW1_Rueckfahrlicht": { label: "Światło wsteczne", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
-    "GW1_FzgGeschw": { label: "Prędkość pojazdu", unit: " km/h", states: { 32708: "Inicjalizacja", 32725: "Zbyt niskie napięcie", 32742: "Błąd czujnika" } },
+    // Stany specjalne: surowy 15-bit × 0,01 → 327.08 / 327.25 / 327.42 km/h (formatSignalValue mapuje z powrotem)
+    "GW1_FzgGeschw": {
+        label: "Prędkość pojazdu",
+        unit: " km/h",
+        states: { 32708: "Inicjalizacja (Init PQ)", 32725: "Zbyt niskie napięcie", 32742: "Błąd czujnika" }
+    },
     "KKO_alt_mBSG_Kombi": { label: "Przestarzała ramka: mBSG_Kombi", states: { 0: "Aktualna", 1: "Przestarzała" } },
 
     // ==========================================
@@ -135,8 +164,13 @@ const signalMeta = Object.freeze({
     "GWB_Alt_1_EPB": { label: "Przestarzała ramka: EPB 1", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
     "GWB_Alt_5_Bremse": { label: "Przestarzała ramka: Bremse 5", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
     "GWB_Alt_AWV_X": { label: "Przestarzała ramka: AWV X", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
-    "GWB_FzgGeschw_Quelle": { label: "Źródło prędkości pojazdu", states: { 0: "Impulsator (Skrzynia)", 1: "Czujniki ABS" } }, 
-    "GWB_FzgGeschw": { label: "Prędkość pojazdu", unit: " km/h" }, 
+    // id_ramek: 1 = ABS-Signal, 0 = kein_ABS
+    "GWB_FzgGeschw_Quelle": { label: "Źródło prędkości pojazdu", states: { 0: "Bez ABS (inne źródło)", 1: "Z ABS" } },
+    "GWB_FzgGeschw": {
+        label: "Prędkość pojazdu",
+        unit: " km/h",
+        states: { 32708: "Inicjalizacja (Init PQ)", 32725: "Zbyt niskie napięcie", 32742: "Błąd czujnika" }
+    },
     "GWB_Wegimpulse": { label: "Impulsy przebytej drogi (Oś przednia)", unit: "" }, 
     "GWB_Wegimpuls_Status": { label: "Status licznika impulsów drogi", states: { 0: "Brak przepełnienia", 1: "Przepełniony (Reset)" } }, 
     "GWB_Wegimpulse_Fehler": { label: "Błąd czujników ABS (Oś przednia)", states: { 0: "OK", 1: "BŁĄD" } }, 
@@ -149,7 +183,8 @@ const signalMeta = Object.freeze({
     "GWB_EPB_Status": { label: "Hamulec postojowy (EPB)", states: { 0: "Zwolniony", 1: "ZACIĄGNIĘTY" } }, 
     "GWB_EPB_Bremslicht": { label: "Światło hamowania z EPB", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } }, 
     "GWB_Schlechtweg": { label: "Wykrycie złej nawierzchni (Wyboje)", states: { 0: "Brak", 1: "ZŁA DROGA" } }, 
-    "GWB_Schlechtweg_Fehler": { label: "Błąd wykrywania złej nawierzchni", states: { 0: "Ważne", 1: "Nieważne/Błąd" } }, 
+    // id_ramek: 0 = gültig, 1 = ungültig (ESP-Fehler)
+    "GWB_Schlechtweg_Fehler": { label: "Status sygnału „zła droga”", states: { 0: "Wartość ważna", 1: "Nieważna (ESP/błąd)" } },
     "GWB_Geschw_Ersatz": { label: "Prędkość zastępcza (Błąd czujnika)", states: { 0: "OK", 1: "WARTOŚĆ ZASTĘPCZA" } }, 
     "GWB_Schaltvorgang": { label: "Zmiana biegu w toku", states: { 0: "Brak zmiany", 1: "ZMIANA BIEGU" } }, 
     "ANB_Teilbremsung_Freigabe": { label: "Zezwolenie na hamowanie częściowe", states: { 0: "Brak zezwolenia", 1: "ZEZWOLONO" } }, 
@@ -164,9 +199,16 @@ const signalMeta = Object.freeze({
     "GWM_Alt_2_Motor": { label: "Przestarzała ramka: Motor 2", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
     "GWM_Alt_5_Motor": { label: "Przestarzała ramka: Motor 5", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
     "GWM_Alt_Motor_Bremse": { label: "Przestarzała ramka: Motor Bremse", states: { 0: "Aktualna", 1: "Przestarzała" } }, 
-    "GWM_RME_Gehalt": { label: "Zawartość biopaliwa (RME)", unit: " %", states: { 7: "BŁĄD" } }, 
-    "GWM_Motordrehzahl": { label: "Obroty silnika", unit: " obr/min", states: { 65280: "BŁĄD CZUJNIKA" } }, 
-    "GWM_KuehlmittelTemp": { label: "Temperatura płynu chłodzącego", unit: " °C", states: { 0: "Inicjalizacja", 255: "BŁĄD" } }, 
+    // surowe 7 × 12,5 = 87,5% — „Fehler” w DB
+    "GWM_RME_Gehalt": { label: "Zawartość biopaliwa (RME)", unit: " %", states: { 87.5: "Błąd" } },
+    // 65280 × 0,25 = 16320 obr/min — wartość błędu po dekodowaniu
+    "GWM_Motordrehzahl": { label: "Obroty silnika", unit: " obr/min", states: { 16320: "Błąd czujnika obrotów" } },
+    // surowe 0 → -48 °C (Init), 255 → 143,25 °C (Fehler)
+    "GWM_KuehlmittelTemp": {
+        label: "Temperatura płynu chłodzącego",
+        unit: " °C",
+        states: { [-48]: "Inicjalizacja", 143.25: "Błąd czujnika" }
+    },
     "GWM_Bremslicht_Schalter": { label: "Czujnik pedału hamulca (BLS)", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } }, 
     "GWM_Bremstest_Schalter": { label: "Styk testowy hamulca (BTS)", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } }, 
     "GWM_Fehl_KmittelTemp": { label: "Błąd czujnika temp. płynu", states: { 0: "OK", 1: "BŁĄD CZUJNIKA" } }, 
@@ -175,14 +217,24 @@ const signalMeta = Object.freeze({
     "GWM_Klimaabschaltung": { label: "Odłączenie kompresora klimatyzacji", states: { 0: "Praca dozwolona", 1: "KOMPRESOR WYŁĄCZONY" } }, 
     "GWM_Kennfeldkuehlung": { label: "Aktywne chłodzenie mapowe", states: { 0: "Nie", 1: "TAK" } }, 
     "GWM_Komp_Leist_red": { label: "Redukcja mocy kompresora", states: { 0: "Nie", 1: "TAK" } }, 
-    "GWM_KLuefter": { label: "Wysterowanie wentylatora chłodnicy", unit: " %", states: { 0: "Wyłączony", 255: "BŁĄD" } }, 
+    // surowe 255 × 0,4 = 102% — „Fehler” w DB
+    "GWM_KLuefter": { label: "Wysterowanie wentylatora chłodnicy", unit: " %", states: { 0: "Wyłączony", 102: "Błąd" } },
     "GWM_Anl_Freigabe": { label: "Zezwolenie na start (Rozrusznik)", states: { 0: "Brak zezwolenia", 1: "START DOZWOLONY" } }, 
     "GWM_Anl_Ausspuren": { label: "Odcięcie pracy rozrusznika", states: { 0: "Praca w toku / Niestabilny", 1: "ODCIĘCIE ROZRUSZNIKA" } }, 
     "GWM_Interlock": { label: "Wymóg wciśnięcia sprzęgła do startu", states: { 0: "Brak wymogu", 1: "SPRZĘGŁO WCIŚNIĘTE" } }, 
     "GWM_TypStartSteu": { label: "Typ sterowania rozruchem", states: { 0: "Kluczyk / Kessy", 1: "AUTOMATYCZNY START" } }, 
     "GWM_Freig_Bremsanforderung": { label: "Zezwolenie na żądanie hamowania", states: { 0: "Brak zezwolenia", 1: "ZEZWOLONO" } }, 
     "GWM_Vorgluehen": { label: "Świece żarowe / Kontrolka silnika", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } }, 
-    "GWM_GRA_Status": { label: "Status tempomatu (GRA)", states: { 0: "Wyłączony", 1: "AKTYWNY", 2: "Przyspieszanie z pedału", 3: "Brak zezwolenia" } }, 
+    // id_ramek: 0 ADR/GRA aus, 1 aktiviert, 2 übersteuert, 3 Fehler/timeout
+    "GWM_GRA_Status": {
+        label: "Status tempomatu (GRA)",
+        states: {
+            0: "Wyłączony",
+            1: "Aktywny (regulacja)",
+            2: "Nadpisanie gazem",
+            3: "Błąd / brak zezwolenia (ADR)"
+        }
+    },
     "GWM_KVerbrauch": { label: "Chwilowe zużycie paliwa", unit: " µl/cykl" }, 
     "GWM_Ueberl_KV": { label: "Przepełnienie licznika zużycia paliwa", states: { 0: "Brak", 1: "PRZEPEŁNIONY" } }, 
 
@@ -190,9 +242,10 @@ const signalMeta = Object.freeze({
     // 0x3C3 - KĄT SKRĘTU KIEROWNICY (mLenkwinkel_1)
     // ==========================================
     "LW1_Lenkradwinkel": { label: "Kąt skrętu kierownicy", unit: " °" }, //
-    "LW1_Vorzeichen": { label: "Kierunek skrętu", states: { 0: "Prawo (Pozytywny)", 1: "Lewo (Negatywny)" } }, //
-    "LW1_Geschwindigkeit": { label: "Prędkość obrotu kierownicy", unit: " °/s" }, //
-    "LW1_Geschw_Vorzeichen": { label: "Kierunek prędkości obrotu", states: { 0: "Prawo (Pozytywna)", 1: "Lewo (Negatywna)" } }, //
+    // id_ramek: 0 = positiv = nach links; 1 = negativ = nach rechts
+    "LW1_Vorzeichen": { label: "Znak kąta (Vorzeichen)", states: { 0: "Lewo (pozytywny)", 1: "Prawo (negatywny)" } },
+    "LW1_Geschwindigkeit": { label: "Prędkość obrotu kierownicy", unit: " °/s" },
+    "LW1_Geschw_Vorzeichen": { label: "Znak prędkości obrotu", states: { 0: "Lewo (pozytywna)", 1: "Prawo (negatywna)" } },
     "LW1_ID": { label: "ID kalibracji czujnika kąta", states: { 0: "Brak kalibracji", 128: "Skalibrowany" } }, //
     "LW1_Quelle_Init": { label: "Źródło inicjalizacji czujnika", states: { 0: "Bremse 3 (ABS)", 1: "EPS_Bit" } }, //
     "LW1_Int_Status": { label: "Status pomiaru kąta", states: { 0: "OK", 1: "Brak inicjalizacji", 2: "Błąd sporadyczny", 3: "Błąd trwały" } }, //
@@ -212,11 +265,12 @@ const signalMeta = Object.freeze({
     "CL1_Heizung_aus": { label: "Żądanie braku grzania (Temp. na MIN)", states: { 0: "Grzanie aktywne", 1: "BRAK GRZANIA" } }, //
     "CL1_Kompressormoment_alt": { label: "Przestarzała ramka: Moment kompresora", states: { 0: "Aktualna", 1: "Przestarzała (Brak danych)" } }, //
     "CL1_Kaeltemitteldruck_alt": { label: "Przestarzała ramka: Ciśnienie czynnika", states: { 0: "Aktualna", 1: "Przestarzała (Kl. 15 OFF)" } }, //
-    "CL1_AussenTemp": { label: "Temperatura powietrza zasysanego (Surowa)", unit: " °C", states: { 255: "BŁĄD SENSORA" } }, //
-    "CL1_KaeltemittelDruck": { label: "Ciśnienie czynnika chłodniczego", unit: " bar", states: { 255: "BŁĄD SENSORA" } }, //
-    "CL1_Last_Kompressor": { label: "Moment obrotowy pobierany przez kompresor", unit: " Nm", states: { 255: "BŁĄD" } }, //
-    "CL1_Geblaeselast": { label: "Wysterowanie dmuchawy nawiewu", unit: " %", states: { 255: "BŁĄD" } }, //
-    "CL1_Strg_Kluefter": { label: "Żądanie wentylatora chłodnicy z klimy", unit: " %", states: { 255: "BŁĄD" } }, //
+    // FF (255) = Fehler w DB; w UI wartość jest już × skala (+ offset) — mapujemy też przeskalowany wynik
+    "CL1_AussenTemp": { label: "Temperatura powietrza zasysanego (Surowa)", unit: " °C", states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" } }, //
+    "CL1_KaeltemittelDruck": { label: "Ciśnienie czynnika chłodniczego", unit: " bar", states: { 255: "BŁĄD SENSORA", 51: "BŁĄD SENSORA" } }, //
+    "CL1_Last_Kompressor": { label: "Moment obrotowy pobierany przez kompresor", unit: " Nm", states: { 255: "BŁĄD", 63.75: "BŁĄD" } }, //
+    "CL1_Geblaeselast": { label: "Wysterowanie dmuchawy nawiewu", unit: " %", states: { 255: "BŁĄD", 102: "BŁĄD" } }, //
+    "CL1_Strg_Kluefter": { label: "Żądanie wentylatora chłodnicy z klimy", unit: " %", states: { 255: "BŁĄD", 102: "BŁĄD" } }, //
     "CL1_Temp_in_F": { label: "Jednostka wyświetlana na panelu Climatronic", states: { 0: "°C", 1: "°F" } }, //
     "CL1_AC_Schalter": { label: "Przycisk AC na panelu", states: { 0: "Wyłączony", 1: "WCIŚNIĘTY (AC ON)" } }, //
     "CL1_WAPU_Zuschaltung": { label: "Dodatkowa pompa wody obiegu ogrzewania", states: { 0: "WŁĄCZONA", 1: "WYŁĄCZONA" } }, //
@@ -228,9 +282,9 @@ const signalMeta = Object.freeze({
     // ==========================================
     // 0x3E3 - KLIMATYZACJA PARAMETRY 2 (mClima_2)
     // ==========================================
-    "CL2_Sonne_links": { label: "Czujnik nasłonecznienia (Lewa strona)", unit: " W/m²", states: { 255: "BŁĄD" } }, //
-    "CL2_Sonne_rechts": { label: "Czujnik nasłonecznienia (Prawa strona)", unit: " W/m²", states: { 255: "BŁĄD" } }, //
-    "CL2_InnenTemp": { label: "Temperatura wewnątrz pojazdu", unit: " °C", states: { 255: "BŁĄD SENSORA" } }, //
+    "CL2_Sonne_links": { label: "Czujnik nasłonecznienia (Lewa strona)", unit: " W/m²", states: { 255: "BŁĄD", 1020: "BŁĄD" } }, //
+    "CL2_Sonne_rechts": { label: "Czujnik nasłonecznienia (Prawa strona)", unit: " W/m²", states: { 255: "BŁĄD", 1020: "BŁĄD" } }, //
+    "CL2_InnenTemp": { label: "Temperatura wewnątrz pojazdu", unit: " °C", states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" } }, //
     "CL2_SitzH_links": { label: "Podgrzewanie fotela kierowcy (Poziom)", unit: "" }, //
     "CL2_SitzH_rechts": { label: "Podgrzewanie fotela pasażera (Poziom)", unit: "" }, //
     "CL2_StSt_Info": { label: "Status systemu Start-Stop dla Klimatyzacji", states: { 0: "Silnik włączony", 1: "Zakaz wyłączenia silnika", 2: "Wymuszenie uruchomienia silnika", 3: "Błąd systemu" } }, //
@@ -239,7 +293,7 @@ const signalMeta = Object.freeze({
     "CL2_Geblaese_plus": { label: "Zwiększenie nawiewu (Ogrzewanie postojowe)", states: { 0: "Brak", 1: "AKTYWNE" } }, //
     "CL2_Umluft_Taste": { label: "Przycisk obiegu zamkniętego (Umluft)", states: { 0: "Puszczony", 1: "WCIŚNIĘTY" } }, //
     "CL2_Solltemperatur": { label: "Temperatura docelowa zadana na panelu", unit: "", states: { 0: "Klima OFF", 255: "Błąd danych" } }, //
-    "CL2_Vorgabe_KWTemp": { label: "Żądana temperatura płynu chłodniczego", unit: " °C", states: { 255: "BŁĄD DANYCH" } }, //
+    "CL2_Vorgabe_KWTemp": { label: "Żądana temperatura płynu chłodniczego", unit: " °C", states: { 255: "BŁĄD DANYCH", 143.25: "BŁĄD DANYCH" } }, //
 
     // ==========================================
     // 0x42B - ZARZĄDZANIE SIECIĄ INFOTAINMENT (mNM_Gateway_I)
@@ -283,9 +337,9 @@ const signalMeta = Object.freeze({
     "BSK_HD_Hauptraste": { label: "Bagażnik (Zamek główny)", states: { 0: "Zamknięty", 1: "OTWARTY" } },
     "BSK_HD_Vorraste": { label: "Bagażnik (Zamek wstępny)", states: { 0: "Zamknięty", 1: "OTWARTY" } },
     "BSK_Unterspannung": { label: "Napięcie systemu", states: { 0: "OK", 1: "NAPIĘCIE KRYTYCZNE" } },
-    "BSK_Display": { label: "Podświetlenie wskaźników (Dimm)", unit: " %" },
+    "BSK_Display": { label: "Podświetlenie wskaźników (Dimm)", unit: " %", states: { 127: "BŁĄD" } },
     "BSK_Display_def": { label: "Usterka zacisku 58d (Dimm)", states: { 0: "OK", 1: "BŁĄD" } },
-    "BSK_Klemme_58t": { label: "Podświetlenie lokalizacyjne (58t)", unit: " %" },
+    "BSK_Klemme_58t": { label: "Podświetlenie lokalizacyjne (58t)", unit: " %", states: { 127: "BŁĄD" } },
     "BSK_Klemme_58t_def": { label: "Usterka zacisku 58t", states: { 0: "OK", 1: "BŁĄD" } },
     "BSK_Interlock": { label: "Kontrolka wciśnięcia sprzęgła", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
     "BSK_Buzzer": { label: "Sygnał dźwiękowy (Gong)", states: { 0: "Cisza", 1: "AKTYWNY" } },
@@ -307,10 +361,36 @@ const signalMeta = Object.freeze({
     "BSK_FLA_Sensor_blockiert": { label: "Kamera FLA (Czujnik)", states: { 0: "OK", 1: "ZASŁONIĘTY/BRUDNY" } },
     "BSK_FLA_Defekt": { label: "Usterka systemu FLA", states: { 0: "OK", 1: "BŁĄD" } },
     "BCM_Remotestart_Betrieb": { label: "Zdalny rozruch", states: { 0: "Nieaktywny", 1: "AKTYWNY" } },
-    "BSK_Ruhespannung": { label: "Napięcie spoczynkowe", unit: " V" },
+    "BSK_Ruhespannung": { label: "Napięcie spoczynkowe", unit: " V", states: { 10.5: "Init", 13.6: "BŁĄD" } },
     "BSK_Nebelschlusslicht": { label: "Światło przeciwmgielne tył", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
     "BSK_Fernlicht": { label: "Światła drogowe (Zacisk 56a)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
     "BSK_Tagfahrlicht": { label: "Światła do jazdy dziennej (DRL)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+
+    // ==========================================
+    // 0x531 - STATUS ŚWIATEŁ DLA LICZNIKA (mLicht_1_alt, Gateway)
+    // ==========================================
+    "LIA_Standlicht": { label: "Światła postojowe (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Abblendlicht": { label: "Światła mijania (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Fernlicht": { label: "Światła drogowe (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Nebellicht": { label: "Przeciwmgielne przód (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Nebelschluss": { label: "Przeciwmgielne tył (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Rueckfahrlicht": { label: "Światło wsteczne (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Parklicht_links": { label: "Światło parkingowe lewe", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Parklicht_rechts": { label: "Światło parkingowe prawe", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Blk_links": { label: "Kierunkowskaz lewy (do kombi)", states: { 0: "Wyłączony", 1: "WŁĄCZONY" } },
+    "LIA_Blk_rechts": { label: "Kierunkowskaz prawy (do kombi)", states: { 0: "Wyłączony", 1: "WŁĄCZONY" } },
+    "LIA_Anhaenger": { label: "Kontrolka przyczepy", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
+    "LIA_Warnblink": { label: "Światła awaryjne (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_BLK_Frequenz": { label: "Częstotliwość migania kierunkowskazów", states: { 0: "Standard", 1: "Alternatywna" } },
+    "LIA_AFL_Schalter": { label: "Przełącznik AFL / AUTO", states: { 0: "Nie", 1: "TAK" } },
+    "LIA_Bremslicht": { label: "Światło hamowania (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Tagesfahrlicht": { label: "Światła dzienne DRL (do kombi)", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Blk_L_Kontrolle": { label: "Kontrolka kierunkowskazu lewego", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
+    "LIA_Blk_R_Kontrolle": { label: "Kontrolka kierunkowskazu prawego", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
+    "LIA_Kurv_Licht": { label: "Światło doświetlające zakręty", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "LIA_Warnblk_Status": { label: "Status trybu awaryjnych", states: { 0: "Nieaktywny", 1: "AKTYWNY" } },
+    "LIA_Zaehler": { label: "Licznik ramki (alive)", unit: "" },
+    "LIA_Pruefsumme": { label: "Suma kontrolna ramki", unit: "" },
 
     // ==========================================
     // 0x527 - KOMUNIKACJA LICZNIKÓW (mGW_Kombi)
@@ -322,8 +402,8 @@ const signalMeta = Object.freeze({
     "GWK_FzgGeschw_Quelle": { label: "Źródło prędkości pojazdu", states: { 0: "Impulsator skrzyni", 1: "Czujniki ABS" } },
     "GWK_FzgGeschw": { label: "Prędkość pojazdu (Wyświetlana)", unit: " km/h" },
     "GWK_Umfang_Reifen": { label: "Obwód opony (zakodowany)", unit: " mm" },
-    "GWK_AussenTemp_gefiltert": { label: "Temperatura zewnętrzna (FIS)", unit: " °C" },
-    "GWK_AussenTemp_ungefiltert": { label: "Temperatura zewnętrzna (Surowa)", unit: " °C" },
+    "GWK_AussenTemp_gefiltert": { label: "Temperatura zewnętrzna (FIS)", unit: " °C", states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" } },
+    "GWK_AussenTemp_ungefiltert": { label: "Temperatura zewnętrzna (Surowa)", unit: " °C", states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" } },
     "GWK_AussenTemp_Fehler": { label: "Czujnik temp. zewnętrznej", states: { 0: "OK", 1: "BŁĄD" } },
     "GWK_Warn_Heiss": { label: "Ostrzeżenie o przegrzaniu silnika", states: { 0: "Brak", 1: "OSTRZEŻENIE!" } },
     "GWK_Passiv_Autolock": { label: "Ryglowanie drzwi po ruszeniu", states: { 0: "Nieaktywne", 1: "AKTYWNE" } },
@@ -339,11 +419,11 @@ const signalMeta = Object.freeze({
     "MO7_FehlerSp": { label: "Błąd zapisany w pamięci (Silnik)", states: { 0: "Brak błędów", 1: "ZAPISANO BŁĄD" } }, 
     "MO7_Fehler_Oel_Temp": { label: "Status czujnika temperatury oleju", states: { 0: "Sprawny (OK)", 1: "BŁĄD CZUJNIKA" } }, 
     "MO7_PTC": { label: "Status wyłączenia dogrzewacza PTC / Świec", unit: "" }, 
-    "MO7_DFM": { label: "Sygnał DFM alternatora (Obciążenie)", unit: " %", states: { 255: "BŁĄD" } }, 
-    "MO7_Hoeheninfo": { label: "Współczynnik korekty wysokości (Atmosf.)", unit: "", states: { 255: "BŁĄD" } }, 
+    "MO7_DFM": { label: "Sygnał DFM alternatora (Obciążenie)", unit: " %", states: { 255: "BŁĄD", 102: "BŁĄD" } },
+    "MO7_Hoeheninfo": { label: "Współczynnik korekty wysokości (Atmosf.)", unit: "", states: { 255: "BŁĄD", 1.9921875: "BŁĄD" } },
     "MO7_Gradient_Drehz": { label: "Gradient obrotów silnika", unit: " obr/min", states: { 127: "Powyżej limitu (>127)" } }, 
     "MO7_Gradient_Vorz": { label: "Kierunek gradientu obrotów", states: { 0: "Rosnące (+)", 1: "Malejące (-)" } }, 
-    "MO7_Ladedruckneu": { label: "Ciśnienie doładowania (Turbo)", unit: " bar", states: { 255: "BŁĄD" } }, 
+    "MO7_Ladedruckneu": { label: "Ciśnienie doładowania (Turbo)", unit: " bar", states: { 255: "BŁĄD", 5.1: "BŁĄD" } }, 
     "MO7_GenLoadResp": { label: "Czas reakcji alternatora (Load Response)", unit: " s" }, 
     "MO7_PTC_bereit": { label: "Gotowość 3-stopniowej grzałki PTC", states: { 0: "Brak grzałki PTC w pojeździe" } }, 
     "MO7_Mot_weckfaehig": { label: "Wybudzanie silnika przez CAN", states: { 0: "Brak wybudzania", 1: "WYMAGANE WYBUDZENIE" } }, 
@@ -353,8 +433,8 @@ const signalMeta = Object.freeze({
     "MO7_Last_abwurf": { label: "Żądanie redukcji napięcia alternatora", states: { 0: "Brak redukcji", 1: "Stupeń 1 (13.3 V)", 2: "Stupeń 2 (12.6 V)", 3: "Stupeń 3 (11.8 V)" } }, 
     "MO7_Ein_Generator": { label: "Włączenie alternatora po starcie", states: { 0: "Wyłączony", 1: "WŁĄCZONY" } }, 
     "MO7_Lastabwurf_Heiz": { label: "Zezwolenie na systemy grzewcze po starcie", states: { 0: "Odcięcie (Brak ładowania)", 1: "Dozwolone praca" } }, 
-    "MO7_Stat_Gluehk": { label: "Status podgrzewania komory (Świece żarowe)", unit: " %", states: { 15: "BŁĄD" } }, 
-    "MO7_Oeltemperatur": { label: "Temperatura oleju silnikowego", unit: " °C", states: { 0: "Brak czujnika", 1: "Inicjalizacja", 255: "BŁĄD CZUJNIKA" } },
+    "MO7_Stat_Gluehk": { label: "Status podgrzewania komory (Świece żarowe)", unit: " %", states: { 15: "BŁĄD", 120: "BŁĄD" } },
+    "MO7_Oeltemperatur": { label: "Temperatura oleju silnikowego", unit: " °C", states: { 0: "Brak czujnika", 1: "Inicjalizacja", 255: "BŁĄD CZUJNIKA", 195: "BŁĄD CZUJNIKA" } },
 
     // ==========================================
     // 0x557 - BŁĘDY MODUŁÓW W SYSTEMIE (mKD_Error)
@@ -517,16 +597,16 @@ const signalMeta = Object.freeze({
     "KO1_Klemme_L": { label: "Kontrolka ładowania (Licznik)", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
     "KO1_Standzeit": { label: "Czas postoju pojazdu", unit: " s" },
     "KO1_Standzeit_Fehler": { label: "Błąd pomiaru czasu postoju", states: { 0: "Czas prawidłowy", 1: "BŁĄD ZASILANIA (Kl. 30)" } },
-    "KO1_Tankinhalt": { label: "Poziom paliwa", unit: " L" },
+    "KO1_Tankinhalt": { label: "Poziom paliwa", unit: " L", states: { 127: "BŁĄD DANYCH" } },
     "KO1_Tankwarnung": { label: "Ostrzeżenie o rezerwie (Diagnostyka)", states: { 0: "OK", 1: "REZERWA" } },
     "KO1_WFS_Schluessel": { label: "Numer kluczyka (Immo)", unit: "" },
     "KO1_KD_Fehler_WFS": { label: "Błąd immobilizera w pamięci", states: { 0: "Brak", 1: "ZAPISANY BŁĄD" } },
     "KO1_Fernlicht": { label: "Kontrolka świateł drogowych", states: { 0: "Wyłączona", 1: "WŁĄCZONA" } },
     "KO1_Freigabe_Zuheizer": { label: "Dogrzewacz (Z menu licznika)", states: { 0: "WŁĄCZONY", 1: "WYŁĄCZONY" } },
     "KO1_MFA_vorhanden": { label: "Obecność przycisków MFA", states: { 0: "Brak", 1: "ZAMONTOWANE" } },
-    "KO1_Bel_Displ": { label: "Siła podświetlenia wskaźników", unit: " %" },
+    "KO1_Bel_Displ": { label: "Siła podświetlenia wskaźników", unit: " %", states: { 127: "Brak zamiennika" } },
     "KO1_Sta_Displ": { label: "Status obwodu podświetlenia", states: { 0: "OK", 1: "USTERKA KL. 58d" } },
-    "KO1_Lichtsensor": { label: "Odczyt czujnika światła", unit: "" },
+    "KO1_Lichtsensor": { label: "Odczyt czujnika światła", unit: "", states: { 254: "INICJALIZACJA", 255: "BŁĄD DANYCH" } },
 
     // ==========================================
     // 0x62F - WYŚWIETLACZ MFA / FIS (mDisplay_1)
@@ -786,8 +866,25 @@ function ensureFrameBigInt(hexData) {
 }
 
 function formatSignalValue(meta, value) {
-    if (meta.states && meta.states[value] !== undefined) {
-        return meta.states[value];
+    if (meta.states) {
+        if (meta.states[value] !== undefined) {
+            return meta.states[value];
+        }
+        // Wartości specjalne z DB czasem podane jako surowy 15-bit (np. 32708), a value już × 0,01 (327.08 km/h)
+        if (typeof value === "number" && Number.isFinite(value)) {
+            const asRawCent = Math.round(value * 100);
+            if (meta.states[asRawCent] !== undefined) {
+                return meta.states[asRawCent];
+            }
+            const r2 = Math.round(value * 100) / 100;
+            if (meta.states[r2] !== undefined) {
+                return meta.states[r2];
+            }
+            const r1 = Math.round(value * 10) / 10;
+            if (meta.states[r1] !== undefined) {
+                return meta.states[r1];
+            }
+        }
     }
     const num = typeof value === "number" && !Number.isInteger(value) ? value.toFixed(2) : value;
     return `${num}${meta.unit || ""}`;
@@ -861,8 +958,14 @@ function decodeAirbagData(id, hexData, cardElement) {
         html += `<div class="ind active-green full-width">SYSTEM AIRBAG OK</div>`;
     }
 
-    // Alarm zderzeniowy (jeśli jakakolwiek siła zderzenia jest > 0)
-    if (fullData.AB1_CrashStaerke > 0 || fullData.AB1_FrontCrash === 1 || fullData.AB1_Rollover === 1) {
+    // Alarm zderzeniowy: wszystkie bity crash z mAirbag_1 (id_ramek.txt 0x151) + CrashStaerke > 0
+    const crashBits =
+        fullData.AB1_FrontCrash === 1 ||
+        fullData.AB1_HeckCrash === 1 ||
+        fullData.AB1_Crash_FT === 1 ||
+        fullData.AB1_Crash_BT === 1 ||
+        fullData.AB1_Rollover === 1;
+    if (fullData.AB1_CrashStaerke > 0 || crashBits) {
         html += `<div class="ind active-error full-width blink-fast">WYPADEK / CRASH DETECTED!</div>`;
     }
 
@@ -870,11 +973,10 @@ function decodeAirbagData(id, hexData, cardElement) {
 }
 
 function decodeGateway1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
+    // mGateway_1 (0x351), DLC 8 B — data/id_ramek.txt: bity 0–1, 9–23 (prędkość), 63
     const fullData = {
         "GW1_FhzgGeschw_alt": extractCANSignal(hexData, 0, 1),
         "GW1_Rueckfahrlicht": extractCANSignal(hexData, 1, 1),
-        // Prędkość ma 15 bitów, a jej przelicznik w dokumentacji to 0.01 (czyli np. wartość 5000 z CAN to 50.00 km/h)
         "GW1_FzgGeschw": extractCANSignal(hexData, 9, 15, 0.01, 0),
         "KKO_alt_mBSG_Kombi": extractCANSignal(hexData, 63, 1)
     };
@@ -921,7 +1023,7 @@ function decodeGateway1Data(id, hexData, cardElement) {
 }
 
 function decodeNMGatewayIData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (19 sygnałów)
+    // mNM_Gateway_I (0x42B), 6 B — data/id_ramek.txt (19 sygnałów; zarezerwowany bit 11 między LimpHome a SleepInd; bity 27–29 przed Kl.15)
     const fullData = {
         "NMGW_I_Receiver": extractCANSignal(hexData, 0, 8),
         "NMGW_I_CmdRing": extractCANSignal(hexData, 8, 1),
@@ -970,8 +1072,15 @@ function decodeNMGatewayIData(id, hexData, cardElement) {
         html += `<div class="ind active-blue full-width">MAGISTRALA: AKTYWNA (AWAKE)</div>`;
     }
 
-    // --- Przyczyny Wybudzenia (Weckursache) ---
-    // Zbieramy do tablicy wszystkie aktywne flagi "Weckursache"
+    // --- Ramki Ring / Alive (OSEK NM) ---
+    if (fullData.NMGW_I_CmdRing === 1 || fullData.NMGW_I_CmdAlive === 1) {
+        const nmCmd = [];
+        if (fullData.NMGW_I_CmdRing === 1) nmCmd.push("RING");
+        if (fullData.NMGW_I_CmdAlive === 1) nmCmd.push("ALIVE");
+        html += `<div class="ind active-blue full-width">NM: ${nmCmd.join(" + ")}</div>`;
+    }
+
+    // --- Przyczyny wybudzenia (Weckursache) ---
     let wakeReasons = [];
     if (fullData.NMGW_I_Kl_15 === 1) wakeReasons.push("ZAPŁON (KL.15)");
     if (fullData.NMGW_I_Komfort_CAN === 1) wakeReasons.push("CAN KOMFORT");
@@ -980,9 +1089,13 @@ function decodeNMGatewayIData(id, hexData, cardElement) {
     if (fullData.NMGW_I_CAN === 1) wakeReasons.push("CAN (OGÓLNY)");
     if (fullData.NMGW_I_Kl_30_Reset === 1) wakeReasons.push("RESET ZASILANIA");
     if (fullData.NMGW_I_Wake_Up_Ltg === 1) wakeReasons.push("LINIA WAKE-UP");
+    if (fullData.NMGW_I_Fkt_Nachlauf === 1) wakeReasons.push("TIMER (NACHLAUF)");
+    if (fullData.NMGW_I_NWake === 1) wakeReasons.push("NWAKE");
+    if (fullData.NMGW_I_LIN1 === 1) wakeReasons.push("LIN 1");
+    if (fullData.NMGW_I_LIN2 === 1) wakeReasons.push("LIN 2");
 
     if (wakeReasons.length > 0) {
-        html += `<div class="ind active-blue full-width">WAKE-UP: ${wakeReasons.join(', ')}</div>`;
+        html += `<div class="ind active-blue full-width">WAKE-UP: ${wakeReasons.join(", ")}</div>`;
     }
 
     // --- Tryb Awaryjny (Limp Home) ---
@@ -994,7 +1107,7 @@ function decodeNMGatewayIData(id, hexData, cardElement) {
 }
 
 function decodeKDErrorData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (62 moduły!)
+    // mKD_Error (0x557), 8 B — data/id_ramek.txt (62 sygnały; bity 23 i 55 zarezerwowane)
     const fullData = {
         "EKD_Motor_A": extractCANSignal(hexData, 0, 1),
         "EKD_Getriebe_A": extractCANSignal(hexData, 1, 1),
@@ -1109,8 +1222,33 @@ function decodeKDErrorData(id, hexData, cardElement) {
     gridContainer.innerHTML = html;
 }
 
+/** 0x551: brak BO_ 1361 w DBC w repozytorium — tylko surowe bajty (data/id_ramek.txt). */
+function decodeGateway551RawData(id, hexData, cardElement) {
+    const parts = hexData.trim().split(/\s+/).filter(Boolean);
+    const fullData = {};
+    for (let i = 0; i < parts.length; i++) {
+        fullData[`Byte_${i}`] = parseInt(parts[i], 16);
+    }
+    frameDataCache[id] = fullData;
+
+    const valElement = cardElement.querySelector(".val");
+    if (valElement) {
+        valElement.setAttribute("data-decoded", "true");
+        valElement.classList.add("hidden-val");
+    }
+
+    const gridContainer = cardElement.querySelector(".grid");
+    if (!gridContainer) return;
+
+    const preview = parts.length ? parts.join(" ").toUpperCase() : "—";
+    gridContainer.innerHTML = `
+        <div class="ind full-width">Brak mapy sygnałów w bazie projektu (0x551).</div>
+        <div class="ind active-blue full-width">DLC ${parts.length}: ${preview}</div>
+    `;
+}
+
 function decodeSysteminfo1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (27 sygnałów)
+    // mSysteminfo_1 (0x651), 8 B — data/id_ramek.txt (27 sygnałów; bity 52–53 zarezerwowane przed NWDF_gueltig)
     const fullData = {
         "SY1_CAN_Extern": extractCANSignal(hexData, 0, 1),
         "SY1_Diag_Antrieb": extractCANSignal(hexData, 1, 1),
@@ -1195,7 +1333,7 @@ function decodeSysteminfo1Data(id, hexData, cardElement) {
 }
 
 function decodeSollverbauData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (64 sygnały - po 1 bicie)
+    // mSollverbau_neu (0x655), 8 B — data/id_ramek.txt (64 sygnały po 1 bicie)
     const fullData = {
         "VBN_Motor_A": extractCANSignal(hexData, 0, 1),
         "VBN_Getriebe_A": extractCANSignal(hexData, 1, 1),
@@ -1312,7 +1450,7 @@ function decodeSollverbauData(id, hexData, cardElement) {
 }
 
 function decodeFzgIdentData(id, hexData, cardElement) {
-    // 1. ODCZYT MULTIPLEKSERA
+    // mFzg_Ident (0x65F), 8 B — data/id_ramek.txt (multipleks FI1_MUX 0–2; bity 2–7 zarezerwowane; 7×8 bitów od bitu 8)
     const mux = extractCANSignal(hexData, 0, 2);
 
     // Pobieramy dotychczasowe dane z pamięci (aby ich nie nadpisać przy nowym cyklu MUX)
@@ -1493,7 +1631,7 @@ function decodeZKEData(id, hexData, cardElement) {
 }
 
 function decodeManetkiData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (39 sygnałów!)
+    // mLSM_1 (0x2C1), DLC 6 B, Intel LE — data/id_ramek.txt. Bit 4 nieużywany (skok Fernlicht→Parklicht).
     const fullData = {
         "LS1_Blk_links": extractCANSignal(hexData, 0, 1),
         "LS1_Blk_rechts": extractCANSignal(hexData, 1, 1),
@@ -1606,14 +1744,13 @@ function decodeManetkiData(id, hexData, cardElement) {
 }
 
 function decodeZASData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
-    // Ramka stacyjki (Klemmen) w PQ35 opiera się na podstawowych bitach zacisków.
+    // mZAS_Status (0x2C3), DLC 1 B — data/id_ramek.txt (ZS1_ZAS_Kl_S … Kl_P, bity 0–4)
     const fullData = {
-        "ZS1_ZAS_Kl_S": extractCANSignal(hexData, 0, 1),   // Zacisk S (Kluczyk w stacyjce)
-        "ZS1_ZAS_Kl_15": extractCANSignal(hexData, 1, 1),  // Zacisk 15 (Zapłon ON)
-        "ZS1_ZAS_Kl_X": extractCANSignal(hexData, 2, 1),  // Zacisk X (Akcesoria)
-        "ZS1_ZAS_Kl_50": extractCANSignal(hexData, 3, 1),  // Zacisk 50 (Rozrusznik kręci)
-        "ZS1_ZAS_Kl_P": extractCANSignal(hexData, 4, 1),   // Zacisk P (Światła postojowe/parkingowe stacyjki)
+        "ZS1_ZAS_Kl_S": extractCANSignal(hexData, 0, 1),
+        "ZS1_ZAS_Kl_15": extractCANSignal(hexData, 1, 1),
+        "ZS1_ZAS_Kl_X": extractCANSignal(hexData, 2, 1),
+        "ZS1_ZAS_Kl_50": extractCANSignal(hexData, 3, 1),
+        "ZS1_ZAS_Kl_P": extractCANSignal(hexData, 4, 1)
     };
 
     // Zapisz do pamięci dla okna Modal
@@ -1632,25 +1769,29 @@ function decodeZASData(id, hexData, cardElement) {
 
     let html = ``;
 
-    // --- Wizualizacja Głównego Stanu Stacyjki ---
-    // Logika priorytetów: Rozrusznik -> Zapłon -> Akcesoria -> Kluczyk -> Brak
+    // Priorytet jak typowa sekwencja: 50 → 15 → X → S (wg DB Kl.X to napięcie / Startvorgang, nie „akcesoria”)
     if (fullData.ZS1_ZAS_Kl_50 === 1) {
         html += `<div class="ind active-orange full-width blink-fast">ROZRUSZNIK (KL. 50)</div>`;
     } else if (fullData.ZS1_ZAS_Kl_15 === 1) {
         html += `<div class="ind active-blue full-width">ZAPŁON WŁĄCZONY (KL. 15)</div>`;
     } else if (fullData.ZS1_ZAS_Kl_X === 1) {
-        html += `<div class="ind active-blue full-width">AKCESORIA (KL. X)</div>`;
+        html += `<div class="ind active-blue full-width">NAPIĘCIE KL. X (OBWODY ZASILONE)</div>`;
     } else if (fullData.ZS1_ZAS_Kl_S === 1) {
         html += `<div class="ind active-blue full-width">KLUCZYK W STACYJCE (KL. S)</div>`;
     } else {
         html += `<div class="ind full-width">BRAK KLUCZYKA</div>`;
     }
 
+    // Kl. P = Parklichtstellung (obwód P), nie to samo co „pozycja 0” jako wyłączenie zapłonu
+    if (fullData.ZS1_ZAS_Kl_P === 1) {
+        html += `<div class="ind active-orange full-width">KL. P: PARKLICHT (OBWÓD ZAŁĄCZONY)</div>`;
+    }
+
     gridContainer.innerHTML = html;
 }
 
 function decodeClima1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (20 sygnałów)
+    // mClima_1 (0x3E1), 8 B — data/id_ramek.txt (20 sygnałów)
     const fullData = {
         "CL1_Drehzahlanhebung": extractCANSignal(hexData, 0, 1),
         "CL1_Zuheizer": extractCANSignal(hexData, 1, 1),
@@ -1700,7 +1841,7 @@ function decodeClima1Data(id, hexData, cardElement) {
     }
 
     // --- Ciśnienie czynnika chłodniczego ---
-    // Wartość szesnastkowa FF (255) oznacza błąd (255 * 0.2 = 51)
+    // Surowe 255 = Fehler (id_ramek); po ×0,2 przekracza zakres 0…50,8 bar
     if (fullData.CL1_KaeltemittelDruck > 50) {
         html += `<div class="ind active-error">CIŚNIENIE: BŁĄD!</div>`;
     } else {
@@ -1744,7 +1885,7 @@ function decodeClima1Data(id, hexData, cardElement) {
 }
 
 function decodeClima2Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (12 sygnałów)
+    // mClima_2 (0x3E3), 8 B — data/id_ramek.txt (12 sygnałów; bity 35–38 zarezerwowane przed CL2_Umluft)
     const fullData = {
         "CL2_Sonne_links": extractCANSignal(hexData, 0, 8, 4, 0),            // Czujnik nasłonecznienia lewy (W/m^2)
         "CL2_Sonne_rechts": extractCANSignal(hexData, 8, 8, 4, 0),           // Czujnik nasłonecznienia prawy (W/m^2)
@@ -1776,8 +1917,8 @@ function decodeClima2Data(id, hexData, cardElement) {
 
     let html = ``;
 
-    // --- Temperatura Wnętrza ---
-    // Wartość 255 (czyli po przeliczeniu 77.5) oznacza błąd czujnika
+    // --- Temperatura wnętrza ---
+    // Surowe 255 = Fehler; po ×0,5−50 wychodzi poza zakres −50…77 °C (id_ramek)
     if (fullData.CL2_InnenTemp > 76) {
         html += `<div class="ind active-error full-width">TEMP. WNĘTRZA: BŁĄD CZUJNIKA</div>`;
     } else {
@@ -1805,20 +1946,19 @@ function decodeClima2Data(id, hexData, cardElement) {
         html += `<div class="ind active-red blink">WEBASTO WŁĄCZONE!</div>`;
     }
 
-    // --- Czujniki Nasłonecznienia ---
-    // Pokazujemy na kafelku informacje tylko wtedy, gdy auto faktycznie "czuje" mocne słońce (> 100 W/m^2)
-    // Maksymalna wartość błędu to 1020 W/m^2 (255 * 4)
-    if (fullData.CL2_Sonne_links < 1020 && fullData.CL2_Sonne_rechts < 1020) {
-        if (fullData.CL2_Sonne_links > 100 || fullData.CL2_Sonne_rechts > 100) {
-            html += `<div class="ind active-orange full-width">SŁOŃCE (W/m²): L: ${fullData.CL2_Sonne_links} | P: ${fullData.CL2_Sonne_rechts}</div>`;
-        }
+    // --- Czujniki nasłonecznienia ---
+    // Zakres 0…1016 W/m²; surowe 255 → 1020 = Fehler (id_ramek)
+    if (fullData.CL2_Sonne_links > 1016 || fullData.CL2_Sonne_rechts > 1016) {
+        html += `<div class="ind active-error full-width">NASŁONECZNIENIE: BŁĄD CZUJNIKA (L/P)</div>`;
+    } else if (fullData.CL2_Sonne_links > 100 || fullData.CL2_Sonne_rechts > 100) {
+        html += `<div class="ind active-orange full-width">SŁOŃCE (W/m²): L: ${fullData.CL2_Sonne_links} | P: ${fullData.CL2_Sonne_rechts}</div>`;
     }
 
     gridContainer.innerHTML = html;
 }
 
 function decodeBSGKombiData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (44 sygnały!)
+    // mBSG_Kombi (0x470), 8 B — data/id_ramek.txt (44 sygnały; bity 51–54 zarezerwowane przed BCM_Remotestart)
     const fullData = {
         "BSK_Blk_links": extractCANSignal(hexData, 0, 1),
         "BSK_Blk_rechts": extractCANSignal(hexData, 1, 1),
@@ -1842,8 +1982,8 @@ function decodeBSGKombiData(id, hexData, cardElement) {
         "BSK_Klemme_58t_def": extractCANSignal(hexData, 31, 1),
         "BSK_Interlock": extractCANSignal(hexData, 32, 1),               // Wciśnij sprzęgło by odpalić
         "BSK_Buzzer": extractCANSignal(hexData, 33, 1),
-        "BSK_Ruecks_HL_verriegelt": extractCANSignal(hexData, 34, 1),    // Oparcie kanapy zablokowane (L)
-        "BSK_Ruecks_HR_verriegelt": extractCANSignal(hexData, 35, 1),    // Oparcie kanapy zablokowane (P)
+        "BSK_Ruecks_HL_verriegelt": extractCANSignal(hexData, 34, 1),    // 0=zablokowane, 1=odblokowane (L)
+        "BSK_Ruecks_HR_verriegelt": extractCANSignal(hexData, 35, 1),    // 0=zablokowane, 1=odblokowane (P)
         "BSK_Def_Lampe": extractCANSignal(hexData, 36, 1),               // Spalona żarówka
         "BSK_NSL_LED_Pfad": extractCANSignal(hexData, 37, 1),
         "BSK_AFL_defekt": extractCANSignal(hexData, 38, 1),              // Błąd świateł AUTO
@@ -1860,7 +2000,7 @@ function decodeBSGKombiData(id, hexData, cardElement) {
         "BSK_FLA_Sensor_blockiert": extractCANSignal(hexData, 49, 1),
         "BSK_FLA_Defekt": extractCANSignal(hexData, 50, 1),
         "BCM_Remotestart_Betrieb": extractCANSignal(hexData, 55, 1),
-        "BSK_Ruhespannung": extractCANSignal(hexData, 56, 5, 0.1, 10.5), // Napięcie w Voltoach
+        "BSK_Ruhespannung": extractCANSignal(hexData, 56, 5, 0.1, 10.5), // ×0,1 +10,5 V; surowe 0=Init, 31=Fehler
         "BSK_Nebelschlusslicht": extractCANSignal(hexData, 61, 1),       // Przeciwmgielne tył
         "BSK_Fernlicht": extractCANSignal(hexData, 62, 1),               // Drogowe (Długie)
         "BSK_Tagfahrlicht": extractCANSignal(hexData, 63, 1)             // DRL (Światła dzienne)
@@ -1890,7 +2030,7 @@ function decodeBSGKombiData(id, hexData, cardElement) {
     if (fullData.BSK_HR_geoeffnet === 1) openDoors.push("TYŁ-P");
 
     if (fullData.BSK_MH_geoeffnet === 1) {
-        html += `<div class="ind active-error full-width">MASKA SILNIKA OTARTA!</div>`;
+        html += `<div class="ind active-error full-width">MASKA SILNIKA OTWARTA!</div>`;
     }
 
     if (fullData.BSK_HD_Hauptraste === 1) {
@@ -1944,8 +2084,85 @@ function decodeBSGKombiData(id, hexData, cardElement) {
     gridContainer.innerHTML = html;
 }
 
+function decodeLicht1AltData(id, hexData, cardElement) {
+    // mLicht_1_alt (0x531), 4 B — data/id_ramek.txt (22 sygnały; zgodnie z DBC BO_ 1329)
+    const fullData = {
+        "LIA_Standlicht": extractCANSignal(hexData, 0, 1),
+        "LIA_Abblendlicht": extractCANSignal(hexData, 1, 1),
+        "LIA_Fernlicht": extractCANSignal(hexData, 2, 1),
+        "LIA_Nebellicht": extractCANSignal(hexData, 3, 1),
+        "LIA_Nebelschluss": extractCANSignal(hexData, 4, 1),
+        "LIA_Rueckfahrlicht": extractCANSignal(hexData, 5, 1),
+        "LIA_Parklicht_links": extractCANSignal(hexData, 6, 1),
+        "LIA_Parklicht_rechts": extractCANSignal(hexData, 7, 1),
+        "LIA_Blk_links": extractCANSignal(hexData, 8, 1),
+        "LIA_Blk_rechts": extractCANSignal(hexData, 9, 1),
+        "LIA_Anhaenger": extractCANSignal(hexData, 10, 1),
+        "LIA_Warnblink": extractCANSignal(hexData, 11, 1),
+        "LIA_BLK_Frequenz": extractCANSignal(hexData, 12, 1),
+        "LIA_AFL_Schalter": extractCANSignal(hexData, 13, 1),
+        "LIA_Bremslicht": extractCANSignal(hexData, 14, 1),
+        "LIA_Tagesfahrlicht": extractCANSignal(hexData, 15, 1),
+        "LIA_Blk_L_Kontrolle": extractCANSignal(hexData, 16, 1),
+        "LIA_Blk_R_Kontrolle": extractCANSignal(hexData, 17, 1),
+        "LIA_Kurv_Licht": extractCANSignal(hexData, 18, 1),
+        "LIA_Warnblk_Status": extractCANSignal(hexData, 19, 1),
+        "LIA_Zaehler": extractCANSignal(hexData, 20, 4),
+        "LIA_Pruefsumme": extractCANSignal(hexData, 24, 8)
+    };
+
+    frameDataCache[id] = fullData;
+
+    const valElement = cardElement.querySelector('.val');
+    if (valElement) {
+        valElement.setAttribute('data-decoded', 'true');
+        valElement.classList.add('hidden-val');
+    }
+
+    const gridContainer = cardElement.querySelector('.grid');
+    if (!gridContainer) return;
+
+    let html = ``;
+
+    if (fullData.LIA_Warnblink === 1) {
+        html += `<div class="ind active-orange full-width blink">&#8592; AWARYJNE &#8594;</div>`;
+    } else if (fullData.LIA_Blk_links === 1) {
+        html += `<div class="ind active-orange blink">&#8592; KIERUNKOWSKAZ</div>`;
+    } else if (fullData.LIA_Blk_rechts === 1) {
+        html += `<div class="ind active-orange blink">KIERUNKOWSKAZ &#8594;</div>`;
+    }
+
+    const lights = [];
+    if (fullData.LIA_Abblendlicht === 1) lights.push("MIJANIA");
+    if (fullData.LIA_Fernlicht === 1) lights.push("DROGOWE");
+    if (fullData.LIA_Tagesfahrlicht === 1) lights.push("DRL");
+    if (fullData.LIA_Standlicht === 1) lights.push("POSTOJOWE");
+    if (fullData.LIA_Parklicht_links === 1 || fullData.LIA_Parklicht_rechts === 1) lights.push("PARKING L/P");
+    if (fullData.LIA_Nebellicht === 1) lights.push("MGŁA PRZÓD");
+    if (fullData.LIA_Nebelschluss === 1) lights.push("MGŁA TYŁ");
+    if (fullData.LIA_Rueckfahrlicht === 1) lights.push("WSTECZNY");
+    if (fullData.LIA_Kurv_Licht === 1) lights.push("KURWATURA");
+    if (lights.length > 0) {
+        html += `<div class="ind active-blue full-width">ŚWIATŁA: ${lights.join(', ')}</div>`;
+    }
+
+    if (fullData.LIA_Bremslicht === 1) {
+        html += `<div class="ind active-red full-width">HAMULEC (światło stopu)</div>`;
+    }
+    if (fullData.LIA_Anhaenger === 1) {
+        html += `<div class="ind active-orange full-width">PRZYCZEPA (kontrolka)</div>`;
+    }
+    if (fullData.LIA_AFL_Schalter === 1) {
+        html += `<div class="ind full-width">PRZEŁĄCZNIK: AUTO / AFL</div>`;
+    }
+
+    html += `<div class="ind full-width">LICZNIK RAMKI: ${fullData.LIA_Zaehler} | SUMA: ${fullData.LIA_Pruefsumme}</div>`;
+
+    gridContainer.innerHTML = html;
+}
+
 function decodeBSG3Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (30 sygnałów)
+    // mBSG_3 (0x575), 4 B — data/id_ramek.txt (30 sygnałów)
     const fullData = {
         "BS3_Klemme_S": extractCANSignal(hexData, 0, 1),
         "BS3_Klemme_15": extractCANSignal(hexData, 1, 1),
@@ -2053,7 +2270,7 @@ function decodeBSG3Data(id, hexData, cardElement) {
 }
 
 function decodeDimmungData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (5 sygnałów)
+    // mDimmung (0x635), 3 B — data/id_ramek.txt (5 sygnałów)
     const fullData = {
         "DI1_Display": extractCANSignal(hexData, 0, 7),
         "DI1_Display_def": extractCANSignal(hexData, 7, 1),
@@ -2109,7 +2326,7 @@ function decodeDimmungData(id, hexData, cardElement) {
 
 
 function decodeBremseGetriebeData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (29 sygnałów)
+    // mGW_Bremse_Getriebe (0x359), DLC 8 B — data/id_ramek.txt (29 sygnałów, bity 0–63)
     const fullData = {
         "GWB_Alt_FzgGeschw": extractCANSignal(hexData, 0, 1),
         "GWB_Alt_2_Bremse": extractCANSignal(hexData, 1, 1),
@@ -2190,7 +2407,7 @@ function decodeBremseGetriebeData(id, hexData, cardElement) {
 }
 
 function decodeMotorData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (25 sygnałów)
+    // mGW_Motor (0x35B), DLC 8 B — data/id_ramek.txt (bit 4 zastrzeżony; GWM_RME od bitu 5)
     const fullData = {
         "GWM_Alt_1_Motor": extractCANSignal(hexData, 0, 1),
         "GWM_Alt_2_Motor": extractCANSignal(hexData, 1, 1),
@@ -2259,12 +2476,13 @@ function decodeMotorData(id, hexData, cardElement) {
         html += `<div class="ind">SPRZĘGŁO: PUSZCZONE</div>`;
     }
 
-    // --- Tempomat (GRA) ---
-    // Dokumentacja dla GRA: 0=wył, 1=aktywny, 2=nadpisany gazem (overridden)
+    // GRA (id_ramek): 0=off, 1=aktywny, 2=więcej gazu niż regulator, 3=błąd/timeout
     if (fullData.GWM_GRA_Status === 1) {
         html += `<div class="ind active-green">TEMPOMAT: AKTYWNY</div>`;
     } else if (fullData.GWM_GRA_Status === 2) {
         html += `<div class="ind active-orange">TEMPOMAT: +GAZ KIEROWCY</div>`;
+    } else if (fullData.GWM_GRA_Status === 3) {
+        html += `<div class="ind active-error">TEMPOMAT: BŁĄD / BRAK ZEZWOLENIA</div>`;
     } else {
         html += `<div class="ind">TEMPOMAT: WYŁ.</div>`;
     }
@@ -2288,19 +2506,19 @@ function decodeMotorData(id, hexData, cardElement) {
 }
 
 function decodeLenkwinkelData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (11 sygnałów)
+    // mLenkwinkel_1 (0x3C3), DLC 8 B — data/id_ramek.txt; Vorzeichen 0=links/+, 1=rechts/−
     const fullData = {
-        "LW1_Lenkradwinkel": extractCANSignal(hexData, 0, 15, 0.04375, 0),       // Kąt (wartość bezwzględna)
-        "LW1_Vorzeichen": extractCANSignal(hexData, 15, 1),                      // Znak kąta (0=lewo/plus, 1=prawo/minus)
-        "LW1_Geschwindigkeit": extractCANSignal(hexData, 16, 15, 0.04375, 0),    // Prędkość obrotu (bez wzgl.)
-        "LW1_Geschw_Vorzeichen": extractCANSignal(hexData, 31, 1),               // Znak prędkości
-        "LW1_ID": extractCANSignal(hexData, 32, 8),                              // Status kalibracji (128 = skalibrowany)
+        "LW1_Lenkradwinkel": extractCANSignal(hexData, 0, 15, 0.04375, 0),
+        "LW1_Vorzeichen": extractCANSignal(hexData, 15, 1),
+        "LW1_Geschwindigkeit": extractCANSignal(hexData, 16, 15, 0.04375, 0),
+        "LW1_Geschw_Vorzeichen": extractCANSignal(hexData, 31, 1),
+        "LW1_ID": extractCANSignal(hexData, 32, 8),
         "LW1_Quelle_Init": extractCANSignal(hexData, 40, 1),
-        "LW1_Int_Status": extractCANSignal(hexData, 41, 2),                      // Status sensora (0=OK, 1=NoInit, 2=Sporadyczny, 3=Trwały błąd)
-        "LW1_KL30_Ausfall": extractCANSignal(hexData, 43, 1),                    // Flaga braku zasilania (odpięta klema)
-        "LW1_Zaehler": extractCANSignal(hexData, 44, 4),                         // Licznik wiadomości
-        "LW1_CRC8CHK": extractCANSignal(hexData, 48, 8),                         // Suma kontrolna CRC
-        "LW1_Pruefsumme": extractCANSignal(hexData, 56, 8)                       // Suma kontrolna ESP
+        "LW1_Int_Status": extractCANSignal(hexData, 41, 2),
+        "LW1_KL30_Ausfall": extractCANSignal(hexData, 43, 1),
+        "LW1_Zaehler": extractCANSignal(hexData, 44, 4),
+        "LW1_CRC8CHK": extractCANSignal(hexData, 48, 8),
+        "LW1_Pruefsumme": extractCANSignal(hexData, 56, 8)
     };
 
     // Zapisz do pamięci dla okna Modal
@@ -2335,7 +2553,6 @@ function decodeLenkwinkelData(id, hexData, cardElement) {
         if (fullData.LW1_Int_Status === 3) errTxt = "BŁĄD TRWAŁY";
         
         html += `<div class="ind active-error full-width blink">STATUS: ${errTxt}</div>`;
-    } else {
     }
 
     // --- Wizualizacja Kąta Skrętu ---
@@ -2360,7 +2577,7 @@ function decodeLenkwinkelData(id, hexData, cardElement) {
 }
 
 function decodeMotor7Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (22 sygnały)
+    // mMotor7 (0x555), 8 B — data/id_ramek.txt (22 sygnały)
     const fullData = {
         "MO7_LL_Status": extractCANSignal(hexData, 0, 1),
         "MO7_V_Begrenz": extractCANSignal(hexData, 1, 1),
@@ -2403,15 +2620,15 @@ function decodeMotor7Data(id, hexData, cardElement) {
     let html = ``;
 
     // --- Ciśnienie doładowania (Turbo) ---
-    // Wartość 255 (czyli po przeliczeniu 5.10) to błąd
+    // Surowe 255 = Fehler (×0,02 → poza zakresem 0…5,08 bar)
     if (fullData.MO7_Ladedruckneu > 5.0) {
         html += `<div class="ind active-error full-width">DOŁADOWANIE (TURBO): BŁĄD CZUJNIKA</div>`;
     } else {
         html += `<div class="ind active-blue full-width">ZADANE TURBO: ${fullData.MO7_Ladedruckneu.toFixed(2)} bar</div>`;
     }
 
-    // --- Temperatura Oleju ---
-    // 255 to błąd 
+    // --- Temperatura oleju ---
+    // Surowe 255 = Fehler; surowe 0/1 = nie zainstalowano / init (id_ramek)
     if (fullData.MO7_Fehler_Oel_Temp === 1 || fullData.MO7_Oeltemperatur > 194) {
          html += `<div class="ind active-error full-width">TEMP. OLEJU: BŁĄD CZUJNIKA</div>`;
     } else if (fullData.MO7_Oeltemperatur === -59) {
@@ -2448,7 +2665,7 @@ function decodeMotor7Data(id, hexData, cardElement) {
 }
 
 function decodeBSG2Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (30 sygnałów)
+    // mBSG_2 (0x571), 6 B — data/id_ramek.txt (30 sygnałów)
     const fullData = {
         "BS2_U_BATT": extractCANSignal(hexData, 0, 8, 0.05, 5),
         "BS2_Heckscheibe_aus": extractCANSignal(hexData, 8, 1),
@@ -2547,7 +2764,7 @@ function decodeBSG2Data(id, hexData, cardElement) {
 }
 
 function decodeKombiK1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (14 sygnałów)
+    // mKombi_K1 (0x621), 7 B — data/id_ramek.txt (19 sygnałów)
     const fullData = {
         "KO1_Tankstop": extractCANSignal(hexData, 0, 1),
         "KO1_Tankwarnlampe": extractCANSignal(hexData, 1, 1),
@@ -2639,7 +2856,7 @@ function decodeKombiK1Data(id, hexData, cardElement) {
 
 
 function decodeGWKombiData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (14 sygnałów)
+    // mGW_Kombi (0x527), 8 B — data/id_ramek.txt (14 sygnałów; bit 3 oraz bity 24–27 zarezerwowane)
     const fullData = {
         "GWK_Alt_3_Kombi": extractCANSignal(hexData, 0, 1),
         "GWK_Alt_2_Kombi": extractCANSignal(hexData, 1, 1),
@@ -2689,8 +2906,8 @@ function decodeGWKombiData(id, hexData, cardElement) {
         html += `<div class="ind active-blue">PRĘDKOŚĆ: ${fullData.GWK_FzgGeschw.toFixed(1)} km/h ${speedSrc}</div>`;
     }
 
-    // --- Temperatura Zewnętrzna (Przefiltrowana) ---
-    // Kod błędu dla wartości przed przeliczeniem to 255 (czyli po wzorze 77.5)
+    // --- Temperatura zewnętrzna (FIS, gefiltert) ---
+    // Surowe 255 = Fehler; po ×0,5−50 poza zakresem −50…77 °C (id_ramek)
     if (fullData.GWK_AussenTemp_Fehler === 1 || fullData.GWK_AussenTemp_gefiltert > 76) {
         html += `<div class="ind active-error">TEMP: BŁĄD CZUJNIKA</div>`;
     } else {
@@ -2717,7 +2934,7 @@ function decodeGWKombiData(id, hexData, cardElement) {
 }
 
 function decodeEinheitenData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (10 sygnałów)
+    // mEinheiten (0x60E), 2 B — data/id_ramek.txt (10 sygnałów)
     const fullData = {
         "EH1_Einh_Strck": extractCANSignal(hexData, 0, 1),
         "EH1_Einh_Temp": extractCANSignal(hexData, 1, 1),
@@ -2777,7 +2994,7 @@ function decodeEinheitenData(id, hexData, cardElement) {
 }
 
 function decodeDisplay1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (10 sygnałów)
+    // mDisplay_1 (0x62F), 4 B — data/id_ramek.txt (10 sygnałów; bit 3 zarezerwowany)
     const fullData = {
         "DY1_Display_OK": extractCANSignal(hexData, 0, 1),
         "DY1_Reset": extractCANSignal(hexData, 1, 1),
@@ -2843,7 +3060,7 @@ function decodeDisplay1Data(id, hexData, cardElement) {
 }
 
 function decodeGateway3Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (7 sygnałów)
+    // mGateway_3 (0x653), 3 B — data/id_ramek.txt (7 sygnałów)
     const fullData = {
         "GW3_Laendervariante": extractCANSignal(hexData, 0, 6),
         "GW3_Alt_3_Kombi": extractCANSignal(hexData, 6, 1),
@@ -2906,7 +3123,7 @@ function decodeGateway3Data(id, hexData, cardElement) {
 }
 
 function decodeDiagnose1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (10 sygnałów)
+    // mDiagnose_1 (0x65D), 8 B — data/id_ramek.txt (10 sygnałów; bit 61 zarezerwowany przed alt_Kilometerstand)
     const fullData = {
         "DN1_Verlernzaehler": extractCANSignal(hexData, 0, 8),
         "DN1_KM_Stand": extractCANSignal(hexData, 8, 20),                    // Przebieg (km)
@@ -2999,7 +3216,9 @@ const frameRegistry = Object.freeze({
     "0x3E3": { name: "CLIMATRONIC 2 (mClima_2)", zone: "komfort", decoder: decodeClima2Data },
     "0x42B": { name: "SLEEP / WAKE (mNM_Gateway)", zone: "system", decoder: decodeNMGatewayIData },
     "0x470": { name: "DRZWI / ŚWIATŁA (mBSG_Kombi)", zone: "komfort", decoder: decodeBSGKombiData },
+    "0x531": { name: "ŚWIATŁA / KOMBI (mLicht_1_alt)", zone: "komfort", decoder: decodeLicht1AltData },
     "0x527": { name: "TEMP. ZEWN. (mGW_Kombi)", zone: "media", decoder: decodeGWKombiData },
+    "0x551": { name: "GATEWAY — NIEZMAP. (0x551)", zone: "system", decoder: decodeGateway551RawData },
     "0x555": { name: "TURBO / OLEJ (mMotor7)", zone: "naped", decoder: decodeMotor7Data },
     "0x557": { name: "BŁĘDY MODUŁÓW (mKD_Error)", zone: "system", decoder: decodeKDErrorData },
     "0x571": { name: "ZASILANIE / AKU (mBSG_2)", zone: "naped", decoder: decodeBSG2Data },
@@ -3225,6 +3444,10 @@ const FRAME_SIGNAL_COLOR_OVERRIDES = Object.freeze({
         }
     },
     "0x359": {
+        "GWB_FzgGeschw": {
+            "32725": "error",
+            "32742": "error"
+        },
         "GWB_Info_Waehlhebel": {
             "15": "error"
         }
@@ -3246,7 +3469,8 @@ const FRAME_SIGNAL_COLOR_OVERRIDES = Object.freeze({
             "1": "info"
         },
         "GWM_GRA_Status": {
-            "0": "info"
+            "0": "info",
+            "3": "error"
         },
         "GWM_Heissl_Vorwarn": {
             "0": "enabled"
@@ -3431,6 +3655,27 @@ const FRAME_SIGNAL_COLOR_OVERRIDES = Object.freeze({
             "0": "info",
             "1": "info"
         }
+    },
+    "0x531": {
+        "LIA_Abblendlicht": { "0": "info", "1": "info" },
+        "LIA_AFL_Schalter": { "0": "info", "1": "info" },
+        "LIA_Anhaenger": { "0": "info", "1": "info" },
+        "LIA_Blk_L_Kontrolle": { "0": "info", "1": "info" },
+        "LIA_Blk_R_Kontrolle": { "0": "info", "1": "info" },
+        "LIA_Blk_links": { "0": "info", "1": "info" },
+        "LIA_Blk_rechts": { "0": "info", "1": "info" },
+        "LIA_Bremslicht": { "0": "info", "1": "info" },
+        "LIA_Fernlicht": { "0": "info", "1": "info" },
+        "LIA_Kurv_Licht": { "0": "info", "1": "info" },
+        "LIA_Nebellicht": { "0": "info", "1": "info" },
+        "LIA_Nebelschluss": { "0": "info", "1": "info" },
+        "LIA_Parklicht_links": { "0": "info", "1": "info" },
+        "LIA_Parklicht_rechts": { "0": "info", "1": "info" },
+        "LIA_Rueckfahrlicht": { "0": "info", "1": "info" },
+        "LIA_Standlicht": { "0": "info", "1": "info" },
+        "LIA_Tagesfahrlicht": { "0": "info", "1": "info" },
+        "LIA_Warnblink": { "0": "info", "1": "info" },
+        "LIA_Warnblk_Status": { "0": "info", "1": "info" }
     },
     "0x527": {
         "GWK_AussenTemp_Fehler": {
@@ -3743,6 +3988,12 @@ function stateTextForRaw(states, rawValue) {
     if (typeof rawValue === "number" && Number.isInteger(rawValue)) {
         candidates.push(String(rawValue));
     }
+    if (typeof rawValue === "number" && Number.isFinite(rawValue)) {
+        candidates.push(Math.round(rawValue * 100));
+        candidates.push(String(Math.round(rawValue * 100)));
+        candidates.push(Math.round(rawValue * 100) / 100);
+        candidates.push(Math.round(rawValue * 10) / 10);
+    }
     for (const c of candidates) {
         if (c === undefined || c === null) continue;
         if (Object.prototype.hasOwnProperty.call(states, c)) return states[c];
@@ -3759,6 +4010,10 @@ function getOverrideTag(frameId, signalKey, rawValue, displayVal) {
 
     const normalizedDisplay = normalizeStatusText(displayVal);
     const candidates = [rawValue, String(rawValue), displayVal, normalizedDisplay];
+    if (typeof rawValue === "number" && Number.isFinite(rawValue)) {
+        candidates.push(Math.round(rawValue * 100));
+        candidates.push(String(Math.round(rawValue * 100)));
+    }
 
     for (const candidate of candidates) {
         if (candidate === undefined || candidate === null) continue;

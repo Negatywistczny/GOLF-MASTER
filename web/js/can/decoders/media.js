@@ -2,7 +2,7 @@ import { extractCANSignal } from "../../shared/canUtils.js";
 import { signalMeta, frameDataCache } from "../../state/index.js";
 
 export function decodeGWKombiData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (14 sygnałów)
+    // mGW_Kombi (0x527), 8 B — data/id_ramek.txt (14 sygnałów; bit 3 oraz bity 24–27 zarezerwowane)
     const fullData = {
         "GWK_Alt_3_Kombi": extractCANSignal(hexData, 0, 1),
         "GWK_Alt_2_Kombi": extractCANSignal(hexData, 1, 1),
@@ -52,8 +52,8 @@ export function decodeGWKombiData(id, hexData, cardElement) {
         html += `<div class="ind active-blue">PRĘDKOŚĆ: ${fullData.GWK_FzgGeschw.toFixed(1)} km/h ${speedSrc}</div>`;
     }
 
-    // --- Temperatura Zewnętrzna (Przefiltrowana) ---
-    // Kod błędu dla wartości przed przeliczeniem to 255 (czyli po wzorze 77.5)
+    // --- Temperatura zewnętrzna (FIS, gefiltert) ---
+    // Surowe 255 = Fehler; po ×0,5−50 poza zakresem −50…77 °C (id_ramek)
     if (fullData.GWK_AussenTemp_Fehler === 1 || fullData.GWK_AussenTemp_gefiltert > 76) {
         html += `<div class="ind active-error">TEMP: BŁĄD CZUJNIKA</div>`;
     } else {
@@ -80,7 +80,7 @@ export function decodeGWKombiData(id, hexData, cardElement) {
 }
 
 export function decodeEinheitenData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (10 sygnałów)
+    // mEinheiten (0x60E), 2 B — data/id_ramek.txt (10 sygnałów)
     const fullData = {
         "EH1_Einh_Strck": extractCANSignal(hexData, 0, 1),
         "EH1_Einh_Temp": extractCANSignal(hexData, 1, 1),
@@ -140,7 +140,7 @@ export function decodeEinheitenData(id, hexData, cardElement) {
 }
 
 export function decodeDisplay1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (10 sygnałów)
+    // mDisplay_1 (0x62F), 4 B — data/id_ramek.txt (10 sygnałów; bit 3 zarezerwowany)
     const fullData = {
         "DY1_Display_OK": extractCANSignal(hexData, 0, 1),
         "DY1_Reset": extractCANSignal(hexData, 1, 1),
@@ -206,7 +206,7 @@ export function decodeDisplay1Data(id, hexData, cardElement) {
 }
 
 export function decodeGateway3Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (7 sygnałów)
+    // mGateway_3 (0x653), 3 B — data/id_ramek.txt (7 sygnałów)
     const fullData = {
         "GW3_Laendervariante": extractCANSignal(hexData, 0, 6),
         "GW3_Alt_3_Kombi": extractCANSignal(hexData, 6, 1),
@@ -269,7 +269,7 @@ export function decodeGateway3Data(id, hexData, cardElement) {
 }
 
 export function decodeDiagnose1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (10 sygnałów)
+    // mDiagnose_1 (0x65D), 8 B — data/id_ramek.txt (10 sygnałów; bit 61 zarezerwowany przed alt_Kilometerstand)
     const fullData = {
         "DN1_Verlernzaehler": extractCANSignal(hexData, 0, 8),
         "DN1_KM_Stand": extractCANSignal(hexData, 8, 20),                    // Przebieg (km)

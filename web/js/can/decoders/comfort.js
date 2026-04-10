@@ -89,7 +89,7 @@ export function decodeZKEData(id, hexData, cardElement) {
 }
 
 export function decodeManetkiData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (39 sygnałów!)
+    // mLSM_1 (0x2C1), DLC 6 B, Intel LE — data/id_ramek.txt. Bit 4 nieużywany (skok Fernlicht→Parklicht).
     const fullData = {
         "LS1_Blk_links": extractCANSignal(hexData, 0, 1),
         "LS1_Blk_rechts": extractCANSignal(hexData, 1, 1),
@@ -202,14 +202,13 @@ export function decodeManetkiData(id, hexData, cardElement) {
 }
 
 export function decodeZASData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
-    // Ramka stacyjki (Klemmen) w PQ35 opiera się na podstawowych bitach zacisków.
+    // mZAS_Status (0x2C3), DLC 1 B — data/id_ramek.txt (ZS1_ZAS_Kl_S … Kl_P, bity 0–4)
     const fullData = {
-        "ZS1_ZAS_Kl_S": extractCANSignal(hexData, 0, 1),   // Zacisk S (Kluczyk w stacyjce)
-        "ZS1_ZAS_Kl_15": extractCANSignal(hexData, 1, 1),  // Zacisk 15 (Zapłon ON)
-        "ZS1_ZAS_Kl_X": extractCANSignal(hexData, 2, 1),  // Zacisk X (Akcesoria)
-        "ZS1_ZAS_Kl_50": extractCANSignal(hexData, 3, 1),  // Zacisk 50 (Rozrusznik kręci)
-        "ZS1_ZAS_Kl_P": extractCANSignal(hexData, 4, 1),   // Zacisk P (Światła postojowe/parkingowe stacyjki)
+        "ZS1_ZAS_Kl_S": extractCANSignal(hexData, 0, 1),
+        "ZS1_ZAS_Kl_15": extractCANSignal(hexData, 1, 1),
+        "ZS1_ZAS_Kl_X": extractCANSignal(hexData, 2, 1),
+        "ZS1_ZAS_Kl_50": extractCANSignal(hexData, 3, 1),
+        "ZS1_ZAS_Kl_P": extractCANSignal(hexData, 4, 1)
     };
 
     // Zapisz do pamięci dla okna Modal
@@ -228,25 +227,29 @@ export function decodeZASData(id, hexData, cardElement) {
 
     let html = ``;
 
-    // --- Wizualizacja Głównego Stanu Stacyjki ---
-    // Logika priorytetów: Rozrusznik -> Zapłon -> Akcesoria -> Kluczyk -> Brak
+    // Priorytet jak typowa sekwencja: 50 → 15 → X → S (wg DB Kl.X to napięcie / Startvorgang, nie „akcesoria”)
     if (fullData.ZS1_ZAS_Kl_50 === 1) {
         html += `<div class="ind active-orange full-width blink-fast">ROZRUSZNIK (KL. 50)</div>`;
     } else if (fullData.ZS1_ZAS_Kl_15 === 1) {
         html += `<div class="ind active-blue full-width">ZAPŁON WŁĄCZONY (KL. 15)</div>`;
     } else if (fullData.ZS1_ZAS_Kl_X === 1) {
-        html += `<div class="ind active-blue full-width">AKCESORIA (KL. X)</div>`;
+        html += `<div class="ind active-blue full-width">NAPIĘCIE KL. X (OBWODY ZASILONE)</div>`;
     } else if (fullData.ZS1_ZAS_Kl_S === 1) {
         html += `<div class="ind active-blue full-width">KLUCZYK W STACYJCE (KL. S)</div>`;
     } else {
         html += `<div class="ind full-width">BRAK KLUCZYKA</div>`;
     }
 
+    // Kl. P = Parklichtstellung (obwód P), nie to samo co „pozycja 0” jako wyłączenie zapłonu
+    if (fullData.ZS1_ZAS_Kl_P === 1) {
+        html += `<div class="ind active-orange full-width">KL. P: PARKLICHT (OBWÓD ZAŁĄCZONY)</div>`;
+    }
+
     gridContainer.innerHTML = html;
 }
 
 export function decodeClima1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (20 sygnałów)
+    // mClima_1 (0x3E1), 8 B — data/id_ramek.txt (20 sygnałów)
     const fullData = {
         "CL1_Drehzahlanhebung": extractCANSignal(hexData, 0, 1),
         "CL1_Zuheizer": extractCANSignal(hexData, 1, 1),
@@ -296,7 +299,7 @@ export function decodeClima1Data(id, hexData, cardElement) {
     }
 
     // --- Ciśnienie czynnika chłodniczego ---
-    // Wartość szesnastkowa FF (255) oznacza błąd (255 * 0.2 = 51)
+    // Surowe 255 = Fehler (id_ramek); po ×0,2 przekracza zakres 0…50,8 bar
     if (fullData.CL1_KaeltemittelDruck > 50) {
         html += `<div class="ind active-error">CIŚNIENIE: BŁĄD!</div>`;
     } else {
@@ -340,7 +343,7 @@ export function decodeClima1Data(id, hexData, cardElement) {
 }
 
 export function decodeClima2Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (12 sygnałów)
+    // mClima_2 (0x3E3), 8 B — data/id_ramek.txt (12 sygnałów; bity 35–38 zarezerwowane przed CL2_Umluft)
     const fullData = {
         "CL2_Sonne_links": extractCANSignal(hexData, 0, 8, 4, 0),            // Czujnik nasłonecznienia lewy (W/m^2)
         "CL2_Sonne_rechts": extractCANSignal(hexData, 8, 8, 4, 0),           // Czujnik nasłonecznienia prawy (W/m^2)
@@ -372,8 +375,8 @@ export function decodeClima2Data(id, hexData, cardElement) {
 
     let html = ``;
 
-    // --- Temperatura Wnętrza ---
-    // Wartość 255 (czyli po przeliczeniu 77.5) oznacza błąd czujnika
+    // --- Temperatura wnętrza ---
+    // Surowe 255 = Fehler; po ×0,5−50 wychodzi poza zakres −50…77 °C (id_ramek)
     if (fullData.CL2_InnenTemp > 76) {
         html += `<div class="ind active-error full-width">TEMP. WNĘTRZA: BŁĄD CZUJNIKA</div>`;
     } else {
@@ -401,20 +404,19 @@ export function decodeClima2Data(id, hexData, cardElement) {
         html += `<div class="ind active-red blink">WEBASTO WŁĄCZONE!</div>`;
     }
 
-    // --- Czujniki Nasłonecznienia ---
-    // Pokazujemy na kafelku informacje tylko wtedy, gdy auto faktycznie "czuje" mocne słońce (> 100 W/m^2)
-    // Maksymalna wartość błędu to 1020 W/m^2 (255 * 4)
-    if (fullData.CL2_Sonne_links < 1020 && fullData.CL2_Sonne_rechts < 1020) {
-        if (fullData.CL2_Sonne_links > 100 || fullData.CL2_Sonne_rechts > 100) {
-            html += `<div class="ind active-orange full-width">SŁOŃCE (W/m²): L: ${fullData.CL2_Sonne_links} | P: ${fullData.CL2_Sonne_rechts}</div>`;
-        }
+    // --- Czujniki nasłonecznienia ---
+    // Zakres 0…1016 W/m²; surowe 255 → 1020 = Fehler (id_ramek)
+    if (fullData.CL2_Sonne_links > 1016 || fullData.CL2_Sonne_rechts > 1016) {
+        html += `<div class="ind active-error full-width">NASŁONECZNIENIE: BŁĄD CZUJNIKA (L/P)</div>`;
+    } else if (fullData.CL2_Sonne_links > 100 || fullData.CL2_Sonne_rechts > 100) {
+        html += `<div class="ind active-orange full-width">SŁOŃCE (W/m²): L: ${fullData.CL2_Sonne_links} | P: ${fullData.CL2_Sonne_rechts}</div>`;
     }
 
     gridContainer.innerHTML = html;
 }
 
 export function decodeBSGKombiData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (44 sygnały!)
+    // mBSG_Kombi (0x470), 8 B — data/id_ramek.txt (44 sygnały; bity 51–54 zarezerwowane przed BCM_Remotestart)
     const fullData = {
         "BSK_Blk_links": extractCANSignal(hexData, 0, 1),
         "BSK_Blk_rechts": extractCANSignal(hexData, 1, 1),
@@ -438,8 +440,8 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
         "BSK_Klemme_58t_def": extractCANSignal(hexData, 31, 1),
         "BSK_Interlock": extractCANSignal(hexData, 32, 1),               // Wciśnij sprzęgło by odpalić
         "BSK_Buzzer": extractCANSignal(hexData, 33, 1),
-        "BSK_Ruecks_HL_verriegelt": extractCANSignal(hexData, 34, 1),    // Oparcie kanapy zablokowane (L)
-        "BSK_Ruecks_HR_verriegelt": extractCANSignal(hexData, 35, 1),    // Oparcie kanapy zablokowane (P)
+        "BSK_Ruecks_HL_verriegelt": extractCANSignal(hexData, 34, 1),    // 0=zablokowane, 1=odblokowane (L)
+        "BSK_Ruecks_HR_verriegelt": extractCANSignal(hexData, 35, 1),    // 0=zablokowane, 1=odblokowane (P)
         "BSK_Def_Lampe": extractCANSignal(hexData, 36, 1),               // Spalona żarówka
         "BSK_NSL_LED_Pfad": extractCANSignal(hexData, 37, 1),
         "BSK_AFL_defekt": extractCANSignal(hexData, 38, 1),              // Błąd świateł AUTO
@@ -456,7 +458,7 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
         "BSK_FLA_Sensor_blockiert": extractCANSignal(hexData, 49, 1),
         "BSK_FLA_Defekt": extractCANSignal(hexData, 50, 1),
         "BCM_Remotestart_Betrieb": extractCANSignal(hexData, 55, 1),
-        "BSK_Ruhespannung": extractCANSignal(hexData, 56, 5, 0.1, 10.5), // Napięcie w Voltoach
+        "BSK_Ruhespannung": extractCANSignal(hexData, 56, 5, 0.1, 10.5), // ×0,1 +10,5 V; surowe 0=Init, 31=Fehler
         "BSK_Nebelschlusslicht": extractCANSignal(hexData, 61, 1),       // Przeciwmgielne tył
         "BSK_Fernlicht": extractCANSignal(hexData, 62, 1),               // Drogowe (Długie)
         "BSK_Tagfahrlicht": extractCANSignal(hexData, 63, 1)             // DRL (Światła dzienne)
@@ -486,7 +488,7 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
     if (fullData.BSK_HR_geoeffnet === 1) openDoors.push("TYŁ-P");
 
     if (fullData.BSK_MH_geoeffnet === 1) {
-        html += `<div class="ind active-error full-width">MASKA SILNIKA OTARTA!</div>`;
+        html += `<div class="ind active-error full-width">MASKA SILNIKA OTWARTA!</div>`;
     }
 
     if (fullData.BSK_HD_Hauptraste === 1) {
@@ -540,8 +542,85 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
     gridContainer.innerHTML = html;
 }
 
+export function decodeLicht1AltData(id, hexData, cardElement) {
+    // mLicht_1_alt (0x531), 4 B — data/id_ramek.txt (22 sygnały; zgodnie z DBC BO_ 1329)
+    const fullData = {
+        "LIA_Standlicht": extractCANSignal(hexData, 0, 1),
+        "LIA_Abblendlicht": extractCANSignal(hexData, 1, 1),
+        "LIA_Fernlicht": extractCANSignal(hexData, 2, 1),
+        "LIA_Nebellicht": extractCANSignal(hexData, 3, 1),
+        "LIA_Nebelschluss": extractCANSignal(hexData, 4, 1),
+        "LIA_Rueckfahrlicht": extractCANSignal(hexData, 5, 1),
+        "LIA_Parklicht_links": extractCANSignal(hexData, 6, 1),
+        "LIA_Parklicht_rechts": extractCANSignal(hexData, 7, 1),
+        "LIA_Blk_links": extractCANSignal(hexData, 8, 1),
+        "LIA_Blk_rechts": extractCANSignal(hexData, 9, 1),
+        "LIA_Anhaenger": extractCANSignal(hexData, 10, 1),
+        "LIA_Warnblink": extractCANSignal(hexData, 11, 1),
+        "LIA_BLK_Frequenz": extractCANSignal(hexData, 12, 1),
+        "LIA_AFL_Schalter": extractCANSignal(hexData, 13, 1),
+        "LIA_Bremslicht": extractCANSignal(hexData, 14, 1),
+        "LIA_Tagesfahrlicht": extractCANSignal(hexData, 15, 1),
+        "LIA_Blk_L_Kontrolle": extractCANSignal(hexData, 16, 1),
+        "LIA_Blk_R_Kontrolle": extractCANSignal(hexData, 17, 1),
+        "LIA_Kurv_Licht": extractCANSignal(hexData, 18, 1),
+        "LIA_Warnblk_Status": extractCANSignal(hexData, 19, 1),
+        "LIA_Zaehler": extractCANSignal(hexData, 20, 4),
+        "LIA_Pruefsumme": extractCANSignal(hexData, 24, 8)
+    };
+
+    frameDataCache[id] = fullData;
+
+    const valElement = cardElement.querySelector('.val');
+    if (valElement) {
+        valElement.setAttribute('data-decoded', 'true');
+        valElement.classList.add('hidden-val');
+    }
+
+    const gridContainer = cardElement.querySelector('.grid');
+    if (!gridContainer) return;
+
+    let html = ``;
+
+    if (fullData.LIA_Warnblink === 1) {
+        html += `<div class="ind active-orange full-width blink">&#8592; AWARYJNE &#8594;</div>`;
+    } else if (fullData.LIA_Blk_links === 1) {
+        html += `<div class="ind active-orange blink">&#8592; KIERUNKOWSKAZ</div>`;
+    } else if (fullData.LIA_Blk_rechts === 1) {
+        html += `<div class="ind active-orange blink">KIERUNKOWSKAZ &#8594;</div>`;
+    }
+
+    const lights = [];
+    if (fullData.LIA_Abblendlicht === 1) lights.push("MIJANIA");
+    if (fullData.LIA_Fernlicht === 1) lights.push("DROGOWE");
+    if (fullData.LIA_Tagesfahrlicht === 1) lights.push("DRL");
+    if (fullData.LIA_Standlicht === 1) lights.push("POSTOJOWE");
+    if (fullData.LIA_Parklicht_links === 1 || fullData.LIA_Parklicht_rechts === 1) lights.push("PARKING L/P");
+    if (fullData.LIA_Nebellicht === 1) lights.push("MGŁA PRZÓD");
+    if (fullData.LIA_Nebelschluss === 1) lights.push("MGŁA TYŁ");
+    if (fullData.LIA_Rueckfahrlicht === 1) lights.push("WSTECZNY");
+    if (fullData.LIA_Kurv_Licht === 1) lights.push("KURWATURA");
+    if (lights.length > 0) {
+        html += `<div class="ind active-blue full-width">ŚWIATŁA: ${lights.join(', ')}</div>`;
+    }
+
+    if (fullData.LIA_Bremslicht === 1) {
+        html += `<div class="ind active-red full-width">HAMULEC (światło stopu)</div>`;
+    }
+    if (fullData.LIA_Anhaenger === 1) {
+        html += `<div class="ind active-orange full-width">PRZYCZEPA (kontrolka)</div>`;
+    }
+    if (fullData.LIA_AFL_Schalter === 1) {
+        html += `<div class="ind full-width">PRZEŁĄCZNIK: AUTO / AFL</div>`;
+    }
+
+    html += `<div class="ind full-width">LICZNIK RAMKI: ${fullData.LIA_Zaehler} | SUMA: ${fullData.LIA_Pruefsumme}</div>`;
+
+    gridContainer.innerHTML = html;
+}
+
 export function decodeBSG3Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (30 sygnałów)
+    // mBSG_3 (0x575), 4 B — data/id_ramek.txt (30 sygnałów)
     const fullData = {
         "BS3_Klemme_S": extractCANSignal(hexData, 0, 1),
         "BS3_Klemme_15": extractCANSignal(hexData, 1, 1),
@@ -649,7 +728,7 @@ export function decodeBSG3Data(id, hexData, cardElement) {
 }
 
 export function decodeDimmungData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (5 sygnałów)
+    // mDimmung (0x635), 3 B — data/id_ramek.txt (5 sygnałów)
     const fullData = {
         "DI1_Display": extractCANSignal(hexData, 0, 7),
         "DI1_Display_def": extractCANSignal(hexData, 7, 1),

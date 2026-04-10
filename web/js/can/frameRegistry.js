@@ -4,6 +4,7 @@ import {
     decodeNMGatewayIData,
     decodeKDErrorData,
     decodeSysteminfo1Data,
+    decodeGateway551RawData,
     decodeSollverbauData,
     decodeFzgIdentData
 } from "./decoders/system.js";
@@ -14,6 +15,7 @@ import {
     decodeClima1Data,
     decodeClima2Data,
     decodeBSGKombiData,
+    decodeLicht1AltData,
     decodeBSG3Data,
     decodeDimmungData
 } from "./decoders/comfort.js";
@@ -46,7 +48,9 @@ const frameRegistry = Object.freeze({
     "0x3E3": { name: "CLIMATRONIC 2 (mClima_2)", zone: "komfort", decoder: decodeClima2Data },
     "0x42B": { name: "SLEEP / WAKE (mNM_Gateway)", zone: "system", decoder: decodeNMGatewayIData },
     "0x470": { name: "DRZWI / ŚWIATŁA (mBSG_Kombi)", zone: "komfort", decoder: decodeBSGKombiData },
+    "0x531": { name: "ŚWIATŁA / KOMBI (mLicht_1_alt)", zone: "komfort", decoder: decodeLicht1AltData },
     "0x527": { name: "TEMP. ZEWN. (mGW_Kombi)", zone: "media", decoder: decodeGWKombiData },
+    "0x551": { name: "GATEWAY — NIEZMAP. (0x551)", zone: "system", decoder: decodeGateway551RawData },
     "0x555": { name: "TURBO / OLEJ (mMotor7)", zone: "naped", decoder: decodeMotor7Data },
     "0x557": { name: "BŁĘDY MODUŁÓW (mKD_Error)", zone: "system", decoder: decodeKDErrorData },
     "0x571": { name: "ZASILANIE / AKU (mBSG_2)", zone: "naped", decoder: decodeBSG2Data },

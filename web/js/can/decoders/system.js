@@ -65,8 +65,14 @@ export function decodeAirbagData(id, hexData, cardElement) {
         html += `<div class="ind active-green full-width">SYSTEM AIRBAG OK</div>`;
     }
 
-    // Alarm zderzeniowy (jeśli jakakolwiek siła zderzenia jest > 0)
-    if (fullData.AB1_CrashStaerke > 0 || fullData.AB1_FrontCrash === 1 || fullData.AB1_Rollover === 1) {
+    // Alarm zderzeniowy: wszystkie bity crash z mAirbag_1 (id_ramek.txt 0x151) + CrashStaerke > 0
+    const crashBits =
+        fullData.AB1_FrontCrash === 1 ||
+        fullData.AB1_HeckCrash === 1 ||
+        fullData.AB1_Crash_FT === 1 ||
+        fullData.AB1_Crash_BT === 1 ||
+        fullData.AB1_Rollover === 1;
+    if (fullData.AB1_CrashStaerke > 0 || crashBits) {
         html += `<div class="ind active-error full-width blink-fast">WYPADEK / CRASH DETECTED!</div>`;
     }
 
@@ -74,11 +80,10 @@ export function decodeAirbagData(id, hexData, cardElement) {
 }
 
 export function decodeGateway1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI
+    // mGateway_1 (0x351), DLC 8 B — data/id_ramek.txt: bity 0–1, 9–23 (prędkość), 63
     const fullData = {
         "GW1_FhzgGeschw_alt": extractCANSignal(hexData, 0, 1),
         "GW1_Rueckfahrlicht": extractCANSignal(hexData, 1, 1),
-        // Prędkość ma 15 bitów, a jej przelicznik w dokumentacji to 0.01 (czyli np. wartość 5000 z CAN to 50.00 km/h)
         "GW1_FzgGeschw": extractCANSignal(hexData, 9, 15, 0.01, 0),
         "KKO_alt_mBSG_Kombi": extractCANSignal(hexData, 63, 1)
     };
@@ -125,7 +130,7 @@ export function decodeGateway1Data(id, hexData, cardElement) {
 }
 
 export function decodeNMGatewayIData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (19 sygnałów)
+    // mNM_Gateway_I (0x42B), 6 B — data/id_ramek.txt (19 sygnałów; zarezerwowany bit 11 między LimpHome a SleepInd; bity 27–29 przed Kl.15)
     const fullData = {
         "NMGW_I_Receiver": extractCANSignal(hexData, 0, 8),
         "NMGW_I_CmdRing": extractCANSignal(hexData, 8, 1),
@@ -174,8 +179,15 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
         html += `<div class="ind active-blue full-width">MAGISTRALA: AKTYWNA (AWAKE)</div>`;
     }
 
-    // --- Przyczyny Wybudzenia (Weckursache) ---
-    // Zbieramy do tablicy wszystkie aktywne flagi "Weckursache"
+    // --- Ramki Ring / Alive (OSEK NM) ---
+    if (fullData.NMGW_I_CmdRing === 1 || fullData.NMGW_I_CmdAlive === 1) {
+        const nmCmd = [];
+        if (fullData.NMGW_I_CmdRing === 1) nmCmd.push("RING");
+        if (fullData.NMGW_I_CmdAlive === 1) nmCmd.push("ALIVE");
+        html += `<div class="ind active-blue full-width">NM: ${nmCmd.join(" + ")}</div>`;
+    }
+
+    // --- Przyczyny wybudzenia (Weckursache) ---
     let wakeReasons = [];
     if (fullData.NMGW_I_Kl_15 === 1) wakeReasons.push("ZAPŁON (KL.15)");
     if (fullData.NMGW_I_Komfort_CAN === 1) wakeReasons.push("CAN KOMFORT");
@@ -184,9 +196,13 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
     if (fullData.NMGW_I_CAN === 1) wakeReasons.push("CAN (OGÓLNY)");
     if (fullData.NMGW_I_Kl_30_Reset === 1) wakeReasons.push("RESET ZASILANIA");
     if (fullData.NMGW_I_Wake_Up_Ltg === 1) wakeReasons.push("LINIA WAKE-UP");
+    if (fullData.NMGW_I_Fkt_Nachlauf === 1) wakeReasons.push("TIMER (NACHLAUF)");
+    if (fullData.NMGW_I_NWake === 1) wakeReasons.push("NWAKE");
+    if (fullData.NMGW_I_LIN1 === 1) wakeReasons.push("LIN 1");
+    if (fullData.NMGW_I_LIN2 === 1) wakeReasons.push("LIN 2");
 
     if (wakeReasons.length > 0) {
-        html += `<div class="ind active-blue full-width">WAKE-UP: ${wakeReasons.join(', ')}</div>`;
+        html += `<div class="ind active-blue full-width">WAKE-UP: ${wakeReasons.join(", ")}</div>`;
     }
 
     // --- Tryb Awaryjny (Limp Home) ---
@@ -198,7 +214,7 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
 }
 
 export function decodeKDErrorData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (62 moduły!)
+    // mKD_Error (0x557), 8 B — data/id_ramek.txt (62 sygnały; bity 23 i 55 zarezerwowane)
     const fullData = {
         "EKD_Motor_A": extractCANSignal(hexData, 0, 1),
         "EKD_Getriebe_A": extractCANSignal(hexData, 1, 1),
@@ -313,8 +329,33 @@ export function decodeKDErrorData(id, hexData, cardElement) {
     gridContainer.innerHTML = html;
 }
 
+/** 0x551: brak BO_ 1361 w DBC w repozytorium — tylko surowe bajty (data/id_ramek.txt). */
+export function decodeGateway551RawData(id, hexData, cardElement) {
+    const parts = hexData.trim().split(/\s+/).filter(Boolean);
+    const fullData = {};
+    for (let i = 0; i < parts.length; i++) {
+        fullData[`Byte_${i}`] = parseInt(parts[i], 16);
+    }
+    frameDataCache[id] = fullData;
+
+    const valElement = cardElement.querySelector(".val");
+    if (valElement) {
+        valElement.setAttribute("data-decoded", "true");
+        valElement.classList.add("hidden-val");
+    }
+
+    const gridContainer = cardElement.querySelector(".grid");
+    if (!gridContainer) return;
+
+    const preview = parts.length ? parts.join(" ").toUpperCase() : "—";
+    gridContainer.innerHTML = `
+        <div class="ind full-width">Brak mapy sygnałów w bazie projektu (0x551).</div>
+        <div class="ind active-blue full-width">DLC ${parts.length}: ${preview}</div>
+    `;
+}
+
 export function decodeSysteminfo1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (27 sygnałów)
+    // mSysteminfo_1 (0x651), 8 B — data/id_ramek.txt (27 sygnałów; bity 52–53 zarezerwowane przed NWDF_gueltig)
     const fullData = {
         "SY1_CAN_Extern": extractCANSignal(hexData, 0, 1),
         "SY1_Diag_Antrieb": extractCANSignal(hexData, 1, 1),
@@ -399,7 +440,7 @@ export function decodeSysteminfo1Data(id, hexData, cardElement) {
 }
 
 export function decodeSollverbauData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (64 sygnały - po 1 bicie)
+    // mSollverbau_neu (0x655), 8 B — data/id_ramek.txt (64 sygnały po 1 bicie)
     const fullData = {
         "VBN_Motor_A": extractCANSignal(hexData, 0, 1),
         "VBN_Getriebe_A": extractCANSignal(hexData, 1, 1),
@@ -516,7 +557,7 @@ export function decodeSollverbauData(id, hexData, cardElement) {
 }
 
 export function decodeFzgIdentData(id, hexData, cardElement) {
-    // 1. ODCZYT MULTIPLEKSERA
+    // mFzg_Ident (0x65F), 8 B — data/id_ramek.txt (multipleks FI1_MUX 0–2; bity 2–7 zarezerwowane; 7×8 bitów od bitu 8)
     const mux = extractCANSignal(hexData, 0, 2);
 
     // Pobieramy dotychczasowe dane z pamięci (aby ich nie nadpisać przy nowym cyklu MUX)

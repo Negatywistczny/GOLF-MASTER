@@ -199,6 +199,10 @@ const FRAME_SIGNAL_COLOR_OVERRIDES = Object.freeze({
         }
     },
     "0x359": {
+        "GWB_FzgGeschw": {
+            "32725": "error",
+            "32742": "error"
+        },
         "GWB_Info_Waehlhebel": {
             "15": "error"
         }
@@ -220,7 +224,8 @@ const FRAME_SIGNAL_COLOR_OVERRIDES = Object.freeze({
             "1": "info"
         },
         "GWM_GRA_Status": {
-            "0": "info"
+            "0": "info",
+            "3": "error"
         },
         "GWM_Heissl_Vorwarn": {
             "0": "enabled"
@@ -405,6 +410,27 @@ const FRAME_SIGNAL_COLOR_OVERRIDES = Object.freeze({
             "0": "info",
             "1": "info"
         }
+    },
+    "0x531": {
+        "LIA_Abblendlicht": { "0": "info", "1": "info" },
+        "LIA_AFL_Schalter": { "0": "info", "1": "info" },
+        "LIA_Anhaenger": { "0": "info", "1": "info" },
+        "LIA_Blk_L_Kontrolle": { "0": "info", "1": "info" },
+        "LIA_Blk_R_Kontrolle": { "0": "info", "1": "info" },
+        "LIA_Blk_links": { "0": "info", "1": "info" },
+        "LIA_Blk_rechts": { "0": "info", "1": "info" },
+        "LIA_Bremslicht": { "0": "info", "1": "info" },
+        "LIA_Fernlicht": { "0": "info", "1": "info" },
+        "LIA_Kurv_Licht": { "0": "info", "1": "info" },
+        "LIA_Nebellicht": { "0": "info", "1": "info" },
+        "LIA_Nebelschluss": { "0": "info", "1": "info" },
+        "LIA_Parklicht_links": { "0": "info", "1": "info" },
+        "LIA_Parklicht_rechts": { "0": "info", "1": "info" },
+        "LIA_Rueckfahrlicht": { "0": "info", "1": "info" },
+        "LIA_Standlicht": { "0": "info", "1": "info" },
+        "LIA_Tagesfahrlicht": { "0": "info", "1": "info" },
+        "LIA_Warnblink": { "0": "info", "1": "info" },
+        "LIA_Warnblk_Status": { "0": "info", "1": "info" }
     },
     "0x527": {
         "GWK_AussenTemp_Fehler": {

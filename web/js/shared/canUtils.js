@@ -45,8 +45,25 @@ function ensureFrameBigInt(hexData) {
 }
 
 function formatSignalValue(meta, value) {
-    if (meta.states && meta.states[value] !== undefined) {
-        return meta.states[value];
+    if (meta.states) {
+        if (meta.states[value] !== undefined) {
+            return meta.states[value];
+        }
+        // Wartości specjalne z DB czasem podane jako surowy 15-bit (np. 32708), a value już × 0,01 (327.08 km/h)
+        if (typeof value === "number" && Number.isFinite(value)) {
+            const asRawCent = Math.round(value * 100);
+            if (meta.states[asRawCent] !== undefined) {
+                return meta.states[asRawCent];
+            }
+            const r2 = Math.round(value * 100) / 100;
+            if (meta.states[r2] !== undefined) {
+                return meta.states[r2];
+            }
+            const r1 = Math.round(value * 10) / 10;
+            if (meta.states[r1] !== undefined) {
+                return meta.states[r1];
+            }
+        }
     }
     const num = typeof value === "number" && !Number.isInteger(value) ? value.toFixed(2) : value;
     return `${num}${meta.unit || ""}`;

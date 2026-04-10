@@ -2,7 +2,7 @@ import { extractCANSignal } from "../../shared/canUtils.js";
 import { signalMeta, frameDataCache } from "../../state/index.js";
 
 export function decodeBremseGetriebeData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (29 sygnałów)
+    // mGW_Bremse_Getriebe (0x359), DLC 8 B — data/id_ramek.txt (29 sygnałów, bity 0–63)
     const fullData = {
         "GWB_Alt_FzgGeschw": extractCANSignal(hexData, 0, 1),
         "GWB_Alt_2_Bremse": extractCANSignal(hexData, 1, 1),
@@ -83,7 +83,7 @@ export function decodeBremseGetriebeData(id, hexData, cardElement) {
 }
 
 export function decodeMotorData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (25 sygnałów)
+    // mGW_Motor (0x35B), DLC 8 B — data/id_ramek.txt (bit 4 zastrzeżony; GWM_RME od bitu 5)
     const fullData = {
         "GWM_Alt_1_Motor": extractCANSignal(hexData, 0, 1),
         "GWM_Alt_2_Motor": extractCANSignal(hexData, 1, 1),
@@ -152,12 +152,13 @@ export function decodeMotorData(id, hexData, cardElement) {
         html += `<div class="ind">SPRZĘGŁO: PUSZCZONE</div>`;
     }
 
-    // --- Tempomat (GRA) ---
-    // Dokumentacja dla GRA: 0=wył, 1=aktywny, 2=nadpisany gazem (overridden)
+    // GRA (id_ramek): 0=off, 1=aktywny, 2=więcej gazu niż regulator, 3=błąd/timeout
     if (fullData.GWM_GRA_Status === 1) {
         html += `<div class="ind active-green">TEMPOMAT: AKTYWNY</div>`;
     } else if (fullData.GWM_GRA_Status === 2) {
         html += `<div class="ind active-orange">TEMPOMAT: +GAZ KIEROWCY</div>`;
+    } else if (fullData.GWM_GRA_Status === 3) {
+        html += `<div class="ind active-error">TEMPOMAT: BŁĄD / BRAK ZEZWOLENIA</div>`;
     } else {
         html += `<div class="ind">TEMPOMAT: WYŁ.</div>`;
     }
@@ -181,19 +182,19 @@ export function decodeMotorData(id, hexData, cardElement) {
 }
 
 export function decodeLenkwinkelData(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (11 sygnałów)
+    // mLenkwinkel_1 (0x3C3), DLC 8 B — data/id_ramek.txt; Vorzeichen 0=links/+, 1=rechts/−
     const fullData = {
-        "LW1_Lenkradwinkel": extractCANSignal(hexData, 0, 15, 0.04375, 0),       // Kąt (wartość bezwzględna)
-        "LW1_Vorzeichen": extractCANSignal(hexData, 15, 1),                      // Znak kąta (0=lewo/plus, 1=prawo/minus)
-        "LW1_Geschwindigkeit": extractCANSignal(hexData, 16, 15, 0.04375, 0),    // Prędkość obrotu (bez wzgl.)
-        "LW1_Geschw_Vorzeichen": extractCANSignal(hexData, 31, 1),               // Znak prędkości
-        "LW1_ID": extractCANSignal(hexData, 32, 8),                              // Status kalibracji (128 = skalibrowany)
+        "LW1_Lenkradwinkel": extractCANSignal(hexData, 0, 15, 0.04375, 0),
+        "LW1_Vorzeichen": extractCANSignal(hexData, 15, 1),
+        "LW1_Geschwindigkeit": extractCANSignal(hexData, 16, 15, 0.04375, 0),
+        "LW1_Geschw_Vorzeichen": extractCANSignal(hexData, 31, 1),
+        "LW1_ID": extractCANSignal(hexData, 32, 8),
         "LW1_Quelle_Init": extractCANSignal(hexData, 40, 1),
-        "LW1_Int_Status": extractCANSignal(hexData, 41, 2),                      // Status sensora (0=OK, 1=NoInit, 2=Sporadyczny, 3=Trwały błąd)
-        "LW1_KL30_Ausfall": extractCANSignal(hexData, 43, 1),                    // Flaga braku zasilania (odpięta klema)
-        "LW1_Zaehler": extractCANSignal(hexData, 44, 4),                         // Licznik wiadomości
-        "LW1_CRC8CHK": extractCANSignal(hexData, 48, 8),                         // Suma kontrolna CRC
-        "LW1_Pruefsumme": extractCANSignal(hexData, 56, 8)                       // Suma kontrolna ESP
+        "LW1_Int_Status": extractCANSignal(hexData, 41, 2),
+        "LW1_KL30_Ausfall": extractCANSignal(hexData, 43, 1),
+        "LW1_Zaehler": extractCANSignal(hexData, 44, 4),
+        "LW1_CRC8CHK": extractCANSignal(hexData, 48, 8),
+        "LW1_Pruefsumme": extractCANSignal(hexData, 56, 8)
     };
 
     // Zapisz do pamięci dla okna Modal
@@ -228,7 +229,6 @@ export function decodeLenkwinkelData(id, hexData, cardElement) {
         if (fullData.LW1_Int_Status === 3) errTxt = "BŁĄD TRWAŁY";
         
         html += `<div class="ind active-error full-width blink">STATUS: ${errTxt}</div>`;
-    } else {
     }
 
     // --- Wizualizacja Kąta Skrętu ---
@@ -253,7 +253,7 @@ export function decodeLenkwinkelData(id, hexData, cardElement) {
 }
 
 export function decodeMotor7Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (22 sygnały)
+    // mMotor7 (0x555), 8 B — data/id_ramek.txt (22 sygnały)
     const fullData = {
         "MO7_LL_Status": extractCANSignal(hexData, 0, 1),
         "MO7_V_Begrenz": extractCANSignal(hexData, 1, 1),
@@ -296,15 +296,15 @@ export function decodeMotor7Data(id, hexData, cardElement) {
     let html = ``;
 
     // --- Ciśnienie doładowania (Turbo) ---
-    // Wartość 255 (czyli po przeliczeniu 5.10) to błąd
+    // Surowe 255 = Fehler (×0,02 → poza zakresem 0…5,08 bar)
     if (fullData.MO7_Ladedruckneu > 5.0) {
         html += `<div class="ind active-error full-width">DOŁADOWANIE (TURBO): BŁĄD CZUJNIKA</div>`;
     } else {
         html += `<div class="ind active-blue full-width">ZADANE TURBO: ${fullData.MO7_Ladedruckneu.toFixed(2)} bar</div>`;
     }
 
-    // --- Temperatura Oleju ---
-    // 255 to błąd 
+    // --- Temperatura oleju ---
+    // Surowe 255 = Fehler; surowe 0/1 = nie zainstalowano / init (id_ramek)
     if (fullData.MO7_Fehler_Oel_Temp === 1 || fullData.MO7_Oeltemperatur > 194) {
          html += `<div class="ind active-error full-width">TEMP. OLEJU: BŁĄD CZUJNIKA</div>`;
     } else if (fullData.MO7_Oeltemperatur === -59) {
@@ -341,7 +341,7 @@ export function decodeMotor7Data(id, hexData, cardElement) {
 }
 
 export function decodeBSG2Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (30 sygnałów)
+    // mBSG_2 (0x571), 6 B — data/id_ramek.txt (30 sygnałów)
     const fullData = {
         "BS2_U_BATT": extractCANSignal(hexData, 0, 8, 0.05, 5),
         "BS2_Heckscheibe_aus": extractCANSignal(hexData, 8, 1),
@@ -440,7 +440,7 @@ export function decodeBSG2Data(id, hexData, cardElement) {
 }
 
 export function decodeKombiK1Data(id, hexData, cardElement) {
-    // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (14 sygnałów)
+    // mKombi_K1 (0x621), 7 B — data/id_ramek.txt (19 sygnałów)
     const fullData = {
         "KO1_Tankstop": extractCANSignal(hexData, 0, 1),
         "KO1_Tankwarnlampe": extractCANSignal(hexData, 1, 1),

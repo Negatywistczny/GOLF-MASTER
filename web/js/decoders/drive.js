@@ -48,13 +48,16 @@ export function decodeBremseGetriebeData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Światło STOP i Hamulec ---
     // Bierzemy pod uwagę światło stop, stabilizację przyczepy i hamulec EPB
     if (fullData.PLS_Bremsleuchte === 1 || fullData.GWB_TSP_aktiv === 1 || fullData.GWB_EPB_Bremslicht === 1) {
-        html += `<div class="ind active-error full-width">ŚWIATŁO STOP WŁĄCZONE</div>`;
-        cardElement.style.borderColor = "var(--red)";
+        html += `<div class="ind active-orange full-width">ŚWIATŁO STOP WŁĄCZONE</div>`;
+        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind full-width">HAMULEC ZWOLNIONY</div>`;
         cardElement.style.borderColor = "var(--border-color)";
@@ -78,7 +81,7 @@ export function decodeBremseGetriebeData(id, hexData, cardElement) {
     // Dodajemy informacje o Shift Lock (zablokowany drążek)
     let shiftLockStr = (fullData.GWB_Shift_Lock === 1) ? " 🔒 (Zablokowany)" : "";
     
-    html += `<div class="ind active-green full-width">BIEG: ${bieg}${shiftLockStr}</div>`;
+    html += `<div class="ind active-blue full-width">BIEG: ${bieg}${shiftLockStr}</div>`;
 
     gridContainer.innerHTML = html;
 }
@@ -126,6 +129,9 @@ export function decodeMotorData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Obroty Silnika (RPM) ---
@@ -133,7 +139,7 @@ export function decodeMotorData(id, hexData, cardElement) {
     if (fullData.GWM_Motordrehzahl >= 16320) {
         html += `<div class="ind active-error full-width">OBROTY: BŁĄD CZYTNIKA</div>`;
     } else {
-        html += `<div class="ind active full-width">OBROTY: ${fullData.GWM_Motordrehzahl} RPM</div>`;
+        html += `<div class="ind active-blue full-width">OBROTY: ${fullData.GWM_Motordrehzahl} RPM</div>`;
     }
 
     // --- Temperatura Płynu Chłodzącego ---
@@ -141,13 +147,13 @@ export function decodeMotorData(id, hexData, cardElement) {
     if (fullData.GWM_KuehlmittelTemp >= 143) {
         html += `<div class="ind active-error full-width">TEMP. PŁYNU: BŁĄD CZUJNIKA</div>`;
     } else {
-        html += `<div class="ind full-width">TEMP: ${fullData.GWM_KuehlmittelTemp.toFixed(1)} °C</div>`;
+        html += `<div class="ind active-blue full-width">TEMP: ${fullData.GWM_KuehlmittelTemp.toFixed(1)} °C</div>`;
     }
 
     // --- Pedał Sprzęgła ---
     // Wartość 0 = wciśnięty (rozłączony napęd) | 1 = puszczony (zasprzęglony)
     if (fullData.GWM_Kuppl_Schalter === 0) {
-        html += `<div class="ind active-lock">SPRZĘGŁO: WCIŚNIĘTE</div>`;
+        html += `<div class="ind active-blue">SPRZĘGŁO: WCIŚNIĘTE</div>`;
     } else {
         html += `<div class="ind">SPRZĘGŁO: PUSZCZONE</div>`;
     }
@@ -156,6 +162,9 @@ export function decodeMotorData(id, hexData, cardElement) {
     // Dokumentacja dla GRA: 0=wył, 1=aktywny, 2=nadpisany gazem (overridden)
     if (fullData.GWM_GRA_Status === 1) {
         html += `<div class="ind active-green">TEMPOMAT: AKTYWNY</div>`;
+        if (cardElement.style.borderColor === "var(--border-color)") {
+            cardElement.style.borderColor = "var(--green)";
+        }
     } else if (fullData.GWM_GRA_Status === 2) {
         html += `<div class="ind active-orange">TEMPOMAT: +GAZ KIEROWCY</div>`;
     } else {
@@ -211,6 +220,9 @@ export function decodeLenkwinkelData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     // --- Kalkulacja prawdziwych wartości ze znakami (lewo/prawo) ---
     // Według dokumentacji: 0 = pozytywny (w lewo), 1 = negatywny (w prawo)
     let actualAngle = fullData.LW1_Lenkradwinkel;
@@ -241,8 +253,8 @@ export function decodeLenkwinkelData(id, hexData, cardElement) {
     } else {
         // Określenie kierunku (kierowcy łatwiej czytać "Lewo/Prawo" niż tylko minus/plus)
         let dirStr = (actualAngle === 0) ? "PROSTO" : (actualAngle > 0 ? "LEWO" : "PRAWO");
-        html += `<div class="ind active full-width">KĄT: ${Math.abs(actualAngle).toFixed(1)}° (${dirStr})</div>`;
-        html += `<div class="ind full-width">PRĘDKOŚĆ OBR: ${Math.abs(actualSpeed).toFixed(1)} °/s</div>`;
+        html += `<div class="ind active-blue full-width">KĄT: ${Math.abs(actualAngle).toFixed(1)}° (${dirStr})</div>`;
+        html += `<div class="ind active-blue full-width">PRĘDKOŚĆ OBR: ${Math.abs(actualSpeed).toFixed(1)} °/s</div>`;
     }
 
     // --- Status Kalibracji / Zasilania ---
@@ -295,6 +307,9 @@ export function decodeMotor7Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Ciśnienie doładowania (Turbo) ---
@@ -302,7 +317,7 @@ export function decodeMotor7Data(id, hexData, cardElement) {
     if (fullData.MO7_Ladedruckneu > 5.0) {
         html += `<div class="ind active-error full-width">DOŁADOWANIE (TURBO): BŁĄD CZUJNIKA</div>`;
     } else {
-        html += `<div class="ind active full-width">ZADANE TURBO: ${fullData.MO7_Ladedruckneu.toFixed(2)} bar</div>`;
+        html += `<div class="ind active-blue full-width">ZADANE TURBO: ${fullData.MO7_Ladedruckneu.toFixed(2)} bar</div>`;
     }
 
     // --- Temperatura Oleju ---
@@ -316,7 +331,7 @@ export function decodeMotor7Data(id, hexData, cardElement) {
     } else if (fullData.MO7_Oeltemperatur === -60) {
          html += `<div class="ind full-width">TEMP. OLEJU: NIE ZAMONTOWANO</div>`;
     } else {
-        html += `<div class="ind full-width">TEMP. OLEJU: ${fullData.MO7_Oeltemperatur} °C</div>`;
+        html += `<div class="ind active-blue full-width">TEMP. OLEJU: ${fullData.MO7_Oeltemperatur} °C</div>`;
     }
 
     // --- Gradient obrotów silnika (przyspieszenie) ---
@@ -324,10 +339,10 @@ export function decodeMotor7Data(id, hexData, cardElement) {
     if (fullData.MO7_Gradient_Vorz === 1) gradient = -gradient; // ujemny spadek obrotów
     
     if (fullData.MO7_Gradient_Drehz >= 127) {
-        html += `<div class="ind full-width">PRZYSPIESZENIE RPM: MAX (>127)</div>`;
+        html += `<div class="ind active-orange full-width">PRZYSPIESZENIE RPM: MAX (>127)</div>`;
     } else {
         // Zaznaczamy na zielono gdy rośnie, a na czerwono jak hamujesz silnikiem
-        let gradColor = gradient > 0 ? "active-green" : (gradient < 0 ? "active-error" : "");
+        let gradColor = gradient > 0 ? "active-blue" : (gradient < 0 ? "active-orange" : "active-blue");
         html += `<div class="ind ${gradColor} full-width">RPM Δ (t-20ms): ${gradient}</div>`;
     }
     
@@ -391,6 +406,9 @@ export function decodeBSG2Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Napięcie Akumulatora (Bordnetz) ---
@@ -398,7 +416,7 @@ export function decodeBSG2Data(id, hexData, cardElement) {
     if (fullData.BS2_U_BATT >= 17.7) {
         html += `<div class="ind active-error full-width">NAPIĘCIE (GŁÓWNE): BŁĄD ODCZYTU</div>`;
     } else {
-        html += `<div class="ind active full-width">AKUMULATOR (GŁÓWNY): ${fullData.BS2_U_BATT.toFixed(2)} V</div>`;
+        html += `<div class="ind active-blue full-width">AKUMULATOR (GŁÓWNY): ${fullData.BS2_U_BATT.toFixed(2)} V</div>`;
     }
 
     // --- Drugi akumulator (opcja dla Webasto itp.) ---
@@ -406,7 +424,7 @@ export function decodeBSG2Data(id, hexData, cardElement) {
         if (fullData.BS2_U_Start_BATT >= 17.7) {
             html += `<div class="ind active-error full-width">NAPIĘCIE (DODATKOWE): BŁĄD</div>`;
         } else {
-            html += `<div class="ind active full-width">AKUMULATOR (DODATK.): ${fullData.BS2_U_Start_BATT.toFixed(2)} V</div>`;
+            html += `<div class="ind active-blue full-width">AKUMULATOR (DODATK.): ${fullData.BS2_U_Start_BATT.toFixed(2)} V</div>`;
         }
     }
 
@@ -426,7 +444,7 @@ export function decodeBSG2Data(id, hexData, cardElement) {
         if (fullData.BS2_aus_PTC_Clima > 0) cutoffs.push(`PTC ZREDUKOWANE`);
 
         if (cutoffs.length > 0) {
-            html += `<div class="ind active-error full-width">ODCIĘTO: ${cutoffs.join(', ')}</div>`;
+            html += `<div class="ind active-orange full-width">ODCIĘTO: ${cutoffs.join(', ')}</div>`;
         }
     } else {
         html += `<div class="ind full-width">ZARZĄDZANIE ENERGIĄ: UŚPIONE</div>`;
@@ -483,6 +501,9 @@ export function decodeKombiK1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Poziom Paliwa i Rezerwa ---
@@ -498,7 +519,7 @@ export function decodeKombiK1Data(id, hexData, cardElement) {
              html += `<div class="ind active-blue full-width">TANKOWANIE...</div>`;
         }
         
-        html += `<div class="ind active full-width">PALIWO: ${fullData.KO1_Tankinhalt} L</div>`;
+        html += `<div class="ind active-blue full-width">PALIWO: ${fullData.KO1_Tankinhalt} L</div>`;
     }
 
     // --- Czas Postoju (Standzeit) ---
@@ -511,7 +532,7 @@ export function decodeKombiK1Data(id, hexData, cardElement) {
         let s = fullData.KO1_Standzeit % 60;
         let timeStr = `${h}h ${m}m ${s}s`;
         
-        html += `<div class="ind full-width">CZAS POSTOJU: ${timeStr}</div>`;
+        html += `<div class="ind active-blue full-width">CZAS POSTOJU: ${timeStr}</div>`;
     }
 
     // --- Ostrzeżenia na desce ---
@@ -520,14 +541,14 @@ export function decodeKombiK1Data(id, hexData, cardElement) {
     if (fullData.KO1_WaschWasser === 1) alerts.push("PŁYN SPRYSK."); //
     
     if (alerts.length > 0) {
-        html += `<div class="ind active-error full-width">KONTROLKI: ${alerts.join(', ')}</div>`;
-        cardElement.style.borderColor = "var(--red)";
+        html += `<div class="ind active-orange full-width">KONTROLKI: ${alerts.join(', ')}</div>`;
+        cardElement.style.borderColor = "var(--orange)";
     }
 
     // --- Podświetlenie Wnętrza / Zegarów ---
     // 127 = błąd
     if (fullData.KO1_Bel_Displ < 127) {
-         html += `<div class="ind active">ŚCIEMNIACZ ZEGARÓW: ${fullData.KO1_Bel_Displ}%</div>`;
+         html += `<div class="ind active-blue">ŚCIEMNIACZ ZEGARÓW: ${fullData.KO1_Bel_Displ}%</div>`;
     }
 
     gridContainer.innerHTML = html;

@@ -50,6 +50,9 @@ export function decodeZKEData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Akcje Pilota (z uwzględnieniem przycisku Panic, jeśli auto z USA) ---
@@ -57,10 +60,10 @@ export function decodeZKEData(id, hexData, cardElement) {
         html += `<div class="ind active-green full-width">PILOT: OTWÓRZ (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
         cardElement.style.borderColor = "var(--green)";
     } else if (fullData.ZK1_Taste_Zu === 1) {
-        html += `<div class="ind active-error full-width">PILOT: ZAMKNIJ (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
-        cardElement.style.borderColor = "var(--red)";
+        html += `<div class="ind active-orange full-width">PILOT: ZAMKNIJ (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
+        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.ZK1_Taste_HDF === 1) {
-        html += `<div class="ind active-lock full-width">PILOT: BAGAŻNIK (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
+        html += `<div class="ind active-orange full-width">PILOT: BAGAŻNIK (KLUCZ #${fullData.ZK1_Funkschl_Nr})</div>`;
         cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.ZK1_Taste_Panik === 1) {
         html += `<div class="ind active-error full-width blink">PILOT: PANIC!</div>`;
@@ -72,7 +75,7 @@ export function decodeZKEData(id, hexData, cardElement) {
 
     // --- Status Leaving Home ---
     if (fullData.ZK1_LeaveHome_aktiv === 1) {
-        html += `<div class="ind active">LEAVING HOME</div>`;
+        html += `<div class="ind active-blue">LEAVING HOME</div>`;
     } else {
         html += `<div class="ind">LEAVING HOME</div>`;
     }
@@ -86,7 +89,7 @@ export function decodeZKEData(id, hexData, cardElement) {
     } else {
         // Jeśli tył jest zamknięty, sprawdźmy chociaż ogólny status zaryglowania (SAFE)
         let rygiel = (fullData.ZK1_Zent_safen === 1) ? "ZARYGLOWANE (SAFE)" : "ZAMKNIĘTE";
-        html += `<div class="ind">${rygiel}</div>`;
+        html += `<div class="ind active-blue">${rygiel}</div>`;
     }
 
     gridContainer.innerHTML = html;
@@ -149,15 +152,18 @@ export function decodeManetkiData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Kierunkowskazy ---
     if (fullData.LS1_Blk_links === 1) {
-        html += `<div class="ind active-green">&#8592; KIERUNEK LEWY</div>`;
-        cardElement.style.borderColor = "var(--green)";
+        html += `<div class="ind active-orange blink">&#8592; KIERUNEK LEWY</div>`;
+        cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.LS1_Blk_rechts === 1) {
-        html += `<div class="ind active-green">KIERUNEK PRAWY &#8594;</div>`;
-        cardElement.style.borderColor = "var(--green)";
+        html += `<div class="ind active-orange blink">KIERUNEK PRAWY &#8594;</div>`;
+        cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind">KIERUNKI WYŁ.</div>`;
         cardElement.style.borderColor = "var(--border-color)";
@@ -165,7 +171,7 @@ export function decodeManetkiData(id, hexData, cardElement) {
 
     // --- Klakson ---
     if (fullData.LS1_Signalhorn === 1) {
-        html += `<div class="ind active-error">KLAKSON!</div>`;
+        html += `<div class="ind active-orange">KLAKSON!</div>`;
     } else {
         html += `<div class="ind">KLAKSON</div>`;
     }
@@ -173,7 +179,7 @@ export function decodeManetkiData(id, hexData, cardElement) {
     // --- Światła Długie / Blinda (Lichthupe) ---
     if (fullData.LS1_Fernlicht === 1 || fullData.LS1_Lichthupe === 1) {
         let txt = fullData.LS1_Lichthupe === 1 ? "MIGNIĘCIE" : "DŁUGIE";
-        html += `<div class="ind active-lock">ŚWIATŁA: ${txt}</div>`;
+        html += `<div class="ind active-blue">ŚWIATŁA: ${txt}</div>`;
     }
 
     // --- Wycieraczki / Spryskiwacze ---
@@ -199,7 +205,7 @@ export function decodeManetkiData(id, hexData, cardElement) {
     }
 
     if (isWiping) {
-        html += `<div class="ind active full-width">WYCIERACZKI: ${wipeStatus}</div>`;
+        html += `<div class="ind active-green full-width">WYCIERACZKI: ${wipeStatus}</div>`;
     } else {
         html += `<div class="ind full-width">WYCIERACZKI: OFF</div>`;
     }
@@ -231,22 +237,25 @@ export function decodeZASData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Wizualizacja Głównego Stanu Stacyjki ---
     // Logika priorytetów: Rozrusznik -> Zapłon -> Akcesoria -> Kluczyk -> Brak
     if (fullData.ZS1_ZAS_Kl_50 === 1) {
-        html += `<div class="ind active-lock full-width blink-fast">ROZRUSZNIK (KL. 50)</div>`;
+        html += `<div class="ind active-orange full-width blink-fast">ROZRUSZNIK (KL. 50)</div>`;
         cardElement.style.borderColor = "var(--orange)";
     } else if (fullData.ZS1_ZAS_Kl_15 === 1) {
-        html += `<div class="ind active-green full-width">ZAPŁON WŁĄCZONY (KL. 15)</div>`;
-        cardElement.style.borderColor = "var(--green)";
+        html += `<div class="ind active-blue full-width">ZAPŁON WŁĄCZONY (KL. 15)</div>`;
+        cardElement.style.borderColor = "var(--blue)";
     } else if (fullData.ZS1_ZAS_Kl_X === 1) {
-        html += `<div class="ind active full-width">AKCESORIA (KL. X)</div>`;
-        cardElement.style.borderColor = "var(--accent)";
+        html += `<div class="ind active-blue full-width">AKCESORIA (KL. X)</div>`;
+        cardElement.style.borderColor = "var(--blue)";
     } else if (fullData.ZS1_ZAS_Kl_S === 1) {
-        html += `<div class="ind active full-width">KLUCZYK W STACYJCE (KL. S)</div>`;
-        cardElement.style.borderColor = "var(--accent)";
+        html += `<div class="ind active-blue full-width">KLUCZYK W STACYJCE (KL. S)</div>`;
+        cardElement.style.borderColor = "var(--blue)";
     } else {
         html += `<div class="ind full-width">BRAK KLUCZYKA</div>`;
         cardElement.style.borderColor = "var(--border-color)";
@@ -293,12 +302,15 @@ export function decodeClima1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Przycisk AC i stan kompresora ---
     if (fullData.CL1_Kompressor === 1) {
-        html += `<div class="ind active-blue full-width">KLIMATYZACJA (KOMPRESOR): WŁĄCZONA</div>`;
-        cardElement.style.borderColor = "var(--blue)";
+        html += `<div class="ind active-green full-width">KLIMATYZACJA (KOMPRESOR): WŁĄCZONA</div>`;
+        cardElement.style.borderColor = "var(--green)";
     } else if (fullData.CL1_AC_Schalter === 1) {
         html += `<div class="ind active-orange full-width">TRYB AC WŁ (KOMPRESOR ZATRZYMANY)</div>`;
         cardElement.style.borderColor = "var(--orange)";
@@ -313,7 +325,7 @@ export function decodeClima1Data(id, hexData, cardElement) {
         html += `<div class="ind active-error">CIŚNIENIE: BŁĄD!</div>`;
     } else {
         // Dodajemy delikatne kolorowanie ostrzegawcze jeśli ciśnienie jest za niskie (np. brak czynnika) lub za wysokie
-        let pressColor = "";
+        let pressColor = "active-blue";
         if (fullData.CL1_Kompressor === 1 && fullData.CL1_KaeltemittelDruck < 2.0) pressColor = "active-error";
         
         html += `<div class="ind ${pressColor}">CIŚNIENIE: ${fullData.CL1_KaeltemittelDruck.toFixed(1)} bar</div>`;
@@ -323,7 +335,7 @@ export function decodeClima1Data(id, hexData, cardElement) {
     if (fullData.CL1_Geblaeselast > 100) {
         html += `<div class="ind active-error">NAWIEW: BŁĄD</div>`;
     } else if (fullData.CL1_Geblaeselast > 0) {
-        html += `<div class="ind active">NAWIEW: ${fullData.CL1_Geblaeselast.toFixed(0)}%</div>`;
+        html += `<div class="ind active-blue">NAWIEW: ${fullData.CL1_Geblaeselast.toFixed(0)}%</div>`;
     } else {
         html += `<div class="ind">NAWIEW: OFF</div>`;
     }
@@ -345,7 +357,7 @@ export function decodeClima1Data(id, hexData, cardElement) {
     if (fullData.CL1_AussenTemp > 77) {
         html += `<div class="ind active-error full-width">TEMP. ZEWN: BŁĄD CZUJNIKA</div>`;
     } else {
-        html += `<div class="ind active full-width">TEMP. ZEWN: ${fullData.CL1_AussenTemp.toFixed(1)} °C</div>`;
+        html += `<div class="ind active-blue full-width">TEMP. ZEWN: ${fullData.CL1_AussenTemp.toFixed(1)} °C</div>`;
     }
 
     gridContainer.innerHTML = html;
@@ -381,6 +393,9 @@ export function decodeClima2Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Temperatura Wnętrza ---
@@ -388,7 +403,7 @@ export function decodeClima2Data(id, hexData, cardElement) {
     if (fullData.CL2_InnenTemp > 76) {
         html += `<div class="ind active-error full-width">TEMP. WNĘTRZA: BŁĄD CZUJNIKA</div>`;
     } else {
-        html += `<div class="ind active full-width">TEMP. WNĘTRZA: ${fullData.CL2_InnenTemp.toFixed(1)} °C</div>`;
+        html += `<div class="ind active-blue full-width">TEMP. WNĘTRZA: ${fullData.CL2_InnenTemp.toFixed(1)} °C</div>`;
     }
 
     // --- Podgrzewanie Foteli ---
@@ -488,6 +503,9 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- DRZWI, MASKA I BAGAŻNIK ---
@@ -515,11 +533,11 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
 
     // --- KIERUNKOWSKAZY / AWARYJNE ---
     if (fullData.BSK_Warnblinker === 1) {
-        html += `<div class="ind active-error full-width blink">&#8592; ŚWIATŁA AWARYJNE &#8594;</div>`;
+        html += `<div class="ind active-orange full-width blink">&#8592; ŚWIATŁA AWARYJNE &#8594;</div>`;
     } else if (fullData.BSK_Blk_links === 1) {
-        html += `<div class="ind active-green">&#8592; KIERUNKOWSKAZ</div>`;
+        html += `<div class="ind active-orange blink">&#8592; KIERUNKOWSKAZ</div>`;
     } else if (fullData.BSK_Blk_rechts === 1) {
-        html += `<div class="ind active-green">KIERUNKOWSKAZ &#8594;</div>`;
+        html += `<div class="ind active-orange blink">KIERUNKOWSKAZ &#8594;</div>`;
     }
 
     // --- OŚWIETLENIE ZEWNĘTRZNE ---
@@ -532,7 +550,7 @@ export function decodeBSGKombiData(id, hexData, cardElement) {
     if (fullData.BSK_Nebelschlusslicht === 1) lights.push("P.MGIELNE TYŁ");
     
     if (lights.length > 0) {
-        html += `<div class="ind active-green full-width">ŚWIATŁA: ${lights.join(', ')}</div>`;
+        html += `<div class="ind active-blue full-width">ŚWIATŁA: ${lights.join(', ')}</div>`;
     }
 
     // --- OSTRZEŻENIA I BŁĘDY EKSPLOATACYJNE ---
@@ -603,6 +621,9 @@ export function decodeBSG3Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Status Akumulatora Głównego (Bordnetzbatt) ---
@@ -643,7 +664,7 @@ export function decodeBSG3Data(id, hexData, cardElement) {
     // --- Coming / Leaving Home ---
     if (fullData.BS3_Coming_Home === 1 || fullData.BS3_Leaving_Home === 1) {
         let chlh = fullData.BS3_Coming_Home === 1 ? "COMING HOME" : "LEAVING HOME";
-        html += `<div class="ind active-blue">AKTYWNE: ${chlh}</div>`;
+        html += `<div class="ind active-green">AKTYWNE: ${chlh}</div>`;
     }
 
     // --- Ostrzeżenia i Usterki ---
@@ -657,7 +678,7 @@ export function decodeBSG3Data(id, hexData, cardElement) {
 
     // --- Status Maska/Szyby ---
     if (fullData.BS3_Verglasung_zu === 1) {
-        html += `<div class="ind active-lock full-width">DOMYKANIE SZYB (DESZCZ)</div>`;
+        html += `<div class="ind active-orange full-width">DOMYKANIE SZYB (DESZCZ)</div>`;
     }
     if (fullData.BS3_Haubenkontakt === 1) {
          html += `<div class="ind active-error full-width">MASKA OTWARTA</div>`;
@@ -689,6 +710,9 @@ export function decodeDimmungData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Ściemniacz Wyświetlaczy (Klemme 58d) ---
@@ -712,7 +736,7 @@ export function decodeDimmungData(id, hexData, cardElement) {
     } else if (fullData.DI1_Sensor === 254) {
         html += `<div class="ind active-orange full-width">CZUJNIK ŚWIATŁA: INICJALIZACJA</div>`;
     } else {
-        html += `<div class="ind active full-width">CZUJNIK ŚWIATŁA: Wartość ${fullData.DI1_Sensor}</div>`;
+        html += `<div class="ind active-blue full-width">CZUJNIK ŚWIATŁA: Wartość ${fullData.DI1_Sensor}</div>`;
         cardElement.style.borderColor = "var(--blue)";
     }
 

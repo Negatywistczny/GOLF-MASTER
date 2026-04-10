@@ -33,6 +33,9 @@ export function decodeGWKombiData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Kontrolka Wspomagania Układu Kierowniczego ---
@@ -50,7 +53,7 @@ export function decodeGWKombiData(id, hexData, cardElement) {
         html += `<div class="ind active-error">PRĘDKOŚĆ: BŁĄD</div>`;
     } else {
         let speedSrc = fullData.GWK_FzgGeschw_Quelle === 1 ? "(ABS)" : "(Skrzynia)";
-        html += `<div class="ind active">PRĘDKOŚĆ: ${fullData.GWK_FzgGeschw.toFixed(1)} km/h ${speedSrc}</div>`;
+        html += `<div class="ind active-blue">PRĘDKOŚĆ: ${fullData.GWK_FzgGeschw.toFixed(1)} km/h ${speedSrc}</div>`;
     }
 
     // --- Temperatura Zewnętrzna (Przefiltrowana) ---
@@ -58,7 +61,7 @@ export function decodeGWKombiData(id, hexData, cardElement) {
     if (fullData.GWK_AussenTemp_Fehler === 1 || fullData.GWK_AussenTemp_gefiltert > 76) {
         html += `<div class="ind active-error">TEMP: BŁĄD CZUJNIKA</div>`;
     } else {
-        html += `<div class="ind active">TEMP: ${fullData.GWK_AussenTemp_gefiltert.toFixed(1)} °C</div>`;
+        html += `<div class="ind active-blue">TEMP: ${fullData.GWK_AussenTemp_gefiltert.toFixed(1)} °C</div>`;
     }
 
     // --- Status Kluczyka / Immo ---
@@ -109,6 +112,9 @@ export function decodeEinheitenData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Jednostki podstawowe (Temp, Dystans, Objętość) ---
@@ -121,14 +127,14 @@ export function decodeEinheitenData(id, hexData, cardElement) {
     if (fullData.EH1_Einh_Druck === 1) unitPress = "psi";
     else if (fullData.EH1_Einh_Druck === 3) unitPress = "kPa";
 
-    html += `<div class="ind active-blue full-width">JEDNOSTKI: ${unitTemp} | ${unitDist} | ${unitVol} | ${unitPress}</div>`;
+    html += `<div class="ind full-width">JEDNOSTKI: ${unitTemp} | ${unitDist} | ${unitVol} | ${unitPress}</div>`;
 
     // --- Formaty Czasu i Daty ---
     let clockFormat = fullData.EH1_Uhr_Anzeige === 0 ? "24H" : "12H (AM/PM)";
     let dateFormat = fullData.EH1_Datum_Anzeige === 0 ? "DD.MM.YYYY" : "MM.DD.YYYY";
     
-    html += `<div class="ind active">FORMAT CZASU: ${clockFormat}</div>`;
-    html += `<div class="ind active">FORMAT DATY: ${dateFormat}</div>`;
+    html += `<div class="ind">FORMAT CZASU: ${clockFormat}</div>`;
+    html += `<div class="ind">FORMAT DATY: ${dateFormat}</div>`;
 
     // --- Dzień Tygodnia ---
     // 0=Init, 1=Mo, 2=Di, 3=Mi, 4=Do, 5=Fr, 6=Sa, 7=So
@@ -168,6 +174,9 @@ export function decodeDisplay1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Status gotowości wyświetlacza ---
@@ -202,7 +211,7 @@ export function decodeDisplay1Data(id, hexData, cardElement) {
 
     // --- Powiadomienia o resecie ---
     if (fullData.DY1_Global_Reset === 1) {
-        html += `<div class="ind active-error full-width blink">GLOBALNY RESET DDP!</div>`;
+        html += `<div class="ind active-orange full-width blink">GLOBALNY RESET DDP!</div>`;
     }
 
     gridContainer.innerHTML = html;
@@ -233,6 +242,9 @@ export function decodeGateway3Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Region i Język ---
@@ -244,8 +256,8 @@ export function decodeGateway3Data(id, hexData, cardElement) {
         let lang = (langMeta[fullData.GW3_Sprachvariante] || "NIEZNANY").toUpperCase();
         if (lang === "BRAK") lang = "BRAK";
         
-        html += `<div class="ind active-blue full-width">REGION: ${country} | JĘZYK: ${lang}</div>`;
-        cardElement.style.borderColor = "var(--blue)";
+        html += `<div class="ind full-width">REGION: ${country} | JĘZYK: ${lang}</div>`;
+        cardElement.style.borderColor = "var(--border-color)";
     } else {
         html += `<div class="ind full-width">REGION/JĘZYK: DANE OCZEKUJĄCE...</div>`;
         cardElement.style.borderColor = "var(--border-color)";
@@ -260,13 +272,13 @@ export function decodeGateway3Data(id, hexData, cardElement) {
         
         let cylStr = cyl > 0 ? `${cyl} CYL.` : "NIEZNANY";
         
-        html += `<div class="ind active full-width">SILNIK: ${cylStr}${isTurbo}</div>`;
+        html += `<div class="ind full-width">SILNIK: ${cylStr}${isTurbo}</div>`;
     }
 
     // --- Flagi Opóźnień (Timeout) ---
     // Gateway informuje czy paczki z licznika (>100ms) i silnika się nie spóźniają 
     if (fullData.GW3_Alt_3_Kombi === 1 || fullData.GW3_Alt_5_Motor === 1) {
-        html += `<div class="ind active-error full-width">OPÓŹNIENIE MAGISTRALI (TIMEOUT)!</div>`;
+        html += `<div class="ind active-orange full-width">OPÓŹNIENIE MAGISTRALI (TIMEOUT)!</div>`;
     }
 
     gridContainer.innerHTML = html;
@@ -300,6 +312,9 @@ export function decodeDiagnose1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Przebieg Pojazdu (Odometer) ---
@@ -331,10 +346,10 @@ export function decodeDiagnose1Data(id, hexData, cardElement) {
             let mi = fullData.DN1_Minute.toString().padStart(2, '0');
             let s = fullData.DN1_Sekunde.toString().padStart(2, '0');
 
-            html += `<div class="ind active full-width">DATA: ${d}.${mo}.${y}</div>`;
-            html += `<div class="ind active full-width">CZAS: ${h}:${mi}:${s}</div>`;
+            html += `<div class="ind active-blue full-width">DATA: ${d}.${mo}.${y}</div>`;
+            html += `<div class="ind active-blue full-width">CZAS: ${h}:${mi}:${s}</div>`;
         } else {
-            html += `<div class="ind active-error full-width">CZAS/DATA: NIEUSTAWIONE (INIT)</div>`;
+            html += `<div class="ind active-orange full-width">CZAS/DATA: NIEUSTAWIONE (INIT)</div>`;
         }
     }
 

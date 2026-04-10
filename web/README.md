@@ -69,3 +69,38 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 Przy dodawaniu nowej ramki CAN:
 1. Dodaj dekoder w odpowiednim `js/decoders/*.js`.
 2. Dodaj wpis ramki do `js/decoders/router.js` (`frameRegistry`).
+
+## 7. Standard kolorow (UI)
+
+Ponizszy standard jest obowiazujacy dla wszystkich dekoderow (`drive`, `comfort`, `media`, `system`).
+
+- **Zielony (`active-green`)** - stan "OK", potwierdzone zezwolenie, system sprawny.
+  - Przyklady: `SYSTEM AIRBAG OK`, `SKANOWANIE OK - BRAK BLEDOW`, `ROZRUCH: ZEZWOLONO`.
+
+- **Niebieski (`active-blue` / `active`)** - informacja i telemetria (stan roboczy bez alarmu, wartosci pomiarowe).
+  - Przyklady: `PREDKOSC`, `OBROTY`, `KAT SKRETU`, `JEDNOSTKI`, `ODO`, `DATA/CZAS`, `WAKE-UP`.
+
+- **Pomaranczowy (`active-orange`)** - ostrzezenie, stan przejsciowy lub aktywna akcja operatora.
+  - Przyklady: `ABS AKTYWNY`, `ESP INTERWENIUJE`, `KIERUNKOWSKAZ`, `SWIATLO STOP WLACZONE`, `TRYB TRANSPORTOWY`.
+
+- **Czerwony (`active-error` / `active-red`)** - blad krytyczny, alarm lub awaria.
+  - Przyklady: `CRASH DETECTED`, `LIMP HOME`, `BRAK LADOWANIA`, `BLEDY DTC`, `BLEDY CZUJNIKOW`.
+
+- **Szary (brak klasy `active-*`)** - neutralne OFF/idle/brak akcji/oczekiwanie na dane oraz informacje permanentne (konfiguracja/kodowanie).
+  - Przyklady: `PILOT: BRAK AKCJI`, `KIERUNKI WYL.`, `KLIMATYZACJA: WYL`, `HAMULEC ZWOLNIONY`, `ZAKODOWANO: ...`.
+
+### 7.1 Obramowanie kafelka (`cardElement.style.borderColor`)
+
+- Domyslnie na poczatku dekodowania: `var(--border-color)` (reset).
+- Zmieniaj kolor obramowania tylko, gdy ramka ma wyrazny stan dominujacy:
+  - `--green`: globalny stan OK tej ramki,
+  - `--blue`: dominujacy stan informacyjny/telemetryczny,
+  - `--orange`: dominujace ostrzezenie,
+  - `--red`: dominujacy alarm/krytyczny blad.
+
+### 7.2 Zasady praktyczne dla nowych stanow
+
+1. Najpierw okresl semantyke stanu: `OK` / `INFO` / `WARNING` / `ERROR` / `IDLE`.
+2. Dopiero potem wybierz klase koloru zgodnie ze standardem powyzej.
+3. Dla "IDLE/OFF" preferuj szary (`ind` bez `active-*`).
+4. Miganie (`blink`, `blink-fast`) stosuj tylko dla stanów wymagajacych uwagi.

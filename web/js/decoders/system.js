@@ -37,6 +37,9 @@ export function decodeAirbagData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // Pasy kierowcy (Z dokumentacji: 3 = zapięte, 2 = odpięte)
@@ -97,11 +100,14 @@ export function decodeGateway1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Wizualizacja Bieg Wsteczny / Światło Cofania ---
     if (fullData.GW1_Rueckfahrlicht === 1) {
-        html += `<div class="ind active-lock full-width">ŚWIATŁO WSTECZNE (COFANIE)</div>`;
+        html += `<div class="ind active-orange full-width">ŚWIATŁO WSTECZNE (COFANIE)</div>`;
         cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind full-width">BIEG WSTECZNY WYŁ.</div>`;
@@ -114,7 +120,7 @@ export function decodeGateway1Data(id, hexData, cardElement) {
         html += `<div class="ind active-error full-width">BŁĄD DANYCH PRĘDKOŚCI (ABS)</div>`;
     } else {
         // Wyświetlamy prędkość zaokrągloną do jednego miejsca po przecinku
-        html += `<div class="ind active full-width">PRĘDKOŚĆ: ${fullData.GW1_FzgGeschw.toFixed(1)} km/h</div>`;
+        html += `<div class="ind active-blue full-width">PRĘDKOŚĆ: ${fullData.GW1_FzgGeschw.toFixed(1)} km/h</div>`;
     }
 
     // --- Ostrzeżenia o utracie łączności (Veraltet) ---
@@ -163,6 +169,9 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Stan Magistrali (Uśpienie / Wybudzenie) ---
@@ -174,8 +183,8 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
         html += `<div class="ind active-orange full-width">MAGISTRALA: ŻĄDANIE UŚPIENIA</div>`;
         cardElement.style.borderColor = "var(--orange)";
     } else {
-        html += `<div class="ind active-green full-width">MAGISTRALA: AKTYWNA (AWAKE)</div>`;
-        cardElement.style.borderColor = "var(--green)";
+        html += `<div class="ind active-blue full-width">MAGISTRALA: AKTYWNA (AWAKE)</div>`;
+        cardElement.style.borderColor = "var(--blue)";
     }
 
     // --- Przyczyny Wybudzenia (Weckursache) ---
@@ -190,7 +199,7 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
     if (fullData.NMGW_I_Wake_Up_Ltg === 1) wakeReasons.push("LINIA WAKE-UP");
 
     if (wakeReasons.length > 0) {
-        html += `<div class="ind active full-width">WAKE-UP: ${wakeReasons.join(', ')}</div>`;
+        html += `<div class="ind active-blue full-width">WAKE-UP: ${wakeReasons.join(', ')}</div>`;
     }
 
     // --- Tryb Awaryjny (Limp Home) ---
@@ -281,6 +290,9 @@ export function decodeKDErrorData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
     let activeErrors = [];
 
@@ -363,6 +375,9 @@ export function decodeSysteminfo1Data(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Tożsamość pojazdu (Marka i Nadwozie) ---
@@ -372,7 +387,7 @@ export function decodeSysteminfo1Data(id, hexData, cardElement) {
     let steering = fullData.SY1_Rechtslenker === 1 ? "RHD (Prawa)" : "LHD (Lewa)";
     let doors = fullData.SY1_Viertuerer === 1 ? "4/5 DRZWI" : "2/3 DRZWI";
 
-    html += `<div class="ind active-blue full-width">ZAKODOWANO: ${brand} | ${doors} | ${steering}</div>`;
+    html += `<div class="ind full-width">ZAKODOWANO: ${brand} | ${doors} | ${steering}</div>`;
 
     // --- Stan usypiania magistrali ---
     let sleepState = [];
@@ -382,7 +397,7 @@ export function decodeSysteminfo1Data(id, hexData, cardElement) {
     if (sleepState.length > 0) {
         html += `<div class="ind active-orange full-width">STAN SIECI: ${sleepState.join(', ')}</div>`;
     } else {
-        html += `<div class="ind full-width">STAN SIECI: WYBUDZONA (AKTYWNA)</div>`;
+        html += `<div class="ind active-blue full-width">STAN SIECI: WYBUDZONA (AKTYWNA)</div>`;
     }
 
     // --- Alert Awaryjnego Hamowania ---
@@ -393,7 +408,7 @@ export function decodeSysteminfo1Data(id, hexData, cardElement) {
 
     // --- Ostrzeżenia diagnostyczne ---
     if (fullData.SY1_Transportmode === 1) {
-        html += `<div class="ind active-error full-width">TRYB TRANSPORTOWY AKTYWNY!</div>`;
+        html += `<div class="ind active-orange full-width">TRYB TRANSPORTOWY AKTYWNY!</div>`;
     }
     
     if (fullData.SY1_KD_Fehler === 1) {
@@ -485,6 +500,9 @@ export function decodeSollverbauData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // --- Zliczanie wyposażenia ---
@@ -496,7 +514,7 @@ export function decodeSollverbauData(id, hexData, cardElement) {
         }
     }
 
-    html += `<div class="ind active-blue full-width">ZAKODOWANO MODUŁÓW: ${moduleCount}</div>`;
+    html += `<div class="ind full-width">ZAKODOWANO MODUŁÓW: ${moduleCount}</div>`;
 
     // --- Flaga Rzeczywistej Instalacji (Soll = Ist) ---
     // 0 = Sollverbau ungleich Istverbau (Błąd kodowania lub brak komunikacji ze sterownikiem)
@@ -579,6 +597,9 @@ export function decodeFzgIdentData(id, hexData, cardElement) {
     const gridContainer = cardElement.querySelector('.grid');
     if (!gridContainer) return;
 
+    // Domyslnie resetuj obramowanie, aby uniknac losowego dziedziczenia koloru.
+    cardElement.style.borderColor = "var(--border-color)";
+
     let html = ``;
 
     // Budowanie ostatecznego ciągu znaków (String) z wartości ASCII
@@ -606,7 +627,7 @@ export function decodeFzgIdentData(id, hexData, cardElement) {
         cardElement.style.borderColor = "var(--orange)";
     } else {
         html += `<div class="ind active-blue full-width">${vinString}</div>`;
-        html += `<div class="ind active full-width">NUMER NADWOZIA ZWERYFIKOWANY</div>`;
+        html += `<div class="ind full-width">NUMER NADWOZIA ZWERYFIKOWANY</div>`;
         cardElement.style.borderColor = "var(--blue)";
     }
 

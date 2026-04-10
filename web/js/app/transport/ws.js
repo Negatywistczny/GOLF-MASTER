@@ -1,4 +1,4 @@
-import { setSocket } from "../../state/runtimeState.js";
+import { setSocket } from "../../state/index.js";
 import { handleCANFrame, logError, logTerminal, updateStatus } from "../../ui/index.js";
 
 const WS_URL = "ws://localhost:8765";

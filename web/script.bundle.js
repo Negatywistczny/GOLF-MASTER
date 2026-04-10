@@ -1,95 +1,8 @@
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY.
  * Source of truth: web/js/**/*.js modules (entry: js/app/main.js).
- * Regenerate with: python3 web/build_offline_bundle.py
+ * Regenerate with: python3 web/bundle_tool.py build
  */
-
-// ===== js/state/runtimeState.js =====
-const activeCards = Object.create(null);
-const errorRegistry = Object.create(null);
-const frameDataCache = Object.create(null);
-const terminalBuffer = [];
-const TERMINAL_MAX_LINES = 300;
-
-let socket = null;
-let __cachedFrameHex = null;
-let __cachedFrameBigInt = 0n;
-
-function getSocket() {
-    return socket;
-}
-
-function setSocket(nextSocket) {
-    socket = nextSocket;
-}
-
-function getCachedFrameHex() {
-    return __cachedFrameHex;
-}
-
-function getCachedFrameBigInt() {
-    return __cachedFrameBigInt;
-}
-
-function setCachedFrame(hex, dataBigInt) {
-    __cachedFrameHex = hex;
-    __cachedFrameBigInt = dataBigInt;
-}
-
-// ===== js/shared/canUtils.js =====
-
-
-function extractCANSignal(hexString, startBit, length, multiplier = 1, offset = 0, isSigned = false) {
-    let dataBigInt;
-    if (typeof hexString === "bigint") {
-        dataBigInt = hexString;
-    } else if (hexString === getCachedFrameHex()) {
-        dataBigInt = getCachedFrameBigInt();
-    } else {
-        const bytes = hexString.trim().split(" ").map((x) => BigInt("0x" + x));
-        dataBigInt = 0n;
-        for (let i = 0; i < bytes.length; i++) {
-            dataBigInt |= bytes[i] << BigInt(i * 8);
-        }
-        setCachedFrame(hexString, dataBigInt);
-    }
-
-    const mask = (1n << BigInt(length)) - 1n;
-    let rawValue = Number((dataBigInt >> BigInt(startBit)) & mask);
-
-    if (isSigned) {
-        const signBit = 1 << (length - 1);
-        if (rawValue & signBit) {
-            rawValue -= 1 << length;
-        }
-    }
-
-    return rawValue * multiplier + offset;
-}
-
-function parseHexToBigInt(hexString) {
-    const bytes = hexString.trim().split(" ").map((x) => BigInt("0x" + x));
-    let dataBigInt = 0n;
-    for (let i = 0; i < bytes.length; i++) {
-        dataBigInt |= bytes[i] << BigInt(i * 8);
-    }
-    return dataBigInt;
-}
-
-function ensureFrameBigInt(hexData) {
-    if (getCachedFrameHex() !== hexData) {
-        setCachedFrame(hexData, parseHexToBigInt(hexData));
-    }
-    return getCachedFrameBigInt();
-}
-
-function formatSignalValue(meta, value) {
-    if (meta.states && meta.states[value] !== undefined) {
-        return meta.states[value];
-    }
-    const num = typeof value === "number" && !Number.isInteger(value) ? value.toFixed(2) : value;
-    return `${num}${meta.unit || ""}`;
-}
 
 // ===== js/state/signalMeta.js =====
 const signalMeta = Object.freeze({
@@ -790,8 +703,97 @@ const signalMeta = Object.freeze({
     "FI1_VIN_17": { label: "Znak VIN (Znak 17)", unit: " (ASCII)" }
 });
 
-// ===== js/decoders/system.js =====
+// ===== js/state/runtimeState.js =====
+const activeCards = Object.create(null);
+const errorRegistry = Object.create(null);
+const frameDataCache = Object.create(null);
+const terminalBuffer = [];
+const TERMINAL_MAX_LINES = 300;
 
+let socket = null;
+let __cachedFrameHex = null;
+let __cachedFrameBigInt = 0n;
+
+function getSocket() {
+    return socket;
+}
+
+function setSocket(nextSocket) {
+    socket = nextSocket;
+}
+
+function getCachedFrameHex() {
+    return __cachedFrameHex;
+}
+
+function getCachedFrameBigInt() {
+    return __cachedFrameBigInt;
+}
+
+function setCachedFrame(hex, dataBigInt) {
+    __cachedFrameHex = hex;
+    __cachedFrameBigInt = dataBigInt;
+}
+
+// ===== js/state/index.js =====
+
+
+// ===== js/shared/canUtils.js =====
+
+
+function extractCANSignal(hexString, startBit, length, multiplier = 1, offset = 0, isSigned = false) {
+    let dataBigInt;
+    if (typeof hexString === "bigint") {
+        dataBigInt = hexString;
+    } else if (hexString === getCachedFrameHex()) {
+        dataBigInt = getCachedFrameBigInt();
+    } else {
+        const bytes = hexString.trim().split(" ").map((x) => BigInt("0x" + x));
+        dataBigInt = 0n;
+        for (let i = 0; i < bytes.length; i++) {
+            dataBigInt |= bytes[i] << BigInt(i * 8);
+        }
+        setCachedFrame(hexString, dataBigInt);
+    }
+
+    const mask = (1n << BigInt(length)) - 1n;
+    let rawValue = Number((dataBigInt >> BigInt(startBit)) & mask);
+
+    if (isSigned) {
+        const signBit = 1 << (length - 1);
+        if (rawValue & signBit) {
+            rawValue -= 1 << length;
+        }
+    }
+
+    return rawValue * multiplier + offset;
+}
+
+function parseHexToBigInt(hexString) {
+    const bytes = hexString.trim().split(" ").map((x) => BigInt("0x" + x));
+    let dataBigInt = 0n;
+    for (let i = 0; i < bytes.length; i++) {
+        dataBigInt |= bytes[i] << BigInt(i * 8);
+    }
+    return dataBigInt;
+}
+
+function ensureFrameBigInt(hexData) {
+    if (getCachedFrameHex() !== hexData) {
+        setCachedFrame(hexData, parseHexToBigInt(hexData));
+    }
+    return getCachedFrameBigInt();
+}
+
+function formatSignalValue(meta, value) {
+    if (meta.states && meta.states[value] !== undefined) {
+        return meta.states[value];
+    }
+    const num = typeof value === "number" && !Number.isInteger(value) ? value.toFixed(2) : value;
+    return `${num}${meta.unit || ""}`;
+}
+
+// ===== js/can/decoders/system.js =====
 
 
 
@@ -1399,7 +1401,7 @@ function decodeFzgIdentData(id, hexData, cardElement) {
     gridContainer.innerHTML = html;
 }
 
-// ===== js/decoders/comfort.js =====
+// ===== js/can/decoders/comfort.js =====
 
 
 
@@ -2102,8 +2104,7 @@ function decodeDimmungData(id, hexData, cardElement) {
     gridContainer.innerHTML = html;
 }
 
-// ===== js/decoders/drive.js =====
-
+// ===== js/can/decoders/drive.js =====
 
 
 
@@ -2633,8 +2634,7 @@ function decodeKombiK1Data(id, hexData, cardElement) {
     gridContainer.innerHTML = html;
 }
 
-// ===== js/decoders/media.js =====
-
+// ===== js/can/decoders/media.js =====
 
 
 
@@ -3803,7 +3803,6 @@ function getResolvedModalValueClass(frameId, signalKey, rawValue, displayVal, _m
 
 
 
-
 function setupModal() {
     const modal = document.getElementById("info-modal");
     const close = document.querySelector(".close-btn");
@@ -4040,7 +4039,6 @@ function startClock() {
 }
 
 // ===== js/ui/actions.js =====
-
 
 
 

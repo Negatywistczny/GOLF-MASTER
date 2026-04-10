@@ -1,0 +1,29 @@
+# Hybryda bundla: w repo jest script.bundle.js (uruchomienie bez Node),
+# ale źródłem prawdy są web/js/**. Ten job odtwarza bundle i porównuje z commitem.
+name: Web bundle
+
+on:
+  push:
+    paths:
+      - "web/js/**"
+      - "web/bundle_tool.py"
+      - "web/script.bundle.js"
+      - ".github/workflows/web-bundle-check.yml"
+  pull_request:
+    paths:
+      - "web/js/**"
+      - "web/bundle_tool.py"
+      - "web/script.bundle.js"
+      - ".github/workflows/web-bundle-check.yml"
+  workflow_dispatch:
+
+jobs:
+  verify-bundle-matches-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Regenerate bundle and compare with repository
+        run: |
+          python3 web/bundle_tool.py build
+          git diff --exit-code web/script.bundle.js

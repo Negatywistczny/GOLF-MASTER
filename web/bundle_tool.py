@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
+"""Offline ES module bundler + bundle freshness check for web/js."""
 from __future__ import annotations
 
+import argparse
 import re
+import sys
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parent
 ENTRY = ROOT / "js" / "app" / "main.js"
 OUTPUT = ROOT / "script.bundle.js"
+JS_ROOT = ROOT / "js"
 
 EXPORT_DECL_RE = re.compile(r"^\s*export\s+(?=(const|let|var|function|class)\b)")
 
@@ -57,7 +60,7 @@ def transform_module(content: str) -> str:
     return "\n".join(output_lines).rstrip() + "\n"
 
 
-def main() -> None:
+def cmd_build() -> int:
     ordered: list[Path] = []
     collect_graph(ENTRY.resolve(), ordered, set())
 
@@ -66,7 +69,7 @@ def main() -> None:
         "/*\n"
         " * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY.\n"
         " * Source of truth: web/js/**/*.js modules (entry: js/app/main.js).\n"
-        " * Regenerate with: python3 web/build_offline_bundle.py\n"
+        " * Regenerate with: python3 web/bundle_tool.py build\n"
         " */\n\n"
     )
 
@@ -79,7 +82,43 @@ def main() -> None:
 
     OUTPUT.write_text("".join(bundle_parts), encoding="utf-8")
     print(f"Offline bundle generated: {OUTPUT}")
+    return 0
+
+
+def cmd_check() -> int:
+    if not OUTPUT.is_file():
+        print(f"bundle_tool check: missing {OUTPUT}", file=sys.stderr)
+        return 1
+
+    latest = 0.0
+    for path in JS_ROOT.rglob("*.js"):
+        latest = max(latest, path.stat().st_mtime)
+
+    if OUTPUT.stat().st_mtime < latest:
+        print(
+            "bundle_tool check: script.bundle.js is stale — run: python3 web/bundle_tool.py build",
+            file=sys.stderr,
+        )
+        return 1
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_build = sub.add_parser("build", help="Generate web/script.bundle.js from web/js modules.")
+    p_build.set_defaults(func=cmd_build)
+
+    p_check = sub.add_parser(
+        "check",
+        help="Exit with status 1 if script.bundle.js is older than any web/js/**/*.js file.",
+    )
+    p_check.set_defaults(func=cmd_check)
+
+    args = parser.parse_args()
+    return int(args.func())
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

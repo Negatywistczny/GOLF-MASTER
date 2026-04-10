@@ -2,7 +2,7 @@ import {
     activeCards,
     getCachedFrameHex,
     setCachedFrame
-} from "../state/runtimeState.js";
+} from "../state/index.js";
 import { canDictionary, decoderRouter } from "../can/frameRegistry.js";
 import { parseHexToBigInt } from "../shared/canUtils.js";
 import { openModal } from "./modal.js";

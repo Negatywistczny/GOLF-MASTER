@@ -1,58 +1,75 @@
-# DOKUMENTACJA MOSTEK (PYTHON BRIDGE) - GOLF MASTER
+# Mostek Python (bridge) — GOLF MASTER
 
-## 1. ROLA W SYSTEMIE
-Skrypt `bridge.py` pełni rolę inteligentnego pośrednika (middleman) między warstwą sprzętową (Arduino) a interfejsem użytkownika (Web UI). Zarządza on asynchronicznym przepływem danych, kolejkami komunikatów oraz logiką diagnostyczną protokołu **TP 2.0 / KWP2000**.
+## 1. Rola w systemie
 
-## 2. WYMAGANIA I KONFIGURACJA
-Skrypt wymaga środowiska Python 3.8+ oraz następujących bibliotek:
-* `pyserial` - obsługa komunikacji USB z Arduino.
-* `websockets` - komunikacja w czasie rzeczywistym z przeglądarką.
-* `asyncio` - zarządzanie wielozadaniowością.
+Skrypt `bridge.py` jest pośrednikiem między warstwą sprzętową (Arduino) a interfejsem użytkownika (Web UI). Zarządza asynchronicznym przepływem danych, kolejkami komunikatów oraz logiką diagnostyczną **TP 2.0 / KWP2000**.
 
-**Główne parametry (Konfigurowalne w kodzie):**
-* `SERIAL_PORT`: Domyślnie `COM7`.
-* `BAUD_RATE`: `115200`.
-* `WS_PORT`: `8765`.
+## 2. Wymagania i konfiguracja
 
-## 3. KLUCZOWE FUNKCJONALNOŚCI
+Środowisko: Python 3.8+.
 
-### A. Zarządzanie energią i zasobami (Auto-Shutdown)
-Skrypt implementuje inteligentny system zamykania procesu:
-* **`auto_shutdown_timer()`**: Jeśli ostatni klient (karta w przeglądarce) zostanie zamknięty, skrypt odlicza 2 sekundy. Jeśli w tym czasie nikt nie połączy się ponownie, proces zabija się (`os._exit(0)`).
-* **Cel**: Zwolnienie portu COM i zasobów systemowych natychmiast po zakończeniu pracy z UI, co zapobiega blokowaniu Arduino przez "wiszące" procesy w tle.
+Zależności (wersje w pliku [requirements.txt](requirements.txt)):
 
-### B. Obsługa Szeregowego Portu (Serial Handling)
-* **`handle_serial()`**: Działa w nieskończonej pętli.
-    * **TX (Do Arduino)**: Pobiera wiadomości z kolejki `tx_queue` i wysyła je do auta.
-    * **RX (Z Arduino)**: Czyta surowe linie danych, rozsyła je do wszystkich klientów WebSocket (`broadcast`) oraz zasila kolejkę `rx_queue` na potrzeby diagnostyki.
+```bash
+pip install -r requirements.txt
+```
 
-### C. Silnik Diagnostyczny (TP 2.0 / KWP2000)
-Funkcja **`tp20_read_dtc()`** realizuje pełny, 4-etapowy "uścisk dłoni" (handshake) z modułami VAG:
-1. **Channel Setup**: Nawiązanie sesji na ID `0x200`.
-2. **Timing Parameters**: Potwierdzenie parametrów czasowych (odpowiedź `A0`).
-3. **KWP2000 Request**: Wysłanie żądania kodów błędów (`0x18 - Read DTC`).
-4. **DTC Reading**: Dekodowanie odpowiedzi na kanale logicznym i zamknięcie sesji (`A4`).
+Uruchom powyższe w katalogu `bridge/` (lub podaj pełną ścieżkę do `requirements.txt`). Opcjonalnie użyj wirtualnego środowiska (`python3 -m venv .venv` → aktywacja → `pip install -r requirements.txt`).
 
-### D. Auto-Skanowanie (Full Scan)
-Funkcja **`perform_full_scan()`** zarządza sekwencyjnym odpytywaniem 19 kluczowych modułów pojazdu (Silnik, ABS, Airbag, Komfort itd.). Każdy moduł jest procesowany oddzielnie, a wyniki są strumieniowane na żywo do przeglądarki.
+- `pyserial` — komunikacja USB z Arduino.
+- `websockets` — połączenie z przeglądarką.
+- `asyncio` — w bibliotece standardowej (brak instalacji).
 
-## 4. SCHEMAT PRZEPŁYWU DANYCH
+**Parametry (konfigurowalne w kodzie):**
 
+- `SERIAL_PORT` — domyślnie `COM7`.
+- `BAUD_RATE` — `115200`.
+- `WS_PORT` — `8765`.
 
+## 3. Kluczowe funkcjonalności
 
-1. **WEB UI** wysyła `CMD:REQ_FULL_SCAN`.
-2. **Python** tworzy zadanie `perform_full_scan`.
-3. **Python** wysyła ramkę `TX:200...` do **Arduino**.
-4. **Arduino** pcha ramkę na fizyczny **CAN**.
-5. **Auto** odpowiada, **Arduino** odsyła ramkę do **Pythona**.
-6. **Python** parsuje odpowiedź i aktualizuje stan w **WEB UI**.
+### A. Zarządzanie energią (auto-shutdown)
 
-## 5. DIAGNOSTYKA I LOGI (SYS/ERR)
-Skrypt generuje logi w standardzie projektu `MESSAGES.md`:
-* `SYS:PY:BROWSER_CONNECTED` - Nowy użytkownik otworzył UI.
-* `SYS:PY:SERIAL_READY` - Połączenie z Arduino ustanowione.
-* `ERR:PY:SERIAL_LOST` - Fizyczne odłączenie Arduino od komputera.
-* `SYS:PY:AUTO_SHUTDOWN` - Automatyczne zwolnienie portu COM.
+- **`auto_shutdown_timer()`** — po zamknięciu ostatniego klienta UI odlicza 2 s; jeśli nikt się nie połączy, proces kończy się (`os._exit(0)`).
+- **Cel** — zwolnienie portu COM i zasobów, bez „wiszących” procesów blokujących Arduino.
+
+### B. Port szeregowy
+
+- **`handle_serial()`** — pętla nieskończona.
+  - **TX (do Arduino)** — kolejka `tx_queue`.
+  - **RX (z Arduino)** — broadcast do klientów WebSocket oraz kolejka `rx_queue` pod diagnostykę.
+
+### C. Silnik diagnostyczny (TP 2.0 / KWP2000)
+
+**`tp20_read_dtc()`** — handshake z modułami VAG:
+
+1. Channel setup — sesja na ID `0x200`.
+2. Timing parameters — potwierdzenie (odpowiedź `A0`).
+3. Żądanie KWP2000 — odczyt DTC (`0x18`).
+4. Odczyt DTC i zamknięcie sesji (`A4`).
+
+### D. Auto-skan
+
+**`perform_full_scan()`** — sekwencyjne odpytywanie modułów; wyniki strumieniowane do przeglądarki.
+
+## 4. Przepływ danych (przykład)
+
+1. Web UI wysyła `CMD:REQ_FULL_SCAN`.
+2. Python uruchamia `perform_full_scan`.
+3. Python wysyła `TX:200…` do Arduino.
+4. Arduino wypycha ramkę na CAN.
+5. Odpowiedź wraca przez Arduino do Pythona.
+6. Python aktualizuje UI.
+
+## 5. Diagnostyka i logi (SYS/ERR)
+
+Format komunikatów: [MESSAGES.md](../MESSAGES.md).
+
+- `SYS:PY:BROWSER_CONNECTED` — nowe połączenie UI.
+- `SYS:PY:SERIAL_READY` — połączenie z Arduino.
+- `ERR:PY:SERIAL_LOST` — odłączenie Arduino.
+- `SYS:PY:AUTO_SHUTDOWN` — zwolnienie portu COM.
 
 ---
-**Uwaga**: Skrypt automatycznie ignoruje błędy dekodowania (`UnicodeDecodeError`), które mogą wystąpić przy fizycznym podłączaniu/odłączaniu kabla USB w trakcie pracy.
+
+**Uwaga:** skrypt pomija błędy dekodowania (`UnicodeDecodeError`) przy fizycznym podłączaniu lub odłączaniu USB w trakcie pracy.

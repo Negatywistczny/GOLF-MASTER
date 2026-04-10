@@ -1,59 +1,55 @@
-# 🏎️ GOLF MASTER v50.0 - Ultimate CAN Management System
+# GOLF MASTER v50.0 — system zarządzania magistralą CAN
 
 **GOLF MASTER** to zaawansowany ekosystem inżynieryjny przeznaczony do monitorowania, diagnostyki i zarządzania magistralą **CAN-Infotainment** w samochodach grupy VAG (platforma **PQ35**, m.in. VW Golf V, Passat B6, Leon II).
 
 System łączy precyzję sprzętową mikrokontrolera z nowoczesnym interfejsem webowym, umożliwiając bezpieczną komunikację z autem bez ryzyka rozładowania akumulatora.
 
-
-
 ---
 
-## 🏗️ Architektura Systemu
+## Architektura systemu
+
 Projekt składa się z trzech współpracujących warstw:
 
-1.  **Hardware (Arduino + MCP2515 + TJA1055):** Fizyczny mostek wpięty w kable samochodu. Obsługuje niskopoziomowy protokół OSEK NM w **logice zero-jedynkowej**: odpowiedź `0x40B` i podtrzymanie radia (`0x661`) działają tylko, gdy Gateway w ramce Alive (`0x42B`) raportuje **Weckursache** (niezerowy Bajt 2 — powody wybudzenia CAN / Wake / Timer). Po wygaśnięciu przyczyn Arduino celowo milknie, umożliwiając uśpienie magistrali. Szczegóły: [hardware/README.md](./hardware/README.md).
-2.  **Bridge (Python):** Asynchroniczny serwer zarządzający przepływem danych, obsługujący diagnostykę TP 2.0 oraz automatyczne zwalnianie portów.
-3.  **Smart UI (Web Frontend):** Responsywny dashboard wizualizujący stan auta w czasie rzeczywistym oraz umożliwiający przeprowadzanie pełnych skanów DTC.
+1. **Hardware (Arduino + MCP2515 + TJA1055)** — fizyczny mostek wpięty w kable samochodu. Obsługuje niskopoziomowy protokół OSEK NM w **logice zero-jedynkowej**: odpowiedź `0x40B` i podtrzymanie radia (`0x661`) działają tylko, gdy Gateway w ramce Alive (`0x42B`) raportuje **Weckursache** (niezerowy bajt 2 — powody wybudzenia CAN / Wake / Timer). Po wygaśnięciu przyczyn Arduino celowo milknie, umożliwiając uśpienie magistrali. Szczegóły: [hardware/README.md](hardware/README.md).
+2. **Bridge (Python)** — asynchroniczny serwer zarządzający przepływem danych, obsługujący diagnostykę TP 2.0 oraz automatyczne zwalnianie portów.
+3. **Smart UI (Web)** — responsywny dashboard w czasie rzeczywistym oraz pełne skany DTC. Szczegóły: [web/README.md](web/README.md).
 
 ---
 
-## 📂 Struktura Projektu
-Każdy folder zawiera dedykowaną dokumentację techniczną:
+## Struktura projektu
 
-* [**`/hardware`**](./hardware/README.md) – Kod źródłowy Arduino, schematy połączeń i konfiguracja transiwera TJA.
-* [**`/bridge`**](./bridge/README.md) – Skrypt Python pośredniczący w komunikacji (WebSocket server).
-* [**`/web`**](./web/README.md) – Interfejs użytkownika, dekodery sygnałów i terminal live.
-* [**`/data`**](./data/README.md) – Bazy wiedzy DBC, mapy adresów i opisy sygnałów CAN.
-* [**`MESSAGES.md`**](./MESSAGES.md) – **Słownik komunikatów** (SYS/ERR) używanych w całym systemie.
+Każdy folder ma dedykowaną dokumentację:
 
-### Struktura Frontendu (aktualna)
-Warstwa Web UI jest rozwijana w modułach ES6 (`web/js/`), a uruchamiana lokalnie przez wygenerowany bundle offline:
+- [hardware](hardware/README.md) — kod Arduino, schematy, konfiguracja transceivera TJA.
+- [bridge](bridge/README.md) — Python, WebSocket, TP 2.0.
+- [web](web/README.md) — interfejs użytkownika, dekodery, terminal na żywo.
+- [data](data/README.md) — bazy DBC, mapy adresów, opisy sygnałów.
+- [MESSAGES.md](MESSAGES.md) — słownik komunikatów SYS/ERR w całym systemie.
 
-* `web/index.html` – punkt wejścia, ładuje `script.bundle.js` (działa z `file://`).
-* `web/js/` – moduły aplikacji: `app/` (wejście, bootstrap, WebSocket), `ui/` (dashboard, modal, `index.js`), `state/` (`signalMeta`, `runtimeState`), `can/`, `shared/`, `decoders/` (szczegóły: [web/README.md](./web/README.md)).
-* `web/js/decoders/` – dekodery ramek CAN oraz router dekoderów.
-* `web/build_offline_bundle.py` – skrypt generujący `web/script.bundle.js` z modułów.
+### Frontend (skrót)
+
+- Warstwa Web UI: moduły ES6 w `web/js/`, uruchomienie lokalne przez `script.bundle.js`.
+- `web/index.html` — punkt wejścia, ładuje `script.bundle.js` (`file://`).
+- `web/js/` — `app/`, `ui/`, `state/`, `can/` (w tym `decoders/`, `frameRegistry.js`), `shared/` — pełny opis: [web/README.md](web/README.md).
+- `web/bundle_tool.py` — `build` (składa bundle), `check` (szybka kontrola lokalna).
+- **Hybryda bundla:** `web/script.bundle.js` jest commitowany (wygodne uruchomienie); po edycji `web/js/**` uruchom `build` i dołącz zaktualizowany bundle do tego samego commita. Na CI workflow odtwarza bundle i porównuje z repozytorium — szczegóły: [web/README.md](web/README.md).
 
 ---
 
-## 🚀 Uruchamianie Systemu (One-Click Start)
+## Uruchamianie (one-click)
 
-Projekt ma dwa skrypty startowe:
+- Windows: `START.bat`
+- macOS: `START.command`
 
-* Windows: `START.bat`
-* macOS: `START.command`
+### Kroki
 
-### Jak uruchomić?
-1. Kliknij odpowiedni plik startowy dla systemu.
+1. Uruchom plik startowy dla swojego systemu.
 2. Wybierz tryb:
-   * `1` - realny bridge (`bridge/bridge.py`)
-   * `2` - symulacja (`bridge/test_simulation.py`)
-3. Skrypt automatycznie:
-   * przebuduje `web/script.bundle.js`,
-   * uruchomi wybrany bridge,
-   * otworzy `web/index.html` lokalnie (`file://`).
+   - `1` — rzeczywisty bridge (`bridge/bridge.py`)
+   - `2` — symulacja (`bridge/test_simulation.py`)
+3. Skrypt: przebuduje `web/script.bundle.js`, uruchomi wybrany bridge, otworzy `web/index.html` (`file://`).
 
-### Uwagi operacyjne
-* UI działa offline po dwukliku `web/index.html`.
-* Po ręcznych zmianach w `web/js/*.js` można przebudować bundle komendą:
-  * `python3 web/build_offline_bundle.py`
+### Uwagi
+
+- UI działa offline po dwukliku `web/index.html`.
+- Po ręcznych zmianach w `web/js/**/*.js` przebuduj bundle i zacommituj go razem ze źródłami: `python3 web/bundle_tool.py build` (opcjonalnie wcześniej: `python3 web/bundle_tool.py check`).

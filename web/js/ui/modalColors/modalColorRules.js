@@ -1,4 +1,4 @@
-import { signalMeta } from "../../state/signalMeta.js";
+import { signalMeta } from "../../state/index.js";
 import { FRAME_SIGNAL_COLOR_OVERRIDES } from "./modalColorOverrides.js";
 
 const COLOR_CLASS_BY_TAG = Object.freeze({

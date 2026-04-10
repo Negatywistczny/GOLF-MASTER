@@ -6,7 +6,7 @@ import {
     decodeSysteminfo1Data,
     decodeSollverbauData,
     decodeFzgIdentData
-} from "../decoders/system.js";
+} from "./decoders/system.js";
 import {
     decodeZKEData,
     decodeManetkiData,
@@ -16,7 +16,7 @@ import {
     decodeBSGKombiData,
     decodeBSG3Data,
     decodeDimmungData
-} from "../decoders/comfort.js";
+} from "./decoders/comfort.js";
 import {
     decodeBremseGetriebeData,
     decodeMotorData,
@@ -24,14 +24,14 @@ import {
     decodeMotor7Data,
     decodeBSG2Data,
     decodeKombiK1Data
-} from "../decoders/drive.js";
+} from "./decoders/drive.js";
 import {
     decodeGWKombiData,
     decodeEinheitenData,
     decodeDisplay1Data,
     decodeGateway3Data,
     decodeDiagnose1Data
-} from "../decoders/media.js";
+} from "./decoders/media.js";
 
 const frameRegistry = Object.freeze({
     "0x151": { name: "AIRBAG (mAirbag_1)", zone: "system", decoder: decodeAirbagData },

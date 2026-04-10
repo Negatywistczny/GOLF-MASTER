@@ -1,4 +1,4 @@
-import { getCachedFrameHex, getCachedFrameBigInt, setCachedFrame } from "../state/runtimeState.js";
+import { getCachedFrameHex, getCachedFrameBigInt, setCachedFrame } from "../state/index.js";
 
 function extractCANSignal(hexString, startBit, length, multiplier = 1, offset = 0, isSigned = false) {
     let dataBigInt;

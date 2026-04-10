@@ -30,7 +30,7 @@ fi
 
 echo
 echo "[1/3] Budowanie offline bundle..."
-"$PYTHON_BIN" "web/build_offline_bundle.py"
+"$PYTHON_BIN" "web/bundle_tool.py" build
 
 echo "[2/3] Uruchamianie: $BRIDGE_SCRIPT"
 "$PYTHON_BIN" "$BRIDGE_SCRIPT" > /tmp/golf-master-bridge.log 2>&1 &

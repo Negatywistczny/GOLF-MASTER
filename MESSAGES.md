@@ -1,72 +1,61 @@
-# SPECYFIKACJA KOMUNIKATÓW SYSTEMOWYCH (SYS) I BŁĘDÓW (ERR)
-**Projekt:** GOLF MASTER (Arduino <-> Python <-> Web UI)
+# Komunikaty systemowe (SYS) i błędy (ERR)
+
+**Projekt:** GOLF MASTER (Arduino ↔ Python ↔ Web UI)  
 **Wersja dokumentu:** 1.0
 
 ---
 
-## 1. WARSTWA SPRZĘTOWA (Arduino - hardware.ino)
-Komunikaty te są wysyłane przez Arduino na port szeregowy (USB).
+## 1. Warstwa sprzętowa (Arduino)
 
-### Wiadomości Systemowe (SYS)
-* **`SYS:HW:READY`**
-    * **Opis:** Inicjalizacja MCP2515 zakończona sukcesem. Arduino jest gotowe do pracy.
-    * **Kiedy:** Raz, po uruchomieniu urządzenia (w funkcji `setup`).
-* **`SYS:CAN:SLEEP_IND`**
-    * **Opis:** Gateway (0x42B) wysłał flagę uśpienia (Bajt 1, bit 0x10).
-    * **Kiedy:** Gdy samochód oficjalnie wyłącza zasilanie magistrali Infotainment.
+Komunikaty na porcie szeregowym (USB).
+
+### System (SYS)
+
+- **`SYS:HW:READY`** — inicjalizacja MCP2515 zakończona; Arduino gotowe. Wysyłane raz w `setup`.
+- **`SYS:CAN:SLEEP_IND`** — Gateway (`0x42B`) ustawił flagę uśpienia (bajt 1, bit `0x10`). Pojazd wyłącza zasilanie magistrali Infotainment.
 
 ### Błędy (ERR)
-* **`ERR:HW:INIT_FAIL`**
-    * **Opis:** Brak komunikacji między Arduino a modułem MCP2515 (błąd SPI lub zasilania).
-    * **Kiedy:** Podczas startu, jeśli układ CAN nie odpowiada.
-* **`ERR:CAN:HANG`**
-    * **Opis:** Wykryto "zamrożenie" magistrali. Zapłon powinien być aktywny, ale od >2s nie odebrano żadnej ramki.
-    * **Kiedy:** Gdy występuje fizyczny problem z komunikacją przy włączonym aucie.
-* **`ERR:HW:TJA`**
-    * **Opis:** Błąd fizyczny transiwera TJA1055T.
-    * **Kiedy:** Wykrycie zwarcia linii CAN-L lub CAN-H do masy/zasilania lub przerwanie obwodu (pin TJA_ERR w stanie LOW).
-* **`ERR:HW:0x[HEX]`**
-    * **Opis:** Surowy kod błędu z rejestru MCP2515.
-    * **Kiedy:** Przepełnienie buforów (Overflow) lub wejście kontrolera w tryb Error-Passive. Najczęstszy kod to `0x05`.
+
+- **`ERR:HW:INIT_FAIL`** — brak komunikacji Arduino ↔ MCP2515 (SPI lub zasilanie).
+- **`ERR:CAN:HANG`** — brak ramek >2 s przy oczekiwanej aktywności magistrali.
+- **`ERR:HW:TJA`** — błąd transceivera TJA1055T (np. zwarcie CAN-L/H, pin `TJA_ERR` w LOW).
+- **`ERR:HW:0x[HEX]`** — surowy kod z rejestru MCP2515 (np. przepełnienie, Error-Passive); często `0x05`.
 
 ---
 
-## 2. WARSTWA MOSTEK (Python - bridge.py)
-Komunikaty generowane przez skrypt pośredniczący, wysyłane do konsoli oraz przez WebSocket do przeglądarki.
+## 2. Warstwa mostka (Python)
 
-### Wiadomości Systemowe (SYS)
-* **`SYS:PY:BROWSER_CONNECTED (Total: n)`**
-    * **Opis:** Nowa instancja Smart UI połączyła się z mostkiem.
-* **`SYS:PY:BROWSER_DISCONNECTED (Total: n)`**
-    * **Opis:** Przeglądarka zamknęła połączenie.
-* **`SYS:PY:NO_CLIENTS_WAITING_2S`**
-    * **Opis:** Uruchomienie procedury auto-shutdown. Brak aktywnych użytkowników.
-* **`SYS:PY:SHUTDOWN_CANCELLED`**
-    * **Opis:** Procedura zamykania przerwana – nowy użytkownik połączył się w ostatniej chwili.
-* **`--- SYS:PY:AUTO_SHUTDOWN ---`**
-    * **Opis:** Skrypt Python zabija własny proces (os._exit), aby zwolnić port COM.
+Komunikaty w konsoli i przez WebSocket do przeglądarki.
+
+### System (SYS)
+
+- **`SYS:PY:BROWSER_CONNECTED (Total: n)`** — nowe połączenie z UI.
+- **`SYS:PY:BROWSER_DISCONNECTED (Total: n)`** — rozłączenie przeglądarki.
+- **`SYS:PY:NO_CLIENTS_WAITING_2S`** — start odliczania auto-shutdown (brak klientów).
+- **`SYS:PY:SHUTDOWN_CANCELLED`** — anulowanie shutdownu (nowy klient w czasie odliczania).
+- **`--- SYS:PY:AUTO_SHUTDOWN ---`** — zakończenie procesu (`os._exit`), zwolnienie portu COM.
 
 ---
 
-## 3. WARSTWA INTERFEJSU (Frontend - ES Modules: `app/main.js`, `app/bootstrap.js`, `app/transport/ws.js`, `ui/index.js`; bundle: `script.bundle.js`)
-Komunikaty generowane w konsoli przeglądarki lub wyświetlane bezpośrednio użytkownikowi w UI.
+## 3. Warstwa interfejsu (Web)
 
-### Statusy Połączenia (Logi UI)
-* **`SYS:JS:WS_CONNECTED`** - Udane połączenie z mostkiem Python.
-* **`ERR:JS:WS_DISCONNECTED`** - Utrata połączenia (mostek wyłączony lub błąd sieci).
-* **`ERR:JS:WS_ERROR`** - Krytyczny błąd gniazda WebSocket.
+Moduły: `app/main.js`, `app/bootstrap.js`, `app/transport/ws.js`, `ui/index.js`; bundle: `script.bundle.js`.
 
-### Błędy Logiczne (Widoczne w kartach UI)
-* **`BŁĘD WFS (IMMO) / VIN NIEZAKODOWANY!`**
-    * **Opis:** Wyświetlany, gdy ramki VIN z Immobilizera zawierają znaki `XXX` lub `---`.
-    * **Kiedy:** Problem z dopasowaniem komponentów lub błąd odczytu VIN.
-* **`SKANOWANIE VIN...`**
-    * **Opis:** Status informujący o zbieraniu części składowych VIN z ramek MUX.
+### Logi połączenia
+
+- **`SYS:JS:WS_CONNECTED`** — połączenie z mostkiem Python.
+- **`ERR:JS:WS_DISCONNECTED`** — utrata połączenia (mostek wyłączony lub błąd sieci).
+- **`ERR:JS:WS_ERROR`** — błąd gniazda WebSocket.
+
+### Teksty w UI (przykłady)
+
+- **`BŁĄD WFS (IMMO) / VIN NIEZAKODOWANY!`** — ramki VIN zawierają `XXX` lub `---`.
+- **`SKANOWANIE VIN...`** — zbieranie segmentów VIN z ramek MUX.
 
 ---
 
-## 4. FORMAT DANYCH (RAW DATA)
-Poza komunikatami statusowymi, główny strumień danych płynie w formacie:
-* `0x[ID]: [D0] [D1] [D2] [D3] [D4] [D5] [D6] [D7]`
-    * *Przykład:* `0x42B: 0B 02 00 00 00 00`
-* `TX:[ID]:[LEN]:[DATA]` (Polecenie wysłania ramki z PC do Auta).
+## 4. Format danych (RAW)
+
+- Ramki CAN: `0x[ID]: [D0] [D1] … [D7]`  
+  *Przykład:* `0x42B: 0B 02 00 00 00 00`
+- Polecenie TX z PC: `TX:[ID]:[LEN]:[DATA]`

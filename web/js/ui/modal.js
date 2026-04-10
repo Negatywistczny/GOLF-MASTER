@@ -1,5 +1,4 @@
-import { signalMeta } from "../state/signalMeta.js";
-import { frameDataCache } from "../state/runtimeState.js";
+import { signalMeta, frameDataCache } from "../state/index.js";
 import { canDictionary } from "../can/frameRegistry.js";
 import { formatSignalValue } from "../shared/canUtils.js";
 import { getResolvedModalValueClass } from "./modalColors/modalColorRules.js";

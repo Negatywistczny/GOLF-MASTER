@@ -1,6 +1,5 @@
-import { extractCANSignal } from "../shared/canUtils.js";
-import { signalMeta } from "../state/signalMeta.js";
-import { frameDataCache } from "../state/runtimeState.js";
+import { extractCANSignal } from "../../shared/canUtils.js";
+import { signalMeta, frameDataCache } from "../../state/index.js";
 
 export function decodeBremseGetriebeData(id, hexData, cardElement) {
     // 1. WYCIĄGANIE ABSOLUTNIE WSZYSTKICH SYGNAŁÓW Z DOKUMENTACJI (29 sygnałów)

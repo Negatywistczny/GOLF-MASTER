@@ -1,4 +1,4 @@
-import { errorRegistry, terminalBuffer, TERMINAL_MAX_LINES } from "../state/runtimeState.js";
+import { errorRegistry, terminalBuffer, TERMINAL_MAX_LINES } from "../state/index.js";
 
 function logError(src, code, desc) {
     const key = `${src}:${code}`;

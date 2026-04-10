@@ -19,7 +19,7 @@ if "%MODE%"=="2" (
 
 echo.
 echo [1/3] Budowanie offline bundle...
-python "%~dp0web\build_offline_bundle.py"
+python "%~dp0web\bundle_tool.py" build
 if errorlevel 1 (
     echo Blad: nie udalo sie zbudowac web/script.bundle.js
     pause

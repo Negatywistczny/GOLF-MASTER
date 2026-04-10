@@ -18,7 +18,7 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 - `js/ui/modal.js` — logika okna szczegółów ramki.
 - `js/ui/statusLogs.js` — status LIVE, logowanie błędów i terminal.
 - `js/ui/actions.js` — akcje użytkownika (snapshot, pełny skan DTC, eksport logów).
-- `js/ui/modalColors/modalColorRules.js` — klasyfikacja kolorów wartości w modalu (logika + odczyt `signalMeta.states`).
+- `js/ui/modalColors/modalColorRules.js` — kolory wartości w modalu: override ramki, opcjonalne `stateTags` w meta sygnału, heurystyka po `displayVal`.
 - `js/ui/modalColors/modalColorOverrides.js` — jawne wyjątki per `ramka → sygnał → wartość`.
 - `js/can/frameRegistry.js` — centralny rejestr ramek (`ID CAN → name/zone/decoder`) oraz mapy `canDictionary` i `decoderRouter`.
 - `js/can/decoders/*.js` — dekodery ramek CAN podzielone strefowo:
@@ -142,13 +142,15 @@ Wylicza go CSS na podstawie klas `.ind` w kafelku, z priorytetem:
 
 Kolorowanie wartości w tabeli modala (`.m-value`) działa warstwowo:
 
-1. **Wyjątek per ramka/sygnał** (`js/ui/modalColors/modalColorOverrides.js` → `FRAME_SIGNAL_COLOR_OVERRIDES`).
-2. **Domyślnie z `signalMeta.states`** (`js/state/signalMeta.js`) przez klasyfikator w `js/ui/modalColors/modalColorRules.js`.
-3. **Fallback z `displayVal`**, gdy sygnał nie ma mapy `states`.
+1. **Opcjonalny wyjątek per ramka/sygnał** (`js/ui/modalColors/modalColorOverrides.js` → `FRAME_SIGNAL_COLOR_OVERRIDES`; może być pusty).
+2. **`stateTags`** przy sygnale w `signalMeta` (jak `states`, ale wartości to tagi: `missing` / `idle` / `info` / `enabled` / `warning` / `error`).
+3. **Heurystyka po sformatowanym tekście** (`displayVal`).
+
+Kolejność warstw jest zaimplementowana w `js/ui/modalColors/modalColorRules.js` (`getResolvedModalValueClass`); `js/ui/modal.js` przekazuje `meta` ze `signalMeta` i wywołuje ten helper przy renderze wierszy tabeli.
 
 Zasada utrzymaniowa:
-- nowe stany najpierw dopisuj w `signalMeta`,
-- override dopisuj tylko, gdy semantyka jest niejednoznaczna lub ma być inna niż domyślna.
+- etykiety stanów w `states`; jawny kolor per wartość w `stateTags`; override ramki tylko gdy semantyka zależy od kontekstu ramki.
+- każdy klucz w `states` musi mieć odpowiadający wpis w `stateTags` — sprawdza to `python3 web/check_signal_meta_state_tags.py` (również w jobie „Web bundle” w CI).
 
 Mapowanie tagów → klasy CSS (`.m-value--*`):
 - `missing` / `idle` — szary (`--text-dim`): brak danych, OFF, nieaktywny, standby.

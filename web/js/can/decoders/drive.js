@@ -511,8 +511,8 @@ export function decodeKombiK1Data(id, hexData, cardElement) {
 
     // --- Ostrzeżenia na desce ---
     let alerts = [];
-    if (fullData.KO1_Handbremse === 1) alerts.push("HAMULEC RĘCZNY"); //
-    if (fullData.KO1_WaschWasser === 1) alerts.push("PŁYN SPRYSK."); //
+    if (fullData.KO1_Handbremse === 1) alerts.push("HAMULEC RĘCZNY");
+    if (fullData.KO1_WaschWasser === 1) alerts.push("PŁYN SPRYSK.");
     
     if (alerts.length > 0) {
         html += `<div class="ind active-orange full-width">KONTROLKI: ${alerts.join(', ')}</div>`;

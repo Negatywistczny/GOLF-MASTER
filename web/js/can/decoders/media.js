@@ -248,7 +248,7 @@ export function decodeGateway3Data(id, hexData, cardElement) {
     }
 
     // --- Typ Silnika ---
-    if (fullData.GW3_Motortyp_empf === 1) { //
+    if (fullData.GW3_Motortyp_empf === 1) {
         // Bity 0-3 określają liczbę cylindrów (np. 4 dla R4, 6 dla V6) 
         let cyl = fullData.GW3_Motortyp & 0x0F; 
         // Bit 4 odpowiada za obecność turbosprężarki (Turbo_M)

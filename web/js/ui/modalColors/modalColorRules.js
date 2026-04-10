@@ -1,4 +1,3 @@
-import { signalMeta } from "../../state/index.js";
 import { FRAME_SIGNAL_COLOR_OVERRIDES } from "./modalColorOverrides.js";
 
 const COLOR_CLASS_BY_TAG = Object.freeze({
@@ -31,19 +30,21 @@ function normalizeStatusText(value) {
 function getModalValueClass(displayVal) {
     const text = normalizeStatusText(displayVal);
 
-    const errorKeywords = ["blad", "error", "fault", "awaria", "usterka", "uszkod"];
+    const idleOkPhrases = [
+        "brak zderzenia", "brak dachowania", "brak bled", "brak interwencji", "brak zadania", "brak zezwolenia",
+        "brak redukcji", "brak wybudzania", "brak ostrzezenia", "brak zmiany", "brak akcji"
+    ];
+    if (idleOkPhrases.some((phrase) => text.includes(phrase))) return "m-value--idle";
+
+    if (text === "brak") return "m-value--idle";
+
+    const errorKeywords = ["blad", "error", "fault", "awaria", "usterka", "uszkod", "wykryto", "zderzen", "dachowani"];
     if (errorKeywords.some((keyword) => text.includes(keyword))) return "m-value--error";
 
-    const warningKeywords = ["ostrzez", "warning", "uwaga", "caution"];
+    const warningKeywords = ["ostrzez", "warning", "uwaga", "caution", "przekroczono"];
     if (warningKeywords.some((keyword) => text.includes(keyword))) return "m-value--warning";
 
-    const infoAbsencePhrases = [
-        "brak bled", "brak interwencji", "brak zadania", "brak zezwolenia", "brak redukcji",
-        "brak wybudzania", "brak ostrzezenia", "brak zderzenia", "brak zmiany", "brak akcji"
-    ];
-    if (infoAbsencePhrases.some((phrase) => text.includes(phrase))) return "m-value--info";
-
-    const missingExactValues = new Set(["brak", "--", "---", "n/a", "nd", "unknown"]);
+    const missingExactValues = new Set(["--", "---", "n/a", "nd", "unknown"]);
     if (missingExactValues.has(text)) return "m-value--missing";
 
     const missingKeywords = ["niezn", "niedostep", "brak danych"];
@@ -58,8 +59,8 @@ function getModalValueClass(displayVal) {
     return "m-value--info";
 }
 
-function stateTextForRaw(states, rawValue) {
-    if (!states) return null;
+function stateTagForRaw(stateTags, rawValue) {
+    if (!stateTags) return null;
     const candidates = [rawValue, String(rawValue)];
     if (typeof rawValue === "number" && Number.isInteger(rawValue)) {
         candidates.push(String(rawValue));
@@ -72,7 +73,7 @@ function stateTextForRaw(states, rawValue) {
     }
     for (const c of candidates) {
         if (c === undefined || c === null) continue;
-        if (Object.prototype.hasOwnProperty.call(states, c)) return states[c];
+        if (Object.prototype.hasOwnProperty.call(stateTags, c)) return stateTags[c];
     }
     return null;
 }
@@ -99,13 +100,6 @@ function getOverrideTag(frameId, signalKey, rawValue, displayVal) {
     return null;
 }
 
-function getBaseTagFromSignalMeta(signalKey, rawValue) {
-    const states = signalMeta[signalKey]?.states;
-    const text = stateTextForRaw(states, rawValue);
-    if (text == null) return null;
-    return getModalValueClass(text).replace("m-value--", "");
-}
-
 function tagToClass(tag) {
     return COLOR_CLASS_BY_TAG[tag] || "m-value--info";
 }
@@ -115,15 +109,14 @@ function tagToClass(tag) {
  * @param {string} signalKey
  * @param {number|string} rawValue
  * @param {string} displayVal
- * @param {object} [_meta] - rezerwa (np. rozszerzenia bez `states`)
+ * @param {object} [meta] - m.in. opcjonalne `stateTags` (mapa surowej wartości → tag jak w override)
  */
-function getResolvedModalValueClass(frameId, signalKey, rawValue, displayVal, _meta) {
-    void _meta;
+function getResolvedModalValueClass(frameId, signalKey, rawValue, displayVal, meta) {
     const overrideTag = getOverrideTag(frameId, signalKey, rawValue, displayVal);
     if (overrideTag) return tagToClass(overrideTag);
 
-    const baseTag = getBaseTagFromSignalMeta(signalKey, rawValue);
-    if (baseTag) return tagToClass(baseTag);
+    const metaTag = stateTagForRaw(meta?.stateTags, rawValue);
+    if (metaTag) return tagToClass(metaTag);
 
     return getModalValueClass(displayVal);
 }

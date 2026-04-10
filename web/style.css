@@ -4,16 +4,25 @@
 
 :root {
     --bg-main: #0a0a0c;
-    --card-bg: #16161d;
-    --accent: #00a8ff;          /* VW Blue */
-    --accent-dark: #007bb5;     
-    --text-main: #e0e0e0;       
-    --text-dim: #666;        
-    --green: #2ecc71;
-    --red: #ff4757;
-    --orange: #ffa502;
+    --surface: #16161d;
+    --surface-alt: #1a1a24;
+    --surface-hover: #1c1c24;
+    --overlay: rgba(0, 0, 0, 0.85);
+    --text-main: #e0e0e0;
+    --text-dim: #666;
+    --text-inverse: #fff;
     --border: #222;
-    --term-bg: #050505;
+    --accent: #00a8ff;
+    --accent-dark: #007bb5;
+    --blue: var(--accent); /* alias for JS inline styles */
+    --green: #2ecc71;
+    --green-dark: #0e3d1f;
+    --orange: #ffa502;
+    --orange-dark: #5e3a00;
+    --red: #ff4757;
+    --red-dark: #4a0e0e;
+    --info-dark: #0a3d62;
+    --border-color: var(--border); /* alias for JS inline styles */
     --space-sm: 8px;
     --space-md: 15px;
     --space-lg: 20px;
@@ -60,7 +69,7 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
 }
 
 .sim-box {
-    background: #1a1a24;
+    background: var(--surface-alt);
     padding: var(--space-sm);
     border-radius: 4px;
     text-align: center;
@@ -87,7 +96,7 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
     content: "";
     flex-grow: 1;
     height: 1px;
-    background: #222;
+    background: var(--border);
 }
 
 .layout-grid {
@@ -99,7 +108,7 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
 
 /* --- KAFELEK DANYCH --- */
 .card {
-    background: var(--card-bg);
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 15px;
@@ -110,7 +119,7 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
 
 .card:hover {
     border-color: var(--accent);
-    background: #1c1c24;
+    background: var(--surface-hover);
 }
 
 .card h2 {
@@ -125,7 +134,7 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
     top: 5px;
     right: 8px;
     font-size: 0.6em;
-    color: #444;
+    color: var(--text-dim);
     font-family: monospace;
 }
 
@@ -153,7 +162,7 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
 
 .ind {
     font-size: 11px;
-    color: #ffffff;
+    color: var(--text-inverse);
     font-weight: 700;
     text-transform: uppercase;
     padding: var(--space-sm) 4px;
@@ -166,35 +175,36 @@ h1 { font-size: 1.2em; color: var(--accent); letter-spacing: 1px; }
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.8);
 }
 
-.ind.active        { background: #0a3d62; }
-.ind.active-green  { background: #0e3d1f; }
-.ind.active-error  { background: #4a0e0e; }
-.ind.active-orange { background: #5e3a00; }
-.ind.active-blue   { background: #0a3d62; }
-.ind.active-lock   { background: #322387; }
+.ind.active        { background: var(--info-dark); }
+.ind.active-green  { background: var(--green-dark); }
+.ind.active-error  { background: var(--red-dark); }
+.ind.active-orange { background: var(--orange-dark); }
+.ind.active-blue   { background: var(--info-dark); }
+.ind.active-lock   { background: var(--accent-dark); }
+.ind.active-red    { background: var(--red-dark); }
 .ind.full-width    { min-width: 100%; }
 
 /* --- PANEL DIAGNOSTYCZNY --- */
 #diag-panel {
     margin-top: 40px;
-    border-top: 2px solid #222;
+    border-top: 2px solid var(--border);
     padding-top: var(--space-lg);
 }
 
 .diag-split { display: flex; gap: var(--space-lg); flex-wrap: wrap; }
-.diag-section { flex: 1; min-width: 300px; background: #111; border-radius: 5px; padding: 10px; }
+.diag-section { flex: 1; min-width: 300px; background: var(--surface); border-radius: 5px; padding: 10px; }
 
 .table-scroll { max-height: 200px; overflow-y: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
-th { text-align: left; color: var(--text-dim); padding: 8px; border-bottom: 1px solid #222; }
-td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
+th { text-align: left; color: var(--text-dim); padding: 8px; border-bottom: 1px solid var(--border); }
+td { padding: 8px; border-bottom: 1px solid var(--border); }
 
-.err-row-js { color: #f1c40f; }
-.err-row-py { color: #3498db; }
+.err-row-js { color: var(--orange); }
+.err-row-py { color: var(--accent); }
 .err-row-hw { color: var(--red); }
 
 #term-stream {
-    background: var(--term-bg);
+    background: var(--bg-main);
     color: var(--green);
     font-family: 'Consolas', monospace;
     font-size: 0.75em;
@@ -211,7 +221,7 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
     left: 0;
     width: 100%;
     display: flex;
-    background: #000;
+    background: var(--bg-main);
     z-index: 1000;
 }
 
@@ -220,12 +230,12 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
     padding: 15px;
     text-align: center;
     font-weight: bold;
-    color: #444;
-    border-top: 2px solid #222;
+    color: var(--text-dim);
+    border-top: 2px solid var(--border);
     font-size: 0.9em;
 }
 
-.relay.active { background: var(--red); color: #fff; border-top-color: #ff7675; }
+.relay.active { background: var(--red); color: var(--text-inverse); border-top-color: var(--red); }
 
 /* --- OKNO MODALNE (SZCZEGÓŁY) --- */
 .modal {
@@ -236,13 +246,13 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.85);
+    background-color: var(--overlay);
 }
 
 .modal.show { display: block; }
 
 .modal-content {
-    background-color: #121217;
+    background-color: var(--surface);
     margin: 5% auto;
     padding: 25px;
     border: 1px solid var(--accent);
@@ -279,7 +289,7 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
     color: var(--text-dim);
 }
 
-.close-btn:hover { color: #fff; }
+.close-btn:hover { color: var(--text-inverse); }
 
 /* Tabela wewnątrz modala */
 .m-table {
@@ -299,11 +309,11 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
 
 .m-table td {
     padding: 12px 10px;
-    border-bottom: 1px solid #1a1a24;
+    border-bottom: 1px solid var(--border);
 }
 
-.m-label { display: block; color: #fff; font-weight: bold; font-size: 15px; }
-.m-id { display: block; color: #444; font-size: 10px; font-family: monospace; }
+.m-label { display: block; color: var(--text-inverse); font-weight: bold; font-size: 15px; }
+.m-id { display: block; color: var(--text-dim); font-size: 10px; font-family: monospace; }
 .m-value {
     text-align: right;
     font-weight: bold;
@@ -332,7 +342,7 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
 /* --- PRZYCISK SNAPSHOT --- */
 .btn-snap {
     background: var(--accent-dark);
-    color: #fff;
+    color: var(--text-inverse);
     border: 1px solid var(--accent);
     padding: var(--space-sm) var(--space-md);
     border-radius: 4px;
@@ -351,9 +361,9 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
 
 /* --- PRZYCISK DIAGNOSTYKI AKTYWNEJ --- */
 .btn-diag {
-    background: #6c5ce7; /* Diagnostyczny fiolet */
-    color: #fff;
-    border: 1px solid #a29bfe;
+    background: var(--accent-dark);
+    color: var(--text-inverse);
+    border: 1px solid var(--accent);
     padding: var(--space-sm) var(--space-md);
     border-radius: 4px;
     font-weight: bold;
@@ -365,8 +375,8 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
 }
 
 .btn-diag:hover {
-    background: #a29bfe;
-    box-shadow: 0 0 12px rgba(108, 92, 231, 0.6);
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
 }
 
 .btn-diag:active {
@@ -375,7 +385,7 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
 
 /* --- PRZYCISK LOGÓW TERMINALA --- */
 .btn-log {
-    background: #2d3436;
+    background: var(--surface-alt);
     color: var(--green);
     border: 1px solid var(--green);
     padding: var(--space-sm) var(--space-md);
@@ -389,7 +399,7 @@ td { padding: 8px; border-bottom: 1px solid #1a1a1a; }
 }
 
 .btn-log:hover {
-    background: #1e272e;
+    background: var(--surface-hover);
     box-shadow: 0 0 12px rgba(46, 204, 113, 0.5);
 }
 

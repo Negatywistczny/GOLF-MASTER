@@ -112,10 +112,10 @@ const signalMeta = {
     // ==========================================
     // 0x351 - GATEWAY GŁÓWNY (mGateway_1)
     // ==========================================
-    "GW1_FhzgGeschw_alt": { label: "Przestarzała ramka: Prędkość pojazdu", states: { 0: "Aktualna", 1: "Przestarzała" } }, // [cite: 112, 113]
-    "GW1_Rueckfahrlicht": { label: "Światło wsteczne", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } }, // [cite: 114, 115]
-    "GW1_FzgGeschw": { label: "Prędkość pojazdu", unit: " km/h", states: { 32708: "Inicjalizacja", 32725: "Zbyt niskie napięcie", 32742: "Błąd czujnika" } }, // [cite: 115, 116, 117]
-    "KKO_alt_mBSG_Kombi": { label: "Przestarzała ramka: mBSG_Kombi", states: { 0: "Aktualna", 1: "Przestarzała" } }, // [cite: 117, 118]
+    "GW1_FhzgGeschw_alt": { label: "Przestarzała ramka: Prędkość pojazdu", states: { 0: "Aktualna", 1: "Przestarzała" } },
+    "GW1_Rueckfahrlicht": { label: "Światło wsteczne", states: { 0: "Wyłączone", 1: "WŁĄCZONE" } },
+    "GW1_FzgGeschw": { label: "Prędkość pojazdu", unit: " km/h", states: { 32708: "Inicjalizacja", 32725: "Zbyt niskie napięcie", 32742: "Błąd czujnika" } },
+    "KKO_alt_mBSG_Kombi": { label: "Przestarzała ramka: mBSG_Kombi", states: { 0: "Aktualna", 1: "Przestarzała" } },
 
     // ==========================================
     // 0x359 - HAMULCE I SKRZYNIA BIEGÓW (mGW_Bremse_Getriebe)
@@ -237,25 +237,25 @@ const signalMeta = {
     // ==========================================
     // 0x42B - ZARZĄDZANIE SIECIĄ INFOTAINMENT (mNM_Gateway_I)
     // ==========================================
-    "NMGW_I_Receiver": { label: "Adres odbiorcy (SG_Adresse)", unit: "" }, // [cite: 267, 268]
-    "NMGW_I_CmdRing": { label: "Wiadomość typu Ring", states: { 0: "Brak", 1: "Aktywna" } }, // [cite: 268, 269]
-    "NMGW_I_CmdAlive": { label: "Wiadomość typu Alive", states: { 0: "Brak", 1: "Aktywna" } }, // [cite: 269, 270]
-    "NMGW_I_CmdLimpHome": { label: "Tryb awaryjny (Limp Home)", states: { 0: "Brak", 1: "Aktywny" } }, // [cite: 270, 271]
-    "NMGW_I_SleepInd": { label: "Wskazanie uśpienia magistrali", states: { 0: "Brak", 1: "Wskazano" } }, // [cite: 271, 272]
-    "NMGW_I_SleepAck": { label: "Potwierdzenie uśpienia", states: { 0: "Brak", 1: "Potwierdzono" } }, // [cite: 272, 273]
-    "NMGW_I_Kl_30_Reset": { label: "Wybudzenie: Reset zacisku 30", states: { 0: "Nie", 1: "TAK" } }, // [cite: 273, 274]
-    "NMGW_I_Fkt_Nachlauf": { label: "Wybudzenie: Zakończenie pracy timera", states: { 0: "Nie", 1: "TAK" } }, // [cite: 274, 275]
-    "NMGW_I_NWake": { label: "Wybudzenie: Wejście NWake", states: { 0: "Nie", 1: "TAK" } }, // [cite: 275, 276]
-    "NMGW_I_CAN": { label: "Wybudzenie: Ruch na CAN", states: { 0: "Nie", 1: "TAK" } }, // [cite: 276, 277]
-    "NMGW_I_Wake_Up_Ltg": { label: "Wybudzenie: Linia Wake-Up licznika", states: { 0: "Nie", 1: "TAK" } }, // [cite: 277, 278]
-    "NMGW_I_Komfort_CAN": { label: "Wybudzenie przez: CAN Komfort", states: { 0: "Nie", 1: "TAK" } }, // [cite: 278, 279]
-    "NMGW_I_Info_CAN": { label: "Wybudzenie przez: CAN Infotainment", states: { 0: "Nie", 1: "TAK" } }, // [cite: 279, 280]
-    "NMGW_I_Kl_15": { label: "Wybudzenie przez: Zacisk 15 (Zapłon)", states: { 0: "Nie", 1: "TAK" } }, // [cite: 280, 281]
-    "NMGW_I_Diag_CAN": { label: "Wybudzenie przez: CAN Diagnostyka", states: { 0: "Nie", 1: "TAK" } }, // [cite: 281, 282]
-    "NMGW_I_LIN1": { label: "Wybudzenie przez: LIN 1", states: { 0: "Nie", 1: "TAK" } }, // [cite: 282, 283]
-    "NMGW_I_LIN2": { label: "Wybudzenie przez: LIN 2", states: { 0: "Nie", 1: "TAK" } }, // [cite: 283, 284]
-    "NMGW_I_WakeUp2": { label: "Wybudzenie: Rezerwa 2", unit: "" }, // [cite: 284, 285]
-    "NMGW_I_WakeUp3": { label: "Wybudzenie: Rezerwa 3", unit: "" }, // [cite: 285, 286]
+    "NMGW_I_Receiver": { label: "Adres odbiorcy (SG_Adresse)", unit: "" },
+    "NMGW_I_CmdRing": { label: "Wiadomość typu Ring", states: { 0: "Brak", 1: "Aktywna" } },
+    "NMGW_I_CmdAlive": { label: "Wiadomość typu Alive", states: { 0: "Brak", 1: "Aktywna" } },
+    "NMGW_I_CmdLimpHome": { label: "Tryb awaryjny (Limp Home)", states: { 0: "Brak", 1: "Aktywny" } },
+    "NMGW_I_SleepInd": { label: "Wskazanie uśpienia magistrali", states: { 0: "Brak", 1: "Wskazano" } },
+    "NMGW_I_SleepAck": { label: "Potwierdzenie uśpienia", states: { 0: "Brak", 1: "Potwierdzono" } },
+    "NMGW_I_Kl_30_Reset": { label: "Wybudzenie: Reset zacisku 30", states: { 0: "Nie", 1: "TAK" } },
+    "NMGW_I_Fkt_Nachlauf": { label: "Wybudzenie: Zakończenie pracy timera", states: { 0: "Nie", 1: "TAK" } },
+    "NMGW_I_NWake": { label: "Wybudzenie: Wejście NWake", states: { 0: "Nie", 1: "TAK" } },
+    "NMGW_I_CAN": { label: "Wybudzenie: Ruch na CAN", states: { 0: "Nie", 1: "TAK" } },
+    "NMGW_I_Wake_Up_Ltg": { label: "Wybudzenie: Linia Wake-Up licznika", states: { 0: "Nie", 1: "TAK" } },
+    "NMGW_I_Komfort_CAN": { label: "Wybudzenie przez: CAN Komfort", states: { 0: "Nie", 1: "TAK" } },
+    "NMGW_I_Info_CAN": { label: "Wybudzenie przez: CAN Infotainment", states: { 0: "Nie", 1: "TAK" } },
+    "NMGW_I_Kl_15": { label: "Wybudzenie przez: Zacisk 15 (Zapłon)", states: { 0: "Nie", 1: "TAK" } },
+    "NMGW_I_Diag_CAN": { label: "Wybudzenie przez: CAN Diagnostyka", states: { 0: "Nie", 1: "TAK" } },
+    "NMGW_I_LIN1": { label: "Wybudzenie przez: LIN 1", states: { 0: "Nie", 1: "TAK" } },
+    "NMGW_I_LIN2": { label: "Wybudzenie przez: LIN 2", states: { 0: "Nie", 1: "TAK" } },
+    "NMGW_I_WakeUp2": { label: "Wybudzenie: Rezerwa 2", unit: "" },
+    "NMGW_I_WakeUp3": { label: "Wybudzenie: Rezerwa 3", unit: "" },
 
     // ==========================================
     // 0x470 - MODUŁ BORDNETZ / KOMFORT (mBSG_Kombi)

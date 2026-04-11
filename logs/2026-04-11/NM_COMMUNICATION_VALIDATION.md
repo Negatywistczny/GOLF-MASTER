@@ -171,6 +171,9 @@ python scripts/validate_nm_serial_log.py logs/2026-04-11/v01_A_swiatla_sleep_ok_
 | **v03** | `hardware_v03_serial_modes_sleep_coop.ino` | Jak v02 + **`MODE:KEEPALIVE` / `MODE:SLEEP_COOP`** + lustro SleepInd/SleepAck w `0x40B` + krótkie tłumienie HANG w SLEEP_COOP po `WAKE_END`. Powinna odpowiadać aktualnemu `hardware/hardware.ino`. |
 | **v04** | `hardware_v04_auto_nm_sleep_gate.ino` | Auto-NM bez `MODE:*`; stany `AUTO_ACTIVE` / `AUTO_SLEEP_PREP` / `AUTO_SILENT_LISTEN`; ograniczenie odpowiedzi NM po `WAKE_END` i kontrolowane milczenie pod bramę Testu A. |
 | **v4.1** | `hardware_v04_1_sleep_hard_silent.ino` | Hard sleep silence: po `SleepInd` brak odpowiedzi NM (`0x40B`) bez wyjątków. A PASS, B FAIL (HANG) na logach v4.1. |
+| **v06** | `hardware_v06_event_driven_nm.ino` | Wersja event-driven po planie: bez timerów przejść stanów NM, odpowiedź tokenowa zgodna z `0x42B`, watchdog aktywny do jawnego pełnego snu, `0x661` tylko w `AUTO_ACTIVE`. |
+| **v06.1** | `hardware_v06_1_sleep_lock_fix.ino` | Poprawka flappingu po `SLEEP_IND`: sleep-lock blokuje powrót do `AUTO_SLEEP_PREP` bez nowego `WAKE_START`; odblokowanie tylko na realnym wake (`wakeCombo 0->!=0`). Zachowana diagnostyka Test C (`PUMP_ON/OFF/TX_661`). |
+| **v10** | `hardware_v10_final.ino` | Wersja finalna po wyciszeniu logów: usunięte spamowe komunikaty `WAKE_*`, `NM_AUTO_*` i diagnostyka pump; zachowana logika NM, `SLEEP_IND`, `ERR:CAN:HANG` i TX `0x661` tylko w `AUTO_ACTIVE`. |
 
 Odtworzenie v01 z innego miejsca:  
 `git show aba4daa:hardware/hardware.ino`

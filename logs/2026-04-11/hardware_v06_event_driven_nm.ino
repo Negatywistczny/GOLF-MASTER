@@ -48,11 +48,12 @@ unsigned long lastGwSelfNmMs = 0;
 // Ostatni bajt 2 z ramki Alive 0x42B→0x0B (nie aktualizowany przy Ring), pomocniczo do diagnostyki.
 byte lastWakeCauseByte = 0x00;
 bool isHanging = false;
-// Jedna flaga stanu snu: używana równocześnie przez watchdog i politykę NM.
-bool busSleep = true;
+// Flaga tylko dla watchdoga HANG: true po SLEEP_IND, false po Alive.
+bool isSleepIndicated = true;
 // Przyczyna wybudzenia (bajty 2–4 Alive z 0x42B→0x0B): !=0 ⇒ logiczne „bus wybudzony”.
 bool isBusActive = false;
 bool sleepAckSeen = false;
+bool busSleepConfirmed = true;
 
 enum AutoNmState : uint8_t {
   AUTO_ACTIVE = 0,
@@ -67,6 +68,13 @@ void setAutoNmState(AutoNmState next);
 void setAutoNmState(AutoNmState next) {
   if (autoNmState == next) return;
   autoNmState = next;
+  if (next == AUTO_ACTIVE) {
+    Serial.println(F("SYS:CAN:NM_AUTO_ACTIVE"));
+  } else if (next == AUTO_SLEEP_PREP) {
+    Serial.println(F("SYS:CAN:NM_AUTO_PREP"));
+  } else {
+    Serial.println(F("SYS:CAN:NM_AUTO_SILENT"));
+  }
 }
 
 // --- LOGIKA DELTA ---
@@ -123,27 +131,19 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
     sleepAckSeen = (b1 & NM_MASK_SLEEP_ACK) != 0;
     if (sleepNow && !prevGwSleepBit) {
       Serial.println(F("SYS:CAN:SLEEP_IND"));
-      busSleep = true;
       setAutoNmState(AUTO_SILENT_LISTEN);
+      busSleepConfirmed = true;
     }
     prevGwSleepBit = sleepNow;
     if (sleepNow) {
-      busSleep = true;
+      isSleepIndicated = true;
     } else if ((b1 & NM_CMD_ALIVE) != 0) {
-      // Po wejściu w sleep ignorujemy tylko Alive bez przyczyn wake (wakeCombo==0),
-      // ale NIE blokujemy ścieżki WAKE_START.
-      bool ignoreIdleAlive = false;
-      if (busSleep && !isBusActive && len >= 5) {
-        uint32_t wakeComboPeek = (uint32_t)buf[2] | ((uint32_t)buf[3] << 8) | ((uint32_t)buf[4] << 16);
-        ignoreIdleAlive = (wakeComboPeek == 0);
-      }
-      if (!ignoreIdleAlive) {
-        busSleep = false;
-        if (isBusActive) {
-          setAutoNmState(AUTO_ACTIVE);
-        } else {
-          setAutoNmState(AUTO_SLEEP_PREP);
-        }
+      isSleepIndicated = false;
+      busSleepConfirmed = false;
+      if (isBusActive) {
+        setAutoNmState(AUTO_ACTIVE);
+      } else {
+        setAutoNmState(AUTO_SLEEP_PREP);
       }
     }
   }
@@ -154,11 +154,14 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
     uint32_t wakeCombo = (uint32_t)buf[2] | ((uint32_t)buf[3] << 8) | ((uint32_t)buf[4] << 16);
     static uint32_t prevWakeCombo = 0;
     if (prevWakeCombo == 0 && wakeCombo != 0) {
-      busSleep = false;
+      Serial.println(F("SYS:CAN:WAKE_START"));
       isBusActive = true;
+      busSleepConfirmed = false;
       sleepAckSeen = false;
+      isSleepIndicated = false;
       setAutoNmState(AUTO_ACTIVE);
     } else if (prevWakeCombo != 0 && wakeCombo == 0) {
+      Serial.println(F("SYS:CAN:WAKE_END"));
       isBusActive = false;
       // Po WAKE_END utrzymujemy odpowiedzi NM, ale deklarujemy gotowość snu.
       setAutoNmState(AUTO_SLEEP_PREP);
@@ -166,7 +169,7 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
     prevWakeCombo = wakeCombo;
   }
 
-  bool shouldReplyNm = tokenToSelf && !busSleep;
+  bool shouldReplyNm = tokenToSelf && !busSleepConfirmed;
 
   if (shouldReplyNm) {
     uint8_t txB1 = 0;
@@ -297,7 +300,7 @@ void loop() {
     CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00);
   }
 
-  if (!isHanging && !busSleep && lastGwSelfNmMs != 0
+  if (!isHanging && !busSleepConfirmed && !isSleepIndicated && lastGwSelfNmMs != 0
       && (millis() - lastGwSelfNmMs > INTERVAL_HANG_CHECK)) {
     Serial.println(F("ERR:CAN:HANG"));
     isHanging = true;

@@ -46,20 +46,22 @@ function generateSnapshot() {
 
 function requestFullDtcScan() {
     const socket = getSocket();
-    const btnScanAll = document.getElementById("btn-scan-all");
     if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send("CMD:REQ_FULL_SCAN");
         logTerminal("SYS:JS: Inicjowanie pełnego Auto-Skanu DTC...");
         updateStatus("SKANOWANIE MODUŁÓW (TP 2.0)...", "var(--orange)");
-
-        if (btnScanAll) {
-            btnScanAll.disabled = true;
-            btnScanAll.style.opacity = "0.5";
-            btnScanAll.textContent = "⏳ SKANOWANIE...";
-        }
+        setDtcScanButtonLoading(true);
     } else {
         logError("JS", "WS_OFFLINE", "Brak połączenia z Pythonem.");
     }
+}
+
+function setDtcScanButtonLoading(isLoading) {
+    const btnScanAll = document.getElementById("btn-scan-all");
+    if (!btnScanAll) return;
+    btnScanAll.disabled = !!isLoading;
+    btnScanAll.style.opacity = isLoading ? "0.5" : "1";
+    btnScanAll.textContent = isLoading ? "⏳ SKANOWANIE..." : "🛠️ SKANUJ DTC";
 }
 
 function downloadTerminalLogs() {
@@ -96,4 +98,4 @@ function downloadTerminalLogs() {
     updateStatus("LOGI TERMINALA ZAPISANE DO PLIKU", "var(--green)");
 }
 
-export { generateSnapshot, requestFullDtcScan, downloadTerminalLogs };
+export { generateSnapshot, requestFullDtcScan, downloadTerminalLogs, setDtcScanButtonLoading };

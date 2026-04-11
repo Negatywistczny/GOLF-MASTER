@@ -2,74 +2,81 @@
 
 ## 1. Rola w systemie
 
-Skrypt `bridge.py` jest pośrednikiem między warstwą sprzętową (Arduino) a interfejsem użytkownika (Web UI). Zarządza asynchronicznym przepływem danych, kolejkami komunikatów oraz logiką diagnostyczną **TP 2.0 / KWP2000**.
+`bridge.py` jest pośrednikiem między Arduino a Web UI. Oprócz strumieniowania ramek CAN realizuje pełny auto-skan DTC przez TP2.0 z obsługą dwóch warstw aplikacyjnych:
+
+- KWP (`0x18` ReadDTCByStatus),
+- UDS (`0x19` ReadDTCInformation, sub-function `0x02`).
 
 ## 2. Wymagania i konfiguracja
 
 Środowisko: Python 3.8+.
 
-Zależności (wersje w pliku [requirements.txt](requirements.txt)):
+Instalacja:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Uruchom powyższe w katalogu `bridge/` (lub podaj pełną ścieżkę do `requirements.txt`). Opcjonalnie użyj wirtualnego środowiska (`python3 -m venv .venv` → aktywacja → `pip install -r requirements.txt`).
+Konfiguracja przez zmienne środowiskowe:
 
-- `pyserial` — komunikacja USB z Arduino.
-- `websockets` — połączenie z przeglądarką.
-- `asyncio` — w bibliotece standardowej (brak instalacji).
+- `GOLF_SERIAL_PORT` (domyślnie `COM7`)
+- `GOLF_BAUD_RATE` (domyślnie `115200`)
+- `GOLF_WS_HOST` (domyślnie `localhost`)
+- `GOLF_WS_PORT` (domyślnie `8765`)
+- `GOLF_TP_SETUP_TIMEOUT_S` (domyślnie `1.5`)
+- `GOLF_TP_TIMING_TIMEOUT_S` (domyślnie `1.0`)
+- `GOLF_TP_RESPONSE_WINDOW_S` (domyślnie `1.6`)
+- `GOLF_TP_IDLE_GAP_S` (domyślnie `0.35`)
 
-**Parametry (konfigurowalne w kodzie):**
+## 3. Silnik DTC (stan bieżący)
 
-- `SERIAL_PORT` — domyślnie `COM7`.
-- `BAUD_RATE` — `115200`.
-- `WS_PORT` — `8765`.
+### A. Sesja transportowa TP2.0
 
-## 3. Kluczowe funkcjonalności
+Każdy moduł przechodzi przez:
 
-### A. Zarządzanie energią (auto-shutdown)
+1. setup kanału (`0x200`, `C0`),
+2. oczekiwanie na `D0` i negocjowany kanał TX,
+3. handshake timing (`A8` -> `A0`),
+4. żądanie DTC (KWP lub UDS),
+5. odbiór i składanie odpowiedzi (w tym multi-frame fallback),
+6. zamknięcie sesji (`A4`).
 
-- **`auto_shutdown_timer()`** — po zamknięciu ostatniego klienta UI odlicza 2 s; jeśli nikt się nie połączy, proces kończy się (`os._exit(0)`).
-- **Cel** — zwolnienie portu COM i zasobów, bez „wiszących” procesów blokujących Arduino.
+### B. Fallback protokołu
 
-### B. Port szeregowy
+Dla modułu można skonfigurować kolejność protokołów (np. `UDS -> KWP` lub `KWP -> UDS`). Jeśli pierwszy wariant nie odpowie, bridge próbuje kolejny.
 
-- **`handle_serial()`** — pętla nieskończona.
-  - **TX (do Arduino)** — kolejka `tx_queue`.
-  - **RX (z Arduino)** — broadcast do klientów WebSocket oraz kolejka `rx_queue` pod diagnostykę.
+### C. Wynik skanu
 
-### C. Silnik diagnostyczny (TP 2.0 / KWP2000)
+Bridge zwraca:
 
-**`tp20_read_dtc()`** — handshake z modułami VAG:
+- status per moduł (`ok`, `clean`, `comm_error`),
+- licznik i listę DTC,
+- surowe payloady i ramki (debug),
+- kody błędów komunikacji.
 
-1. Channel setup — sesja na ID `0x200`.
-2. Timing parameters — potwierdzenie (odpowiedź `A0`).
-3. Żądanie KWP2000 — odczyt DTC (`0x18`).
-4. Odczyt DTC i zamknięcie sesji (`A4`).
+## 4. Kontrakt WebSocket (DTC)
 
-### D. Auto-skan
+Poza klasycznymi liniami `SYS:/ERR:/0x...`, bridge wysyła strukturalne eventy JSON:
 
-**`perform_full_scan()`** — sekwencyjne odpytywanie modułów; wyniki strumieniowane do przeglądarki.
+```json
+{
+  "type": "dtc_scan",
+  "event": "start|progress|module_result|complete|error",
+  "payload": {}
+}
+```
 
-## 4. Przepływ danych (przykład)
+To pozwala UI pokazać raport per moduł bez ręcznego parsowania terminala.
 
-1. Web UI wysyła `CMD:REQ_FULL_SCAN`.
-2. Python uruchamia `perform_full_scan`.
-3. Python wysyła `TX:200…` do Arduino.
-4. Arduino wypycha ramkę na CAN.
-5. Odpowiedź wraca przez Arduino do Pythona.
-6. Python aktualizuje UI.
+## 5. Ograniczenia i interpretacja
 
-## 5. Diagnostyka i logi (SYS/ERR)
+- `stored`/`historyczne` DTC != aktywna usterka.
+- Brak odpowiedzi modułu != brak błędów (może oznaczać problem sesji/routingu/busa).
+- Status bitów DTC musi być interpretowany razem z kontekstem (zapłon, silnik, warunki testu).
+- Odczyt CAN snapshot nie zastępuje pełnego odczytu DTC z freeze frame.
 
-Format komunikatów: [MESSAGES.md](../MESSAGES.md).
+## 6. Regresja
 
-- `SYS:PY:BROWSER_CONNECTED` — nowe połączenie UI.
-- `SYS:PY:SERIAL_READY` — połączenie z Arduino.
-- `ERR:PY:SERIAL_LOST` — odłączenie Arduino.
-- `SYS:PY:AUTO_SHUTDOWN` — zwolnienie portu COM.
+Checklistę testów (symulator + auto) znajdziesz w:
 
----
-
-**Uwaga:** skrypt pomija błędy dekodowania (`UnicodeDecodeError`) przy fizycznym podłączaniu lub odłączaniu USB w trakcie pracy.
+- [DTC_REGRESSION_CHECKLIST.md](DTC_REGRESSION_CHECKLIST.md)

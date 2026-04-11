@@ -1,5 +1,14 @@
 import { setSocket } from "../../state/index.js";
-import { handleCANFrame, logError, logSystem, clearMessage, logTerminal, updateStatus } from "../../ui/index.js";
+import {
+    handleCANFrame,
+    logError,
+    logSystem,
+    clearMessage,
+    logTerminal,
+    updateStatus,
+    handleDtcScanEvent,
+    setDtcScanButtonLoading
+} from "../../ui/index.js";
 
 const WS_URL = "ws://localhost:8765";
 const MESSAGE_TTL_MS = {
@@ -28,6 +37,28 @@ function ttlForError(src, code) {
 }
 
 function parseIncomingData(raw) {
+    if (raw.startsWith("{")) {
+        try {
+            const event = JSON.parse(raw);
+            if (event.type === "dtc_scan") {
+                handleDtcScanEvent(event.event, event.payload || {});
+                if (event.event === "start") {
+                    setDtcScanButtonLoading(true);
+                    updateStatus("SKAN DTC: START", "var(--orange)");
+                } else if (event.event === "complete") {
+                    setDtcScanButtonLoading(false);
+                    updateStatus("AUTO-SKAN ZAKOŃCZONY", "var(--green)");
+                } else if (event.event === "error") {
+                    setDtcScanButtonLoading(false);
+                    updateStatus("BŁĄD SKANU DTC", "var(--red)");
+                }
+                return;
+            }
+        } catch (_err) {
+            // Fallback do klasycznego parsera tekstowego.
+        }
+    }
+
     logTerminal(raw);
 
     if (raw.startsWith("CLR:")) {
@@ -74,17 +105,13 @@ export function connectWebSocket() {
     socket.onmessage = (event) => {
         parseIncomingData(event.data);
         if (event.data.includes("AUTO-SKAN ZAKOŃCZONY")) {
-            const btnScan = document.getElementById("btn-scan-all");
-            if (btnScan) {
-                btnScan.disabled = false;
-                btnScan.style.opacity = "1";
-                btnScan.textContent = "🛠️ AUTO-SKAN DTC";
-            }
+            setDtcScanButtonLoading(false);
             updateStatus("AUTO-SKAN ZAKOŃCZONY", "var(--green)");
         }
     };
 
     socket.onclose = () => {
+        setDtcScanButtonLoading(false);
         updateStatus("UTRACO_POŁĄCZENIE Z PYTHONEM", "var(--red)");
         logError("JS", "WS_DISCONNECTED", "Brak połączenia z bridge.py", { ttlMs: MESSAGE_TTL_MS.ERR_WS_DISCONNECTED });
         setTimeout(connectWebSocket, 3000);

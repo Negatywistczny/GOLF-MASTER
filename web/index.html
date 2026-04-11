@@ -80,6 +80,26 @@
             </div>
         </div>
 
+        <div class="diag-section dtc-scan-section" id="dtc-scan-panel">
+            <div class="section-label">🧰 WYNIK AUTO-SKANU DTC</div>
+            <div id="dtc-scan-summary" class="dtc-summary">Scan: IDLE | Moduły: 0/0 | DTC moduły: 0 | DTC łącznie: 0 | Błędy komunikacji: 0</div>
+            <div class="table-scroll dtc-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ADR</th>
+                            <th>MODUŁ</th>
+                            <th>PROTOKÓŁ</th>
+                            <th>STATUS</th>
+                            <th>DTC</th>
+                            <th>SZCZEGÓŁY</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dtc-scan-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <div class="relay-grid">

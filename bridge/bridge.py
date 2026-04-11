@@ -1,80 +1,250 @@
-import serial
 import asyncio
-import websockets
+import json
+import os
 import time
-import os  # NOWOŚĆ: Potrzebne do twardego zamykania procesu
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
+
+import serial
+import websockets
 
 # --- KONFIGURACJA ---
-SERIAL_PORT = 'COM7'
-BAUD_RATE = 115200
-WS_HOST = 'localhost'
-WS_PORT = 8765
+SERIAL_PORT = os.getenv("GOLF_SERIAL_PORT", "COM7")
+BAUD_RATE = int(os.getenv("GOLF_BAUD_RATE", "115200"))
+WS_HOST = os.getenv("GOLF_WS_HOST", "localhost")
+WS_PORT = int(os.getenv("GOLF_WS_PORT", "8765"))
+
+TP_SETUP_TIMEOUT_S = float(os.getenv("GOLF_TP_SETUP_TIMEOUT_S", "1.5"))
+TP_TIMING_TIMEOUT_S = float(os.getenv("GOLF_TP_TIMING_TIMEOUT_S", "1.0"))
+TP_RESPONSE_WINDOW_S = float(os.getenv("GOLF_TP_RESPONSE_WINDOW_S", "1.6"))
+TP_IDLE_GAP_S = float(os.getenv("GOLF_TP_IDLE_GAP_S", "0.35"))
+
+TP_CONTROL_BYTES = {0xA0, 0xA1, 0xA4, 0xA8, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5}
 
 connected_clients = set()
-shutdown_task = None        # Zadanie odliczające do wyłączenia
+shutdown_task = None
 is_scanning = False
 tx_queue = None
 rx_queue = None
 
+
+@dataclass(frozen=True)
+class ModuleSpec:
+    addr_hex: str
+    name: str
+    protocols: Tuple[str, ...]
+
+
+MODULES: Tuple[ModuleSpec, ...] = (
+    ModuleSpec("01", "Silnik (Engine)", ("uds", "kwp")),
+    ModuleSpec("02", "Skrzynia Biegów (Auto Trans)", ("uds", "kwp")),
+    ModuleSpec("03", "ABS / ESP / Hamulce", ("uds", "kwp")),
+    ModuleSpec("08", "Klimatyzacja (Climatronic)", ("kwp", "uds")),
+    ModuleSpec("09", "Centralna Elektryka (Bordnetz)", ("kwp", "uds")),
+    ModuleSpec("15", "Poduszki Powietrzne (Airbag)", ("kwp", "uds")),
+    ModuleSpec("16", "Koło Kierownicy (Steering Wheel)", ("kwp", "uds")),
+    ModuleSpec("17", "Zestaw Wskaźników (Instrument Cluster)", ("kwp", "uds")),
+    ModuleSpec("19", "Gateway CAN (J533)", ("uds", "kwp")),
+    ModuleSpec("25", "Immobilizer", ("kwp", "uds")),
+    ModuleSpec("37", "Nawigacja", ("uds", "kwp")),
+    ModuleSpec("42", "Elektronika Drzwi Kierowcy", ("kwp", "uds")),
+    ModuleSpec("44", "Wspomaganie Kierownicy (Steering Assist)", ("kwp", "uds")),
+    ModuleSpec("46", "Moduł Komfortu (Central Convenience)", ("kwp", "uds")),
+    ModuleSpec("52", "Elektronika Drzwi Pasażera", ("kwp", "uds")),
+    ModuleSpec("56", "Radio / Infotainment", ("uds", "kwp")),
+    ModuleSpec("62", "Elektronika Drzwi Tylnych Lewych", ("kwp", "uds")),
+    ModuleSpec("72", "Elektronika Drzwi Tylnych Prawych", ("kwp", "uds")),
+    ModuleSpec("77", "Telefon / Bluetooth", ("uds", "kwp")),
+)
+
+
+class SessionError(Exception):
+    def __init__(self, code: str, message: str):
+        super().__init__(message)
+        self.code = code
+        self.message = message
+
+
+def _now_ms() -> int:
+    return int(time.time() * 1000)
+
+
+def _hex_payload(data: List[int]) -> str:
+    return " ".join(f"{b:02X}" for b in data)
+
+
+def _parse_can_line(line: str) -> Optional[Tuple[int, List[int]]]:
+    if not line.startswith("0x") or ":" not in line:
+        return None
+    can_id_txt, payload_txt = line.split(":", 1)
+    try:
+        can_id = int(can_id_txt, 16)
+    except ValueError:
+        return None
+
+    bytes_out: List[int] = []
+    for tok in payload_txt.strip().split():
+        try:
+            bytes_out.append(int(tok, 16))
+        except ValueError:
+            return None
+    return can_id, bytes_out
+
+
+def _decode_uds_status_bits(status_byte: int) -> List[str]:
+    bit_names = (
+        "testFailed",
+        "testFailedThisOperationCycle",
+        "pendingDtc",
+        "confirmedDtc",
+        "testNotCompletedSinceLastClear",
+        "testFailedSinceLastClear",
+        "testNotCompletedThisOperationCycle",
+        "warningIndicatorRequested",
+    )
+    flags: List[str] = []
+    for bit_idx, name in enumerate(bit_names):
+        if status_byte & (1 << bit_idx):
+            flags.append(name)
+    return flags
+
+
+def _decode_uds_dtc_payload(payload: bytes) -> List[Dict[str, Any]]:
+    if len(payload) < 3 or payload[0] != 0x59:
+        return []
+    records: List[Dict[str, Any]] = []
+    idx = 3
+    while idx + 3 < len(payload):
+        dtc = (payload[idx] << 16) | (payload[idx + 1] << 8) | payload[idx + 2]
+        status = payload[idx + 3]
+        records.append(
+            {
+                "code": f"{dtc:06X}",
+                "statusByte": f"0x{status:02X}",
+                "statusFlags": _decode_uds_status_bits(status),
+                "source": "UDS",
+            }
+        )
+        idx += 4
+    return records
+
+
+def _decode_kwp_dtc_payload(payload: bytes) -> List[Dict[str, Any]]:
+    if len(payload) < 3 or payload[0] not in (0x58, 0x59):
+        return []
+    records: List[Dict[str, Any]] = []
+    idx = 2
+    while idx + 2 < len(payload):
+        dtc = (payload[idx] << 8) | payload[idx + 1]
+        status = payload[idx + 2]
+        records.append(
+            {
+                "code": f"{dtc:04X}",
+                "statusByte": f"0x{status:02X}",
+                "statusFlags": _decode_uds_status_bits(status),
+                "source": "KWP",
+            }
+        )
+        idx += 3
+    return records
+
+
+def _decode_dtc_payloads(protocol: str, payloads: List[bytes]) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
+    for payload in payloads:
+        if protocol == "uds":
+            decoded = _decode_uds_dtc_payload(payload)
+        else:
+            decoded = _decode_kwp_dtc_payload(payload)
+        if decoded:
+            out.extend(decoded)
+    return out
+
+
+class PayloadAssembler:
+    """
+    Próbuje złożyć payload wieloramkowy (ISO-TP styl) i jednocześnie wspiera
+    fallback na „surowe” ramki TP2.0/legacy.
+    """
+
+    def __init__(self) -> None:
+        self.expected_len: Optional[int] = None
+        self.buffer = bytearray()
+        self.payloads: List[bytes] = []
+
+    def feed(self, data: List[int]) -> Optional[bytes]:
+        if not data:
+            return None
+
+        pci = (data[0] >> 4) & 0x0F
+
+        if pci == 0x0:
+            ln = data[0] & 0x0F
+            payload = bytes(data[1 : 1 + ln]) if ln > 0 else bytes(data[1:])
+            if payload:
+                self.payloads.append(payload)
+                return payload
+            return None
+
+        if pci == 0x1 and len(data) >= 2:
+            self.expected_len = ((data[0] & 0x0F) << 8) | data[1]
+            self.buffer = bytearray(data[2:])
+            if self.expected_len is not None and len(self.buffer) >= self.expected_len:
+                payload = bytes(self.buffer[: self.expected_len])
+                self.payloads.append(payload)
+                self.expected_len = None
+                self.buffer = bytearray()
+                return payload
+            return None
+
+        if pci == 0x2:
+            if self.expected_len is None:
+                payload = bytes(data)
+                self.payloads.append(payload)
+                return payload
+            self.buffer.extend(data[1:])
+            if len(self.buffer) >= self.expected_len:
+                payload = bytes(self.buffer[: self.expected_len])
+                self.payloads.append(payload)
+                self.expected_len = None
+                self.buffer = bytearray()
+                return payload
+            return None
+
+        # Flow-control lub format niestandardowy traktujemy jako surową ramkę danych.
+        payload = bytes(data)
+        self.payloads.append(payload)
+        return payload
+
+
+async def _send_event(websocket, event: str, payload: Dict[str, Any]) -> None:
+    msg = json.dumps(
+        {"type": "dtc_scan", "event": event, "payload": payload},
+        ensure_ascii=False,
+    )
+    try:
+        await websocket.send(msg)
+    except websockets.exceptions.ConnectionClosed:
+        pass
+
+
 async def log_and_send(websocket, message: str):
-    """Wyświetla log w konsoli i wysyła go do UI"""
     print(message)
     try:
         await websocket.send(message)
     except websockets.exceptions.ConnectionClosed:
         pass
 
+
 async def auto_shutdown_timer():
-    """Odlicza 2 sekundy i zabija proces, jeśli nikogo nie ma"""
     print("SYS:PY:NO_CLIENTS_WAITING_2S")
     await asyncio.sleep(2)
     if len(connected_clients) == 0:
         print("--- SYS:PY:AUTO_SHUTDOWN ---")
-        os._exit(0)  # Skuteczne zamknięcie całego procesu Pythona i portu COM
+        os._exit(0)
 
-async def handle_serial():
-    """Funkcja odpowiedzialna za czytanie z Arduino i rozsyłanie do przeglądarek"""
-    while True:
-        ser = None
-        try:
-            buffer = bytearray()
-            ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0)
-            print(f"SYS:PY:CONNECTED_TO_{SERIAL_PORT}")
-            await broadcast("SYS:PY:SERIAL_READY")
-
-            while True:
-                # --- WYSYŁANIE KOMEND DO ARDUINO (TX) ---
-                while not tx_queue.empty():
-                    msg_to_send = tx_queue.get_nowait()
-                    ser.write(msg_to_send.encode('ascii'))
-                    print(f"SYS:PY:TX_SENT_TO_AUTO: {msg_to_send.strip()}")
-
-                # --- ODBIERANIE (RX) Z BUFOROWANIEM ---
-                waiting = ser.in_waiting
-                if waiting > 0:
-                    buffer.extend(ser.read(waiting))
-
-                    while b'\n' in buffer:
-                        line_bytes, buffer = buffer.split(b'\n', 1)
-                        line = line_bytes.decode('utf-8', errors='ignore').strip()
-                        if line:
-                            await broadcast(line)
-                            await rx_queue.put(line)
-
-                await asyncio.sleep(0.005)
-
-        except (serial.SerialException, FileNotFoundError):
-            error_msg = f"ERR:PY:SERIAL_LOST:{SERIAL_PORT}"
-            print(error_msg)
-            await broadcast(error_msg)
-            
-            if ser:
-                ser.close()
-            
-            await asyncio.sleep(3)
 
 async def broadcast(message: str):
-    """Asynchronicznie wysyła wiadomość do wszystkich podłączonych kart"""
     if connected_clients:
         disconnected = set()
         for client in connected_clients:
@@ -84,162 +254,348 @@ async def broadcast(message: str):
                 disconnected.add(client)
         connected_clients.difference_update(disconnected)
 
-async def tp20_read_dtc(addr_hex, name, websocket):
-    """Przeprowadza pełny 4-etapowy Handshake TP 2.0 z jednym modułem"""
-    addr_int = int(addr_hex, 16)
-    rx_id_expected = f"0x{200 + addr_int:03X}" # Np. 0x201 dla Silnika
-    
-    # 1. Czyszczenie starych ramek z kolejki RX
+
+async def _queue_can_tx(can_id: int, data: List[int]) -> None:
+    payload = _hex_payload(data)
+    await tx_queue.put(f"TX:{can_id:X}:{len(data)}:{payload}\n")
+
+
+def _flush_rx_queue() -> None:
     while not rx_queue.empty():
         rx_queue.get_nowait()
-        
-    # 2. NAWIĄZANIE SESJI (Channel Setup)
-    await log_and_send(websocket, f"SYS:PYTHON: [1/4] Łączenie z {name} (0x{addr_hex})...")
-    await tx_queue.put(f"TX:200:7:{addr_hex} C0 00 10 00 03 01\n")
-    
-    tx_channel = None
-    
-    # 3. CZEKAMY NA ODPOWIEDŹ GATEWAYA (Twardy limit 1.5s niezależny od szumu)
-    timeout_end = time.monotonic() + 1.5
-    while time.monotonic() < timeout_end:
-        try:
-            line = await asyncio.wait_for(rx_queue.get(), timeout=0.1)
-            if line.startswith(rx_id_expected):
-                parts = line.split(":")
-                if len(parts) >= 2:
-                    data_bytes = parts[1].strip().split()
-                    if len(data_bytes) >= 7 and data_bytes[1] == "D0":
-                        tx_channel = f"{data_bytes[5]}{data_bytes[4]}".lstrip('0')
-                        break
-        except asyncio.TimeoutError:
-            continue # Kolejka pusta, sprawdzamy czas i kręcimy się dalej
 
-    if not tx_channel:
-        await log_and_send(websocket, f"SYS:PYTHON: ❌ Brak odpowiedzi od {name}.")
-        return
 
-    await log_and_send(websocket, f"SYS:PYTHON: [2/4] Zgoda! Kanał TX to 0x{tx_channel}")
-    
-    # 4. CZEKAMY NA PROŚBĘ O TIMINGI (0x300: A8)
-    timeout_end = time.monotonic() + 1.0
-    while time.monotonic() < timeout_end:
+async def handle_serial():
+    while True:
+        ser = None
         try:
-            line = await asyncio.wait_for(rx_queue.get(), timeout=0.1)
-            if line.startswith("0x300:"):
-                data_bytes = line.split(":")[1].strip().split()
-                if data_bytes[0] == "A8":
-                    break
-        except asyncio.TimeoutError:
-            continue
+            buffer = bytearray()
+            ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0)
+            print(f"SYS:PY:CONNECTED_TO_{SERIAL_PORT}")
+            await broadcast("SYS:PY:SERIAL_READY")
 
-    # 5. POTWIERDZAMY TIMING PARAMETERS
-    await log_and_send(websocket, f"SYS:PYTHON: [3/4] Potwierdzam Timingi (A0)...")
-    await tx_queue.put(f"TX:{tx_channel}:6:A0 0F 8A FF 32 FF\n")
-    await asyncio.sleep(0.1)
-    
-    # 6. WYSYŁAMY ŻĄDANIE KWP2000 (0x18 - Read DTC by Status)
-    await log_and_send(websocket, f"SYS:PYTHON: [4/4] Żądam Kody DTC KWP2000...")
-    await tx_queue.put(f"TX:{tx_channel}:6:11 04 18 00 00 00\n")
-    
-    # 7. ODBIERAMY BŁĘDY NA KANALE 0x300
-    dtc_frames = 0
-    timeout_end = time.monotonic() + 1.5
-    while time.monotonic() < timeout_end:
+            while True:
+                while not tx_queue.empty():
+                    msg_to_send = tx_queue.get_nowait()
+                    ser.write(msg_to_send.encode("ascii"))
+                    print(f"SYS:PY:TX_SENT_TO_AUTO: {msg_to_send.strip()}")
+
+                waiting = ser.in_waiting
+                if waiting > 0:
+                    buffer.extend(ser.read(waiting))
+                    while b"\n" in buffer:
+                        line_bytes, buffer = buffer.split(b"\n", 1)
+                        line = line_bytes.decode("utf-8", errors="ignore").strip()
+                        if line:
+                            await broadcast(line)
+                            await rx_queue.put(line)
+                await asyncio.sleep(0.005)
+
+        except (serial.SerialException, FileNotFoundError):
+            error_msg = f"ERR:PY:SERIAL_LOST:{SERIAL_PORT}"
+            print(error_msg)
+            await broadcast(error_msg)
+            if ser:
+                ser.close()
+            await asyncio.sleep(3)
+
+
+async def _wait_for_frame(
+    predicate,
+    timeout_s: float,
+) -> Tuple[int, List[int], str]:
+    deadline = time.monotonic() + timeout_s
+    while True:
+        left = deadline - time.monotonic()
+        if left <= 0:
+            raise SessionError("timeout", "Przekroczono limit oczekiwania na ramkę")
         try:
-            line = await asyncio.wait_for(rx_queue.get(), timeout=0.1)
-            if line.startswith("0x300:"):
-                data_bytes = line.split(":")[1].strip().split()
-                if data_bytes[0] not in ["A8", "B1", "B2", "B3", "B4", "B5", "A0", "A1"]:
-                    dtc_frames += 1
-                    await log_and_send(websocket, f"SYS:PYTHON: ⚠️ OTRZYMANO DANE DTC: {line}")
-                    timeout_end = time.monotonic() + 0.5
+            line = await asyncio.wait_for(rx_queue.get(), timeout=min(0.1, left))
         except asyncio.TimeoutError:
             continue
-            
-    if dtc_frames > 0:
-        await log_and_send(websocket, f"SYS:PYTHON: ✅ Odebrano {dtc_frames} ramek z kodami DTC z {name}!")
+        parsed = _parse_can_line(line)
+        if not parsed:
+            continue
+        can_id, data = parsed
+        if predicate(can_id, data, line):
+            return can_id, data, line
+
+
+async def _tp20_open_session(module: ModuleSpec, websocket) -> int:
+    addr_int = int(module.addr_hex, 16)
+    rx_id_expected = 0x200 + addr_int
+
+    _flush_rx_queue()
+
+    await log_and_send(websocket, f"SYS:PYTHON: [1/4] Łączenie z {module.name} (0x{module.addr_hex})...")
+    await _queue_can_tx(0x200, [addr_int, 0xC0, 0x00, 0x10, 0x00, 0x03, 0x01])
+
+    def setup_predicate(can_id, data, _line):
+        return can_id == rx_id_expected and len(data) >= 7 and data[1] == 0xD0
+
+    try:
+        _, setup_data, _ = await _wait_for_frame(setup_predicate, TP_SETUP_TIMEOUT_S)
+    except SessionError as exc:
+        raise SessionError("gateway_setup_timeout", f"Brak D0 z gateway dla {module.addr_hex}") from exc
+    tx_channel = (setup_data[5] << 8) | setup_data[4]
+    await log_and_send(websocket, f"SYS:PYTHON: [2/4] Zgoda! Kanał TX to 0x{tx_channel:X}")
+
+    def timing_predicate(can_id, data, _line):
+        return can_id == 0x300 and len(data) >= 1 and data[0] == 0xA8
+
+    try:
+        await _wait_for_frame(timing_predicate, TP_TIMING_TIMEOUT_S)
+    except SessionError as exc:
+        raise SessionError("timing_timeout", f"Brak A8 (timing) dla {module.addr_hex}") from exc
+    await log_and_send(websocket, "SYS:PYTHON: [3/4] Potwierdzam Timingi (A0)...")
+    await _queue_can_tx(tx_channel, [0xA0, 0x0F, 0x8A, 0xFF, 0x32, 0xFF])
+    await asyncio.sleep(0.05)
+    return tx_channel
+
+
+async def _tp20_close_session(tx_channel: int) -> None:
+    await _queue_can_tx(tx_channel, [0xA4])
+    await asyncio.sleep(0.04)
+
+
+def _request_for_protocol(protocol: str) -> List[int]:
+    if protocol == "uds":
+        # UDS ReadDTCInformation (report DTC by status mask = 0xFF)
+        return [0x03, 0x19, 0x02, 0xFF, 0x00, 0x00]
+    # KWP ReadDTCByStatus
+    return [0x11, 0x04, 0x18, 0x00, 0x00, 0x00]
+
+
+async def _read_dtc_payloads(protocol: str, tx_channel: int, websocket) -> Dict[str, Any]:
+    if protocol == "uds":
+        await log_and_send(websocket, "SYS:PYTHON: [4/4] Żądam DTC UDS (0x19)...")
     else:
-        await log_and_send(websocket, f"SYS:PYTHON: ✅ {name} jest czysty (Brak DTC).")
-        
-    # 8. ZAMKNIĘCIE KANAŁU (Disconnect - A4)
-    await tx_queue.put(f"TX:{tx_channel}:1:A4\n")
-    await log_and_send(websocket, f"SYS:PYTHON: Sesja zamknięta. Przechodzę dalej...")
-    await asyncio.sleep(0.5)
+        await log_and_send(websocket, "SYS:PYTHON: [4/4] Żądam DTC KWP2000 (0x18)...")
+
+    await _queue_can_tx(tx_channel, _request_for_protocol(protocol))
+
+    assembler = PayloadAssembler()
+    raw_frames: List[List[int]] = []
+
+    hard_deadline = time.monotonic() + TP_RESPONSE_WINDOW_S
+    idle_deadline = hard_deadline
+
+    while time.monotonic() < hard_deadline and time.monotonic() < idle_deadline:
+        left = min(hard_deadline - time.monotonic(), idle_deadline - time.monotonic())
+        if left <= 0:
+            break
+        try:
+            line = await asyncio.wait_for(rx_queue.get(), timeout=min(0.1, left))
+        except asyncio.TimeoutError:
+            continue
+        parsed = _parse_can_line(line)
+        if not parsed:
+            continue
+        can_id, data = parsed
+        if can_id != 0x300 or not data:
+            continue
+        if data[0] in TP_CONTROL_BYTES:
+            continue
+        raw_frames.append(data)
+        assembler.feed(data)
+        idle_deadline = min(hard_deadline, time.monotonic() + TP_IDLE_GAP_S)
+
+    payloads = assembler.payloads[:]
+    if assembler.expected_len is not None:
+        raise SessionError("incomplete_payload", "Niekompletna odpowiedź wieloramkowa")
+    if not payloads:
+        payloads = [bytes(frame) for frame in raw_frames]
+
+    dtcs = _decode_dtc_payloads(protocol, payloads)
+    return {
+        "rawFrames": [_hex_payload(frame) for frame in raw_frames],
+        "payloadsHex": [_hex_payload(list(p)) for p in payloads],
+        "dtcs": dtcs,
+    }
+
+
+async def _scan_module_protocol(
+    module: ModuleSpec,
+    protocol: str,
+    websocket,
+) -> Dict[str, Any]:
+    tx_channel = None
+    started_ms = _now_ms()
+    try:
+        tx_channel = await _tp20_open_session(module, websocket)
+        read_result = await _read_dtc_payloads(protocol, tx_channel, websocket)
+        await _tp20_close_session(tx_channel)
+        await log_and_send(websocket, "SYS:PYTHON: Sesja zamknięta. Przechodzę dalej...")
+
+        dtcs = read_result["dtcs"]
+        status = "ok" if dtcs else "clean"
+        return {
+            "status": status,
+            "protocol": protocol.upper(),
+            "dtcs": dtcs,
+            "dtcCount": len(dtcs),
+            "rawFrames": read_result["rawFrames"],
+            "payloadsHex": read_result["payloadsHex"],
+            "durationMs": _now_ms() - started_ms,
+        }
+    except SessionError as exc:
+        if tx_channel is not None:
+            try:
+                await _tp20_close_session(tx_channel)
+            except Exception:
+                pass
+        raise SessionError(exc.code, exc.message) from exc
+
+
+async def _scan_module_with_fallback(
+    module: ModuleSpec,
+    websocket,
+    idx: int,
+    total: int,
+) -> Dict[str, Any]:
+    protocol_errors: List[Dict[str, str]] = []
+    for protocol in module.protocols:
+        await _send_event(
+            websocket,
+            "progress",
+            {
+                "index": idx,
+                "total": total,
+                "module": {"addr": module.addr_hex, "name": module.name},
+                "protocol": protocol.upper(),
+            },
+        )
+        try:
+            result = await _scan_module_protocol(module, protocol, websocket)
+            result_payload = {
+                "index": idx,
+                "total": total,
+                "module": {"addr": module.addr_hex, "name": module.name},
+                **result,
+                "errors": protocol_errors,
+            }
+            await _send_event(websocket, "module_result", result_payload)
+            if result["dtcCount"] > 0:
+                await log_and_send(websocket, f"SYS:PYTHON: ✅ Odebrano {result['dtcCount']} DTC z {module.name}.")
+            else:
+                await log_and_send(websocket, f"SYS:PYTHON: ✅ {module.name} jest czysty (Brak DTC).")
+            return result_payload
+        except SessionError as exc:
+            protocol_errors.append(
+                {"protocol": protocol.upper(), "code": exc.code, "message": exc.message}
+            )
+            await log_and_send(
+                websocket,
+                f"SYS:PYTHON: ⚠️ {module.name} / {protocol.upper()} - {exc.code}: {exc.message}",
+            )
+            continue
+
+    failure_payload = {
+        "index": idx,
+        "total": total,
+        "module": {"addr": module.addr_hex, "name": module.name},
+        "status": "comm_error",
+        "protocol": module.protocols[0].upper(),
+        "dtcs": [],
+        "dtcCount": 0,
+        "rawFrames": [],
+        "payloadsHex": [],
+        "durationMs": 0,
+        "errors": protocol_errors,
+    }
+    await _send_event(websocket, "module_result", failure_payload)
+    await log_and_send(websocket, f"SYS:PYTHON: ❌ Brak komunikacji z {module.name}.")
+    return failure_payload
+
 
 async def perform_full_scan(websocket):
-    """Zarządza sekwencyjnym odpytywaniem modułów"""
     global is_scanning
     if is_scanning:
         await log_and_send(websocket, "SYS:PYTHON: ⚠️ Skanowanie już trwa. Proszę czekać.")
         return
 
     is_scanning = True
+    scan_started = _now_ms()
+    scan_id = f"scan-{scan_started}"
+
     try:
-        modules = {
-            "01": "Silnik (Engine)",
-            "02": "Skrzynia Biegów (Auto Trans)",
-            "03": "ABS / ESP / Hamulce",
-            "08": "Klimatyzacja (Climatronic)",
-            "09": "Centralna Elektryka (Bordnetz)",
-            "15": "Poduszki Powietrzne (Airbag)",
-            "16": "Koło Kierownicy (Steering Wheel)",
-            "17": "Zestaw Wskaźników (Instrument Cluster)",
-            "19": "Gateway CAN (J533)",
-            "25": "Immobilizer",
-            "37": "Nawigacja",
-            "42": "Elektronika Drzwi Kierowcy",
-            "44": "Wspomaganie Kierownicy (Steering Assist)",
-            "46": "Moduł Komfortu (Central Convenience)",
-            "52": "Elektronika Drzwi Pasażera",
-            "56": "Radio / Infotainment",
-            "62": "Elektronika Drzwi Tylnych Lewych",
-            "72": "Elektronika Drzwi Tylnych Prawych",
-            "77": "Telefon / Bluetooth"
-        }
+        await _send_event(
+            websocket,
+            "start",
+            {
+                "scanId": scan_id,
+                "moduleTotal": len(MODULES),
+                "startedAt": scan_started,
+            },
+        )
+        await log_and_send(websocket, "SYS:PYTHON: --- START AUTO-SKAN (KWP/UDS over TP2.0) ---")
 
-        await log_and_send(websocket, "SYS:PYTHON: --- START AUTO-SKAN (KWP2000 over TP2.0) ---")
+        module_results: List[Dict[str, Any]] = []
+        for idx, module in enumerate(MODULES, start=1):
+            module_result = await _scan_module_with_fallback(module, websocket, idx, len(MODULES))
+            module_results.append(module_result)
 
-        for addr, name in modules.items():
-            # Uruchamiamy proces uścisku dłoni dla pojedynczego modułu
-            await tp20_read_dtc(addr, name, websocket)
+        comm_errors = sum(1 for r in module_results if r["status"] == "comm_error")
+        modules_with_dtc = sum(1 for r in module_results if r["dtcCount"] > 0)
+        total_dtcs = sum(r["dtcCount"] for r in module_results)
+        finished_ms = _now_ms()
 
+        await _send_event(
+            websocket,
+            "complete",
+            {
+                "scanId": scan_id,
+                "startedAt": scan_started,
+                "finishedAt": finished_ms,
+                "durationMs": finished_ms - scan_started,
+                "moduleTotal": len(MODULES),
+                "moduleErrors": comm_errors,
+                "modulesWithDtc": modules_with_dtc,
+                "totalDtcs": total_dtcs,
+            },
+        )
         await log_and_send(websocket, "SYS:PYTHON: --- AUTO-SKAN ZAKOŃCZONY ---")
+    except Exception as exc:
+        await _send_event(
+            websocket,
+            "error",
+            {
+                "scanId": scan_id,
+                "errorCode": "scan_failed",
+                "message": str(exc),
+            },
+        )
+        await log_and_send(websocket, f"ERR:PY:DTC_SCAN_FAILED:{exc}")
     finally:
         is_scanning = False
 
+
 async def ws_handler(websocket):
-    """Obsługa nowych połączeń z przeglądarki"""
     global shutdown_task
-    
+
     connected_clients.add(websocket)
-    
-    # Anulowanie odliczania (np. jeśli użytkownik tylko odświeżył stronę)
+
     if shutdown_task is not None and not shutdown_task.done():
         shutdown_task.cancel()
         print("SYS:PY:SHUTDOWN_CANCELLED")
 
     print(f"SYS:PY:BROWSER_CONNECTED (Total: {len(connected_clients)})")
-    
+
     try:
-        # Pętla nasłuchująca wiadomości od przeglądarki (Smart UI)
         async for message in websocket:
             if message.startswith("CMD:"):
                 parts = message.split(":", 1)
                 if len(parts) >= 2:
                     command = parts[1].strip()
-
                     if command == "REQ_FULL_SCAN":
                         print("[DIAG] Otrzymano żądanie Auto-Scan z UI.")
-
-                        # Tworzymy asynchroniczne zadanie w tle, żeby nie zablokować nasłuchiwania WebSocketa
                         asyncio.create_task(perform_full_scan(websocket))
     finally:
         connected_clients.discard(websocket)
         print(f"SYS:PY:BROWSER_DISCONNECTED (Total: {len(connected_clients)})")
-        
-        # Inicjacja procesu zamykania po utracie ostatniego klienta
         if len(connected_clients) == 0:
             shutdown_task = asyncio.create_task(auto_shutdown_timer())
+
 
 async def main():
     global tx_queue, rx_queue
@@ -247,9 +603,11 @@ async def main():
     rx_queue = asyncio.Queue()
 
     print(f"--- GOLF MASTER BRIDGE STARTING ON ws://{WS_HOST}:{WS_PORT} ---")
+    print(f"SYS:PY:CONFIG PORT={SERIAL_PORT} BAUD={BAUD_RATE}")
 
     async with websockets.serve(ws_handler, WS_HOST, WS_PORT):
         await handle_serial()
+
 
 if __name__ == "__main__":
     try:

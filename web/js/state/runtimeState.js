@@ -2,6 +2,17 @@ const activeCards = Object.create(null);
 const errorRegistry = Object.create(null);
 const frameDataCache = Object.create(null);
 const terminalBuffer = [];
+const dtcScanRegistry = Object.create(null);
+const dtcScanState = {
+    scanId: null,
+    startedAt: null,
+    status: "idle",
+    moduleTotal: 0,
+    moduleDone: 0,
+    moduleErrors: 0,
+    modulesWithDtc: 0,
+    totalDtcs: 0
+};
 const TERMINAL_MAX_LINES = 3000;
 
 let socket = null;
@@ -29,4 +40,17 @@ function setCachedFrame(hex, dataBigInt) {
     __cachedFrameBigInt = dataBigInt;
 }
 
-export { activeCards, errorRegistry, frameDataCache, terminalBuffer, TERMINAL_MAX_LINES, getSocket, setSocket, getCachedFrameHex, getCachedFrameBigInt, setCachedFrame };
+export {
+    activeCards,
+    errorRegistry,
+    frameDataCache,
+    terminalBuffer,
+    dtcScanRegistry,
+    dtcScanState,
+    TERMINAL_MAX_LINES,
+    getSocket,
+    setSocket,
+    getCachedFrameHex,
+    getCachedFrameBigInt,
+    setCachedFrame
+};

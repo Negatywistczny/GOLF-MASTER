@@ -256,6 +256,41 @@ table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
 th { text-align: left; color: var(--text-dim); padding: 8px; border-bottom: 1px solid var(--border); }
 td { padding: 8px; border-bottom: 1px solid var(--border); }
 
+.dtc-scan-section {
+    margin-top: var(--space-lg);
+}
+
+.dtc-summary {
+    font-family: "Consolas", monospace;
+    font-size: 0.8em;
+    margin-bottom: 10px;
+    color: var(--text-main);
+}
+
+.dtc-scroll {
+    max-height: 260px;
+}
+
+.dtc-status-ok {
+    color: var(--green);
+    font-weight: 700;
+}
+
+.dtc-status-warning {
+    color: var(--orange);
+    font-weight: 700;
+}
+
+.dtc-status-error {
+    color: var(--red);
+    font-weight: 700;
+}
+
+.dtc-status-idle {
+    color: var(--text-dim);
+    font-weight: 700;
+}
+
 .msg-row-system { color: var(--green); }
 .msg-row-error { color: var(--red); }
 

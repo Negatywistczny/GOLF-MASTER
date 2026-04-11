@@ -1,4 +1,5 @@
 import asyncio
+import json
 import websockets
 import os
 from pathlib import Path
@@ -101,6 +102,16 @@ async def log_and_send(websocket, message: str):
     except websockets.exceptions.ConnectionClosed:
         pass
 
+async def send_scan_event(websocket, event: str, payload: dict):
+    try:
+        await websocket.send(json.dumps({
+            "type": "dtc_scan",
+            "event": event,
+            "payload": payload
+        }, ensure_ascii=False))
+    except websockets.exceptions.ConnectionClosed:
+        pass
+
 async def simulate_can_bus():
     """
     Odtwarza zarejestrowaną historię jazdy (ramki + odstępy z logów), w pętli.
@@ -124,7 +135,7 @@ async def simulate_can_bus():
         else:
             await asyncio.sleep(1)
 
-async def simulate_tp20_read_dtc(addr_hex, name, websocket):
+async def simulate_tp20_read_dtc(addr_hex, name, websocket, protocol: str):
     """
     Symulacja odpowiednika tp20_read_dtc() z bridge.py.
     Nie komunikuje się z hardware - jedynie emituje analogiczne logi i ramki.
@@ -139,7 +150,10 @@ async def simulate_tp20_read_dtc(addr_hex, name, websocket):
     await log_and_send(websocket, "SYS:PYTHON: [3/4] Potwierdzam Timingi (A0)...")
     await asyncio.sleep(0.05)
 
-    await log_and_send(websocket, "SYS:PYTHON: [4/4] Żądam Kody DTC KWP2000...")
+    if protocol == "uds":
+        await log_and_send(websocket, "SYS:PYTHON: [4/4] Żądam DTC UDS (0x19)...")
+    else:
+        await log_and_send(websocket, "SYS:PYTHON: [4/4] Żądam Kody DTC KWP2000...")
     await asyncio.sleep(0.08)
 
     # Prosta, deterministyczna symulacja: niektóre moduły zwracają DTC.
@@ -149,11 +163,22 @@ async def simulate_tp20_read_dtc(addr_hex, name, websocket):
         await broadcast(dtc_frame)
         await log_and_send(websocket, f"SYS:PYTHON: ⚠️ OTRZYMANO DANE DTC: {dtc_frame}")
         await log_and_send(websocket, f"SYS:PYTHON: ✅ Odebrano 1 ramek z kodami DTC z {name}!")
+        dtcs = [{"code": f"{int(addr_hex, 16):04X}", "statusByte": "0x2F", "statusFlags": ["confirmedDtc"], "source": protocol.upper()}]
     else:
         await log_and_send(websocket, f"SYS:PYTHON: ✅ {name} jest czysty (Brak DTC).")
+        dtcs = []
 
     await log_and_send(websocket, "SYS:PYTHON: Sesja zamknięta. Przechodzę dalej...")
     await asyncio.sleep(0.12)
+    return {
+        "status": "ok" if dtcs else "clean",
+        "protocol": protocol.upper(),
+        "dtcCount": len(dtcs),
+        "dtcs": dtcs,
+        "errors": [],
+        "rawFrames": ["58 04 00 11 22 33"] if dtcs else [],
+        "payloadsHex": ["58 04 00 11 22 33"] if dtcs else []
+    }
 
 async def perform_full_scan(websocket):
     """Symulowany auto-skan modułów, zgodny przepływem z bridge.py."""
@@ -186,9 +211,48 @@ async def perform_full_scan(websocket):
             "77": "Telefon / Bluetooth",
         }
 
-        await log_and_send(websocket, "SYS:PYTHON: --- START AUTO-SKAN (KWP2000 over TP2.0) ---")
-        for addr, name in modules.items():
-            await simulate_tp20_read_dtc(addr, name, websocket)
+        started_at = int(asyncio.get_running_loop().time() * 1000)
+        scan_id = f"sim-{started_at}"
+        await send_scan_event(websocket, "start", {
+            "scanId": scan_id,
+            "moduleTotal": len(modules),
+            "startedAt": started_at
+        })
+        await log_and_send(websocket, "SYS:PYTHON: --- START AUTO-SKAN (KWP/UDS over TP2.0) ---")
+
+        module_results = []
+        for idx, (addr, name) in enumerate(modules.items(), start=1):
+            protocol = "uds" if int(addr, 16) % 2 == 0 else "kwp"
+            await send_scan_event(websocket, "progress", {
+                "index": idx,
+                "total": len(modules),
+                "module": {"addr": addr, "name": name},
+                "protocol": protocol.upper()
+            })
+            result = await simulate_tp20_read_dtc(addr, name, websocket, protocol)
+            payload = {
+                "index": idx,
+                "total": len(modules),
+                "module": {"addr": addr, "name": name},
+                **result
+            }
+            module_results.append(payload)
+            await send_scan_event(websocket, "module_result", payload)
+
+        module_errors = sum(1 for r in module_results if r["status"] == "comm_error")
+        modules_with_dtc = sum(1 for r in module_results if r["dtcCount"] > 0)
+        total_dtcs = sum(r["dtcCount"] for r in module_results)
+        finished_at = int(asyncio.get_running_loop().time() * 1000)
+        await send_scan_event(websocket, "complete", {
+            "scanId": scan_id,
+            "startedAt": started_at,
+            "finishedAt": finished_at,
+            "durationMs": finished_at - started_at,
+            "moduleTotal": len(modules),
+            "moduleErrors": module_errors,
+            "modulesWithDtc": modules_with_dtc,
+            "totalDtcs": total_dtcs
+        })
         await log_and_send(websocket, "SYS:PYTHON: --- AUTO-SKAN ZAKOŃCZONY ---")
     finally:
         is_scanning = False

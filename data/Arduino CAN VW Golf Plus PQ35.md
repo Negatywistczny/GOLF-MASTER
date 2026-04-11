@@ -257,17 +257,21 @@ Prawidłowo zaprojektowany system nie tylko dostarczy precyzyjnych danych na kom
 
 Dla spójności z **rzeczywistymi definicjami sygnałów** (w tym bitów w bajcie 1 ramki `0x42B`) obowiązuje plik **`data/id_ramek.txt`** (ramka `mNM_Gateway_I`), a nie wyłącznie opisy w tym dokumencie.
 
-W projekcie zastosowano strategię **bez aktywnego podtrzymywania magistrali po `WAKE_END`**:
+W projekcie (aktualnie **v04 Auto-NM**) zastosowano strategię **sleep-first**:
 
-- **Maszyna stanów**: `NET_SLEEP`, `NET_ACTIVE`, `NET_GRACE`, `NET_SLEEP_READY` — przejścia m.in. przy `SYS:CAN:WAKE_START` / `WAKE_END`, zboczu `SleepInd` oraz timerach Grace / SleepReady.
-- **NM (`0x40B`)**: odpowiedź na token do węzła `0x0B`, gdy w bajcie 1 ustawiony jest `CmdRing`, `CmdAlive` lub `CmdLimpHome` — **bez** warunku `isBusActive`, aby uniknąć braku odpowiedzi przy `CmdLimpHome` po zakończeniu fazy wake.
-- **Ramka aplikacyjna `0x661`**: nadawana **tylko** w stanie `NET_ACTIVE` (nie w Grace / SleepReady / Sleep), żeby nie „zagadywać” magistrali po zakończeniu cyklu wybudzenia.
+- **Maszyna stanów sieci**: `NET_SLEEP`, `NET_ACTIVE`, `NET_GRACE`, `NET_SLEEP_READY` — przejścia przy `SYS:CAN:WAKE_START` / `WAKE_END`, zboczu `SleepInd` i timerach.
+- **Automat NM (bez komend `MODE:*`)**: `AUTO_ACTIVE`, `AUTO_SLEEP_PREP`, `AUTO_SILENT_LISTEN`.
+- **NM (`0x40B`)**:
+  - `AUTO_ACTIVE`: odpowiedź na token do `0x0B` (stabilna komunikacja),
+  - `AUTO_SLEEP_PREP`: odpowiedzi tylko dla ramek związanych ze snem (`SleepInd`/`SleepAck`),
+  - `AUTO_SILENT_LISTEN`: celowe milczenie (bez sztucznego trzymania pierścienia).
+- **Ramka aplikacyjna `0x661`**: nadawana tylko w `NET_ACTIVE`.
 
-**Konsekwencja dla pełnego snu magistrali:** dopóki Arduino **odpowiada** na każdy token NM do `0x0B`, węzeł pozostaje aktywny w pierścieniu — Gateway w typowej sekwencji **nie zakończy** usypiania Infotainment „obok” takiego urządzenia, więc w logu **nie pojawi się** `SYS:CAN:SLEEP_IND` ani `0x42B` z `0B 14…` **przy tej polityce TX**. Log może wyglądać jak nieskończony strumień po `WAKE_END`; to oczekiwane przy obecnym założeniu „zawsze odpowiadaj na NM”. Szczegóły i jak traktować Test A: **`logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md`**.
+**Konsekwencja dla walidacji:** bramą sukcesu jest teraz Test A (`sleep-path`) na logu z podłączonym Arduino. Dopiero po przejściu tej bramy interpretujemy Test B/C jako wynik produktowy (nie tylko regresję techniczną). Szczegóły i aktualny status: **`logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md`**.
 
 Checklista testów A/B/C: **`logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md`** (kanoniczna kopia przy logach; skrypt: `scripts/validate_nm_serial_log.py`).
 
-Archiwum ponumerowanych szkiców przy logach: **`hardware_v01_aba4daa__tests-1-4.ino`** (baseline pod logi `v01_*_2026-04-11.txt`) i **`hardware_v02_nm_netstate_plan.ino`** (plan NetState; logi `v02_*_2026-04-11.txt`) w `logs/2026-04-11/`.
+Archiwum ponumerowanych szkiców przy logach: **`hardware_v01_aba4daa__tests-1-4.ino`**, **`hardware_v02_nm_netstate_plan.ino`**, **`hardware_v03_serial_modes_sleep_coop.ino`** i **`hardware_v04_auto_nm_sleep_gate.ino`** w `logs/2026-04-11/`.
 
 #### **Cytowane prace**
 

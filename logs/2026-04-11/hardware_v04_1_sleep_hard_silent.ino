@@ -1,3 +1,8 @@
+/*
+ * hardware v4.1 — hard sleep silence:
+ * po SleepInd brak odpowiedzi NM (0x40B), bez wyjątków na SleepAck.
+ * Snapshot aktualnego hardware/hardware.ino do testu A (sleep gate).
+ */
 #include <SPI.h>
 #include <mcp_can.h>
 

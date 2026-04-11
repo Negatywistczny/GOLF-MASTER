@@ -1,3 +1,8 @@
+/*
+ * hardware v04 — Auto-NM sleep-first (bez MODE:* po Serial):
+ * Active/SleepPrep/SilentListen, ograniczenie odpowiedzi 0x40B po WAKE_END,
+ * brama walidacji Test A (sleep-path) przed interpretacją Testów B/C.
+ */
 #include <SPI.h>
 #include <mcp_can.h>
 
@@ -166,8 +171,7 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
       Serial.println(F("SYS:CAN:SLEEP_IND"));
       netState = NET_SLEEP_READY;
       sleepReadyStartMs = millis();
-      // Twarda reguła: po wejściu w sleep natychmiast przechodzimy do ciszy NM.
-      setAutoNmState(AUTO_SILENT_LISTEN);
+      setAutoNmState(AUTO_SLEEP_PREP);
     }
     prevGwSleepBit = sleepNow;
     if (sleepNow) {
@@ -203,8 +207,17 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
   }
 
   bool tokenToSelf = (buf[0] == NM_NODE_SELF && gwNmCmd);
-  // Twarda reguła sleep-first: odpowiadamy NM tylko w aktywnej fazie, nigdy po SleepInd.
-  bool shouldReplyNm = tokenToSelf && (autoNmState == AUTO_ACTIVE) && !isSleepIndicated;
+  bool shouldReplyNm = false;
+  if (tokenToSelf) {
+    if (autoNmState == AUTO_ACTIVE) {
+      shouldReplyNm = true;
+    } else if (autoNmState == AUTO_SLEEP_PREP) {
+      // W fazie przejścia odpowiadamy tylko dla ramek związanych ze snem, aby nie podtrzymywać pierścienia.
+      shouldReplyNm = ((b1 & (NM_MASK_SLEEP | NM_MASK_SLEEP_ACK)) != 0);
+    } else {
+      shouldReplyNm = false;
+    }
+  }
 
   if (shouldReplyNm) {
     uint8_t txB1 = NM_CMD_ALIVE;
@@ -331,13 +344,9 @@ void loop() {
     CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00);
   }
 
-  // Brak ruchu jest dopuszczalny tylko przy pełnym śnie magistrali.
-  // Pełny sen: stan NET_SLEEP + AUTO_SILENT_LISTEN + SleepInd + brak aktywnego wake.
-  bool fullSleepConfirmed = (netState == NET_SLEEP)
-                            && (autoNmState == AUTO_SILENT_LISTEN)
-                            && isSleepIndicated
-                            && !isBusActive;
-  bool hangSuppressed = fullSleepConfirmed;
+  // W stanie przygotowania snu i nasłuchu celowo dopuszczamy ciszę NM do 0x0B.
+  bool hangSuppressed = (autoNmState != AUTO_ACTIVE) || (hadWakeEndForGrace && netState != NET_ACTIVE
+                         && (millis() - graceStartMs) < GRACE_AFTER_WAKE_END_MS && !isSleepIndicated);
 
   if (!hangSuppressed && !isHanging && !isSleepIndicated && lastGwSelfNmMs != 0
       && (millis() - lastGwSelfNmMs > INTERVAL_HANG_CHECK)) {

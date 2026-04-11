@@ -256,9 +256,19 @@ table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
 th { text-align: left; color: var(--text-dim); padding: 8px; border-bottom: 1px solid var(--border); }
 td { padding: 8px; border-bottom: 1px solid var(--border); }
 
-.err-row-js { color: var(--orange); }
-.err-row-py { color: var(--accent); }
-.err-row-hw { color: var(--red); }
+.msg-row-system { color: var(--green); }
+.msg-row-js { color: var(--orange); }
+.msg-row-py { color: var(--accent); }
+.msg-row-hw { color: var(--red); }
+
+#error-table-body tr {
+    transition: opacity 0.25s ease, filter 0.25s ease;
+}
+
+#error-table-body tr.msg-stale {
+    opacity: 0.45;
+    filter: grayscale(0.35);
+}
 
 #term-stream {
     background: var(--bg-main);

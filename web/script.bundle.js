@@ -5295,24 +5295,109 @@ function handleCANFrame(id, data) {
 // ===== js/ui/statusLogs.js =====
 
 
-function logError(src, code, desc) {
-    const key = `${src}:${code}`;
+const REGISTRY_TICK_MS = 1000;
+let registryTickerStarted = false;
+
+function buildKey(src, code) {
+    return `${src}:${code}`;
+}
+
+function formatAge(ms) {
+    if (ms < 1000) return "teraz";
+    const seconds = Math.floor(ms / 1000);
+    if (seconds < 60) return `${seconds}s temu`;
+    const minutes = Math.floor(seconds / 60);
+    const remain = seconds % 60;
+    return remain === 0 ? `${minutes}m temu` : `${minutes}m ${remain}s temu`;
+}
+
+function rowClassFor(kind, src) {
+    if (kind === "SYS") return "msg-row-system";
+    if (src.toUpperCase() === "JS") return "msg-row-js";
+    if (src.toUpperCase() === "PY") return "msg-row-py";
+    return "msg-row-hw";
+}
+
+function setRowState(entry, now) {
+    const ageMs = now - entry.lastSeenMs;
+    const isStale = Number.isFinite(entry.ttlMs) && entry.ttlMs >= 0 && ageMs > entry.ttlMs;
+    entry.row.classList.toggle("msg-stale", isStale);
+    entry.row.cells[3].textContent = isStale ? `nieaktywne: ${formatAge(ageMs)}` : formatAge(ageMs);
+}
+
+function upsertMessage(kind, src, code, desc, options = {}) {
     const tableBody = document.getElementById("error-table-body");
+    if (!tableBody) return;
+    const now = Date.now();
+    const normalizedSrc = String(src || "UNK").toUpperCase();
+    const normalizedCode = String(code || "UNKNOWN");
+    const normalizedDesc = String(desc || "");
+    const key = buildKey(normalizedSrc, normalizedCode);
+    const ttlMs = Object.prototype.hasOwnProperty.call(options, "ttlMs")
+        ? options.ttlMs
+        : (kind === "SYS" ? 5000 : 15000);
 
     if (errorRegistry[key]) {
-        errorRegistry[key].count++;
-        errorRegistry[key].row.cells[3].textContent = errorRegistry[key].count;
+        const existing = errorRegistry[key];
+        existing.lastSeenMs = now;
+        existing.desc = normalizedDesc || existing.desc;
+        if (Object.prototype.hasOwnProperty.call(options, "ttlMs")) {
+            existing.ttlMs = ttlMs;
+        }
+        existing.row.cells[2].textContent = existing.desc;
+        tableBody.prepend(existing.row);
+        setRowState(existing, now);
     } else {
         const row = tableBody.insertRow(0);
-        row.className = `err-row-${src.toLowerCase()}`;
+        row.className = rowClassFor(kind, normalizedSrc);
         row.innerHTML = `
-            <td>${code}</td>
-            <td>${src}</td>
-            <td>${desc}</td>
-            <td>1</td>
+            <td>${normalizedCode}</td>
+            <td>${normalizedSrc}</td>
+            <td>${normalizedDesc}</td>
+            <td>teraz</td>
         `;
-        errorRegistry[key] = { count: 1, row: row };
+        const entry = {
+            kind,
+            src: normalizedSrc,
+            code: normalizedCode,
+            desc: normalizedDesc,
+            row,
+            lastSeenMs: now,
+            ttlMs
+        };
+        errorRegistry[key] = entry;
+        setRowState(entry, now);
     }
+}
+
+function logError(src, code, desc, options = {}) {
+    upsertMessage("ERR", src, code, desc, options);
+}
+
+function logSystem(src, code, desc, options = {}) {
+    upsertMessage("SYS", src, code, desc, options);
+}
+
+function clearMessage(src, code) {
+    const key = buildKey(String(src || "UNK").toUpperCase(), String(code || "UNKNOWN"));
+    const entry = errorRegistry[key];
+    if (!entry) return;
+    entry.ttlMs = 0;
+    entry.lastSeenMs = Date.now() - 2000;
+    setRowState(entry, Date.now());
+}
+
+function refreshRegistryAges() {
+    const now = Date.now();
+    for (const key in errorRegistry) {
+        setRowState(errorRegistry[key], now);
+    }
+}
+
+function startMessageRegistryTicker() {
+    if (registryTickerStarted) return;
+    registryTickerStarted = true;
+    setInterval(refreshRegistryAges, REGISTRY_TICK_MS);
 }
 
 function logTerminal(msg) {
@@ -5455,18 +5540,52 @@ function downloadTerminalLogs() {
 
 
 const WS_URL = "ws://localhost:8765";
+const MESSAGE_TTL_MS = {
+    SYS_DEFAULT: 5000,
+    ERR_DEFAULT: 15000,
+    ERR_CAN_HANG: 60000,
+    ERR_HW: 30000,
+    ERR_SERIAL_LOST: null,
+    ERR_WS_DISCONNECTED: null
+};
+
+function parseTagged(raw, prefix) {
+    const parts = raw.split(":");
+    const src = parts[1] || "UNK";
+    const code = parts[2] || "UNKNOWN";
+    const details = parts.slice(3).join(":").trim();
+    return { src, code, details, kind: prefix };
+}
+
+function ttlForError(src, code) {
+    if (src === "CAN" && code === "HANG") return MESSAGE_TTL_MS.ERR_CAN_HANG;
+    if (src === "HW") return MESSAGE_TTL_MS.ERR_HW;
+    if (src === "PY" && code === "SERIAL_LOST") return MESSAGE_TTL_MS.ERR_SERIAL_LOST;
+    if (src === "JS" && code === "WS_DISCONNECTED") return MESSAGE_TTL_MS.ERR_WS_DISCONNECTED;
+    return MESSAGE_TTL_MS.ERR_DEFAULT;
+}
 
 function parseIncomingData(raw) {
     logTerminal(raw);
 
+    if (raw.startsWith("CLR:")) {
+        const { src, code } = parseTagged(raw, "CLR");
+        clearMessage(src, code);
+        return;
+    }
+
     if (raw.startsWith("ERR:")) {
-        const [_, src, code] = raw.split(":");
-        logError(src, code, "Wykryto błąd warstwy " + src);
+        const { src, code, details } = parseTagged(raw, "ERR");
+        const ttlMs = ttlForError(src, code);
+        const desc = details || `Wykryto błąd warstwy ${src}`;
+        logError(src, code, desc, { ttlMs });
         return;
     }
 
     if (raw.startsWith("SYS:")) {
-        const [_, src, code] = raw.split(":");
+        const { src, code, details } = parseTagged(raw, "SYS");
+        const desc = details || `Komunikat systemowy ${src}`;
+        logSystem(src, code, desc, { ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT });
         updateStatus(`${src}: ${code}`, "var(--accent)");
         return;
     }
@@ -5484,6 +5603,10 @@ function connectWebSocket() {
     socket.onopen = () => {
         updateStatus("POŁĄCZONO Z PYTHONEM", "var(--green)");
         logTerminal("SYS:JS:WS_CONNECTED");
+        logSystem("JS", "WS_CONNECTED", "Połączono z bridge.py", { ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT });
+        clearMessage("JS", "WS_DISCONNECTED");
+        clearMessage("JS", "WS_ERROR");
+        clearMessage("PY", "SERIAL_LOST");
     };
 
     socket.onmessage = (event) => {
@@ -5501,12 +5624,12 @@ function connectWebSocket() {
 
     socket.onclose = () => {
         updateStatus("UTRACO_POŁĄCZENIE Z PYTHONEM", "var(--red)");
-        logError("JS", "WS_DISCONNECTED", "Brak połączenia z bridge.py");
+        logError("JS", "WS_DISCONNECTED", "Brak połączenia z bridge.py", { ttlMs: MESSAGE_TTL_MS.ERR_WS_DISCONNECTED });
         setTimeout(connectWebSocket, 3000);
     };
 
     socket.onerror = () => {
-        logError("JS", "WS_ERROR", "Błąd gniazda WebSocket");
+        logError("JS", "WS_ERROR", "Błąd gniazda WebSocket", { ttlMs: 20000 });
     };
 }
 
@@ -5517,6 +5640,7 @@ function connectWebSocket() {
 document.addEventListener("DOMContentLoaded", () => {
     connectWebSocket();
     startClock();
+    startMessageRegistryTicker();
     setupModal();
 
     const btnSnapshot = document.getElementById("btn-snapshot");

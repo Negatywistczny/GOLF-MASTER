@@ -2,6 +2,7 @@ import { connectWebSocket } from "./transport/ws.js";
 import {
     setupModal,
     startClock,
+    startMessageRegistryTicker,
     generateSnapshot,
     requestFullDtcScan,
     downloadTerminalLogs
@@ -10,6 +11,7 @@ import {
 document.addEventListener("DOMContentLoaded", () => {
     connectWebSocket();
     startClock();
+    startMessageRegistryTicker();
     setupModal();
 
     const btnSnapshot = document.getElementById("btn-snapshot");

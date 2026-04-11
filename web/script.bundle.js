@@ -5345,10 +5345,10 @@ function upsertMessage(kind, src, code, desc, options = {}) {
             existing.ttlMs = ttlMs;
         }
         existing.row.cells[2].textContent = existing.desc;
-        tableBody.prepend(existing.row);
+        tableBody.prepend(existing.row); // Powrót komunikatu = skok na górę.
         setRowState(existing, now);
     } else {
-        const row = tableBody.insertRow(0);
+        const row = tableBody.insertRow(0); // Nowe wpisy na górze.
         row.className = rowClassFor(kind, normalizedSrc);
         row.innerHTML = `
             <td>${normalizedCode}</td>
@@ -5379,9 +5379,10 @@ function logSystem(src, code, desc, options = {}) {
 }
 
 function clearMessage(src, code) {
-    const key = buildKey(String(src || "UNK").toUpperCase(), String(code || "UNKNOWN"));
+    const key = buildKey(src, code);
     const entry = errorRegistry[key];
     if (!entry) return;
+    // Umożliwia ręczne wygaszenie komunikatów bez określonego TTL.
     entry.ttlMs = 0;
     entry.lastSeenMs = Date.now() - 2000;
     setRowState(entry, Date.now());
@@ -5438,6 +5439,10 @@ function startClock() {
 }
 
 // ===== js/ui/actions.js =====
+
+
+
+
 
 function formatLocalFileTimestamp(date = new Date()) {
     const yyyy = date.getFullYear();

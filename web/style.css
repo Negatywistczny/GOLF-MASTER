@@ -257,8 +257,8 @@ th { text-align: left; color: var(--text-dim); padding: 8px; border-bottom: 1px 
 td { padding: 8px; border-bottom: 1px solid var(--border); }
 
 .msg-row-system { color: var(--green); }
-.msg-row-js { color: var(--orange); }
-.msg-row-py { color: var(--accent); }
+.msg-row-js { color: var(--red); }
+.msg-row-py { color: var(--red); }
 .msg-row-hw { color: var(--red); }
 
 #error-table-body tr {

@@ -330,11 +330,27 @@ export function decodeMotor7Data(id, hexData, cardElement) {
     }
     
     // --- Generator / Alternator ---
-    // Gdy generator nie ładuje po starcie silnika, wyrzucamy błąd
-    if (fullData.MO7_Ein_Generator === 1) {
-        html += `<div class="ind active-green full-width">ALTERNATOR WŁĄCZONY (OBCIĄŻ. DFM: ${fullData.MO7_DFM.toFixed(1)}%)</div>`;
+    // W praktyce MO7_Ein_Generator często pozostaje 0 mimo prawidłowego ładowania.
+    // Dlatego status opieramy na kilku sygnałach: fladze, DFM i napięciu Bordnetz (0x571).
+    const bsgData = frameDataCache["0x571"] || frameDataCache["0X571"] || {};
+    const bordnetzV = typeof bsgData.BS2_U_BATT === "number" ? bsgData.BS2_U_BATT : null;
+    const chargingByFlag = fullData.MO7_Ein_Generator === 1;
+    const chargingByDfm = fullData.MO7_DFM > 5.0;
+    const chargingByVoltage = bordnetzV !== null && bordnetzV >= 13.6 && bordnetzV < 17.7;
+    const chargingConfirmed = chargingByFlag || chargingByDfm || chargingByVoltage;
+
+    if (chargingConfirmed) {
+        let source = "DFM";
+        if (chargingByFlag) source = "FLAGA ECU";
+        else if (chargingByVoltage) source = "NAPIĘCIE";
+        const vInfo = bordnetzV !== null ? ` | U: ${bordnetzV.toFixed(2)} V` : "";
+        html += `<div class="ind active-green full-width">ALTERNATOR: ŁADOWANIE OK (${source} | DFM: ${fullData.MO7_DFM.toFixed(1)}%${vInfo})</div>`;
+    } else if (fullData.MO7_Sleep_Ind === 1) {
+        html += `<div class="ind full-width">ALTERNATOR: POSTÓJ / SLEEP</div>`;
+    } else if (bordnetzV !== null && bordnetzV < 12.2 && fullData.MO7_DFM <= 1.0) {
+        html += `<div class="ind active-error full-width">ALTERNATOR: BRAK ŁADOWANIA (DFM 0%, NISKIE NAPIĘCIE)</div>`;
     } else {
-        html += `<div class="ind active-error full-width">ALTERNATOR: WYŁĄCZONY!</div>`;
+        html += `<div class="ind active-orange full-width">ALTERNATOR: BRAK PEWNEGO POTWIERDZENIA ŁADOWANIA</div>`;
     }
 
     gridContainer.innerHTML = html;

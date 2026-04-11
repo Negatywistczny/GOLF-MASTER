@@ -1,6 +1,6 @@
 # Walidacja komunikacji NM (PQ35 Infotainment) — checklista
 
-Kryteria odnoszą się do firmware w `hardware/hardware.ino` (obecnie **v4.1 hard-sleep-silence** — patrz tabela archiwum; **v04/v03/v02/v01** to archiwum w `logs/2026-04-11/`).
+Kryteria odnoszą się do firmware w `hardware/hardware.ino` (obecnie **v10 final / v10 refactor-structural** — patrz tabela archiwum; **v04/v03/v02/v01** to archiwum w `logs/2026-04-11/`).
 
 ## Canon i klasyfikacja dowodów
 
@@ -174,6 +174,7 @@ python scripts/validate_nm_serial_log.py logs/2026-04-11/v01_A_swiatla_sleep_ok_
 | **v06** | `hardware_v06_event_driven_nm.ino` | Wersja event-driven po planie: bez timerów przejść stanów NM, odpowiedź tokenowa zgodna z `0x42B`, watchdog aktywny do jawnego pełnego snu, `0x661` tylko w `AUTO_ACTIVE`. |
 | **v06.1** | `hardware_v06_1_sleep_lock_fix.ino` | Poprawka flappingu po `SLEEP_IND`: sleep-lock blokuje powrót do `AUTO_SLEEP_PREP` bez nowego `WAKE_START`; odblokowanie tylko na realnym wake (`wakeCombo 0->!=0`). Zachowana diagnostyka Test C (`PUMP_ON/OFF/TX_661`). |
 | **v10** | `hardware_v10_final.ino` | Wersja finalna po wyciszeniu logów: usunięte spamowe komunikaty `WAKE_*`, `NM_AUTO_*` i diagnostyka pump; zachowana logika NM, `SLEEP_IND`, `ERR:CAN:HANG` i TX `0x661` tylko w `AUTO_ACTIVE`. |
+| **v10-refactor** | `hardware_v10_refactor_structural.ino` | Refaktor strukturalny bez zmiany zachowania: rozbicie `handleGatewayNm`, wydzielenie kroków `loop`, porządek sekcji i komentarzy. Semantyka NM/watchdog/TX zachowana 1:1 względem `v10`. |
 
 Odtworzenie v01 z innego miejsca:  
 `git show aba4daa:hardware/hardware.ino`

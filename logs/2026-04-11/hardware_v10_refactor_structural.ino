@@ -46,11 +46,14 @@ MCP_CAN CAN0(SPI_CS_PIN);
 unsigned long lastSendTime = 0;
 // Ostatni czas ramki Gateway NM do nas (0x42B→0x0B) — tylko to liczy się do ERR:CAN:HANG i kasowania latcha.
 unsigned long lastGwSelfNmMs = 0;
+// Ostatni bajt 2 z ramki Alive 0x42B→0x0B (nie aktualizowany przy Ring), pomocniczo do diagnostyki.
+byte lastWakeCauseByte = 0x00;
 bool isHanging = false;
 // Jedna flaga stanu snu: używana równocześnie przez watchdog i politykę NM.
 bool busSleep = true;
 // Przyczyna wybudzenia (bajty 2–4 Alive z 0x42B→0x0B): !=0 ⇒ logiczne „bus wybudzony”.
 bool isBusActive = false;
+bool sleepAckSeen = false;
 unsigned long lastErrCheckMs = 0;
 
 enum AutoNmState : uint8_t {
@@ -125,6 +128,7 @@ void updateSleepSignalsFromGateway(uint8_t b1, const uint8_t *buf, uint8_t len) 
 
   static bool prevGwSleepBit = false;
   bool sleepNow = (b1 & NM_MASK_SLEEP) != 0;
+  sleepAckSeen = (b1 & NM_MASK_SLEEP_ACK) != 0;
   if (sleepNow && !prevGwSleepBit) {
     Serial.println(F("SYS:CAN:SLEEP_IND"));
     busSleep = true;
@@ -150,11 +154,13 @@ void updateSleepSignalsFromGateway(uint8_t b1, const uint8_t *buf, uint8_t len) 
 void updateWakeStateFromAlive(uint8_t b1, const uint8_t *buf, uint8_t len) {
   if (buf[0] != NM_NODE_SELF || (b1 & NM_CMD_ALIVE) == 0 || len < 5) return;
 
+  lastWakeCauseByte = buf[2];
   uint32_t wakeCombo = decodeWakeCombo(buf);
   static uint32_t prevWakeCombo = 0;
   if (prevWakeCombo == 0 && wakeCombo != 0) {
     busSleep = false;
     isBusActive = true;
+    sleepAckSeen = false;
     setAutoNmState(AUTO_ACTIVE);
   } else if (prevWakeCombo != 0 && wakeCombo == 0) {
     isBusActive = false;
@@ -298,18 +304,11 @@ void processCanRxLoop() {
   }
 }
 
-void runHealthChecks() {
-  // Watchdog komunikacji: sprawdzany w każdej iteracji pętli.
+void runHangWatchdogCheck() {
   if (!isHanging && !busSleep && lastGwSelfNmMs != 0
       && (millis() - lastGwSelfNmMs > INTERVAL_HANG_CHECK)) {
     Serial.println(F("ERR:CAN:HANG"));
     isHanging = true;
-  }
-
-  // Kontrola błędów HW ograniczona czasowo.
-  if (millis() - lastErrCheckMs > 1000) {
-    lastErrCheckMs = millis();
-    checkHardwareErrors();
   }
 }
 
@@ -319,6 +318,13 @@ void pumpRadioIfActive() {
     lastSendTime = millis();
     unsigned char stRadio[8] = {0x01, 0x01, 0x10, 0, 0, 0, 0, 0};
     CAN0.sendMsgBuf(CAN_ID_RADIO_STATUS, 0, 8, stRadio);
+  }
+}
+
+void runPeriodicHardwareCheck() {
+  if (millis() - lastErrCheckMs > 1000) {
+    lastErrCheckMs = millis();
+    checkHardwareErrors();
   }
 }
 
@@ -347,6 +353,7 @@ void setup() {
 void loop() {
   processSerial();
   processCanRxLoop();
-  runHealthChecks();
+  runHangWatchdogCheck();
   pumpRadioIfActive();
+  runPeriodicHardwareCheck();
 }

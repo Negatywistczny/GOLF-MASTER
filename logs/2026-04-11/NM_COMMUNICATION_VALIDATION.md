@@ -45,6 +45,11 @@ Watchdog (`ERR:CAN:HANG`) może być **uśpiony / wygaszony wyłącznie** po otr
 4. **Watchdog jest jedynym wyjątkiem czasowym** — próg czasowy może być używany wyłącznie do wykrywania utraty komunikacji (`ERR:CAN:HANG`), nie do sterowania polityką NM.
 5. **Próg 2 s pozostaje tymczasowo bez zmian** — obecnie nie jest to przedmiot tej iteracji; krytyczny jest brak maskowania zerwania komunikacji.
 
+### Reguły werdyktu (uzupełnienie, obowiązkowe)
+
+1. **PASS walidatora + FAIL systemowy = FAIL końcowy** — jeśli check skryptu jest `OK`, ale log ujawnia regresję zachowania magistrali (np. pętla wybudzania po `SLEEP_IND`), iteracja jest niezaliczona.
+2. **Przedwczesne urwanie komunikacji bez `ERR:CAN:HANG` = błąd krytyczny** — brak alarmu watchdoga przy utracie komunikacji traktujemy jako maskowanie awarii i automatyczny FAIL.
+
 ### Reguła analizy przed zmianą polityki NM (obowiązkowa)
 
 Przed wdrożeniem każdej kolejnej wersji firmware wykonujemy **obowiązkowy checkpoint porównawczy**:

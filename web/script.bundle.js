@@ -5313,9 +5313,7 @@ function formatAge(ms) {
 
 function rowClassFor(kind, src) {
     if (kind === "SYS") return "msg-row-system";
-    if (src.toUpperCase() === "JS") return "msg-row-js";
-    if (src.toUpperCase() === "PY") return "msg-row-py";
-    return "msg-row-hw";
+    return "msg-row-error";
 }
 
 function setRowState(entry, now) {

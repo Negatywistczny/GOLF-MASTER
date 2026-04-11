@@ -267,6 +267,14 @@ Dla każdej sytuacji podano:
 
 ---
 
+## Status bieżący (`v10-refactor`)
+
+- Aktualny firmware (`hardware/hardware.ino`) realizuje docelowy profil komunikacji bez odtwarzania sytuacji E1/E2/E3/E4.
+- Sytuacje E1-E4 należy traktować jako **historyczne wzorce anty-regresji**, nie jako aktualny stan projektu.
+- Dla nowych zmian obowiązuje walidacja względem tego katalogu: brak powrotu do któregokolwiek wzorca E*.
+
+---
+
 ## Macierz skrócona: sytuacja -> decyzja TX
 
 | Sytuacja | Co wysyłać | Czego nie wysyłać / nie robić |

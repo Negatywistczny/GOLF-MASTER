@@ -15,7 +15,7 @@
 | `WAKE_END` + token do `0x0B` | fakt | nadal odpowiadać tokenowo (bez wymuszonej ciszy timerem) | aktywny | sama cisza po wake to nie pełny sen |
 | `CmdLimpHome` (`0x04`) + token do `0x0B` | fakt + inferencja | obowiązkowa odpowiedź rekonfiguracyjna (nie milczeć) | aktywny | eliminuje E1 (HANG po impulsach) |
 | `SleepInd` globalne (`0x10`) + domykanie sekwencji | fakt + inferencja | odpowiedź zgodna z polityką snu (minimalna, bez sztucznego keepalive) | aktywny do pełnego potwierdzenia | etap przejściowy, jeszcze nie pełny sleep |
-| pełny sen potwierdzony przez gateway (`SleepInd/SleepAck` w cyklu końcowym) | hipoteza->do potwierdzenia snifferem | brak podtrzymywania NM po domknięciu | można wygasić | jedyny legalny moment wygaszenia watchdog |
+| pełny sen potwierdzony przez gateway (`SleepInd/SleepAck` w cyklu końcowym) | fakt + inferencja (finalny firmware) | brak podtrzymywania NM po domknięciu | można wygasić | jedyny legalny moment wygaszenia watchdog |
 | brak `0x42B` > 2000 ms poza stanem pełnego snu | fakt | brak „nadawania na ślepo” jako substytutu stanu | `ERR:CAN:HANG` | wykrycie utraty komunikacji |
 
 ## Reguły zakazane
@@ -25,7 +25,7 @@
 3. Bezwarunkowe `always-keepalive` blokujące naturalny sen.
 4. Trwałe milczenie przy aktywnym tokenie i `CmdLimpHome`.
 
-## Co musi zostać potwierdzone kampanią sniffer
+## Co warto okresowo potwierdzać kampanią sniffer (monitoring regresji)
 
 - Realny moment ostatniego `0x40B` przed snem.
 - Czy `0x661` gaśnie zgodnie z fazą NM (C).

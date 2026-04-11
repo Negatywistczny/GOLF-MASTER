@@ -35,5 +35,11 @@ Nowa wersja jest akceptowalna dopiero gdy jednocześnie:
 
 - Zestaw regresyjny `v01-v05` został opisany i usztywniony jako brama wejścia dla kolejnych zmian.
 - Iteracja dokumentacyjno-walidacyjna: **zamknięta**.
-- Iteracja implementacyjna firmware: **otwarta** (wymaga nowych logów A/B/C + sniffer).
+- Iteracja implementacyjna firmware: **zamknięta** (finalny fix wdrożony w `v10` / `v10-refactor`).
+
+## Domknięcie po finalnym fixie (`v10-refactor`)
+
+- Bieżący profil roboczy nie odtwarza historycznych błędów E1/E2/E3/E4.
+- `v01-v05` pozostaje tylko zbiorem anty-regresyjnym i materiałem porównawczym.
+- Nowe uruchomienia testów A/B/C traktować jako kontrolę regresji dla kolejnych zmian, nie jako otwarty problem komunikacji.
 

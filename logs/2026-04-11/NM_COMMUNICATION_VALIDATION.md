@@ -2,6 +2,14 @@
 
 Kryteria odnoszą się do firmware w `hardware/hardware.ino` (obecnie **v10 final / v10 refactor-structural** — patrz tabela archiwum; **v04/v03/v02/v01** to archiwum w `logs/2026-04-11/`).
 
+## Status końcowy po wdrożeniu `v10-refactor`
+
+- Komunikacja NM dla bieżącego firmware (`hardware/hardware.ino`) jest traktowana jako **zamknięta i stabilna**.
+- Problem „sleep vs odporność po impulsach” został **domknięty**: obowiązuje polityka event-driven bez timerowego sterowania stanem.
+- Krytyczne klasy błędów historycznych (**E1/E2/E3/E4**) mają status: **rozwiązane w aktualnym buildzie** (pozostają w dokumentacji wyłącznie jako anty-regresja).
+- `ERR:CAN:HANG` pozostaje aktywnym bezpiecznikiem utraty komunikacji poza stanem pełnego snu.
+- `logs/2026-04-11/hardware_v10_refactor_structural.ino` jest snapshotem referencyjnym aktualnego `hardware/hardware.ino`.
+
 ## Canon i klasyfikacja dowodów
 
 - Canon mapy `0x42B` i klasyfikacji fakt/inferencja/hipoteza: `logs/2026-04-11/NM_CANONICAL_BASELINE.md`.
@@ -17,7 +25,7 @@ Kryteria odnoszą się do firmware w `hardware/hardware.ino` (obecnie **v10 fina
 - **v04**: Auto-NM bez `MODE:*`; próba ograniczenia odpowiedzi NM po `WAKE_END`.
 - **v4.1 (hard sleep silence)**: po `SleepInd` brak odpowiedzi `0x40B` (bez wyjątków). **Wynik polowy:** `v04_1_A_sleep_gate_cisza_2026-04-11.txt` = **PASS** (sleep-path), ale `v04_1_B_impulsy_po_Apass_2026-04-11.txt` = **FAIL** (`ERR:CAN:HANG`). W praktyce efekt końcowy jest **równoważny v01** (nie ma jednocześnie „sleep + odporność B”).
 
-### Ocena postępu v02 → v03 względem zamierzonego celu
+### Ocena postępu v02 → v03 względem zamierzonego celu (historyczna, przed v10)
 
 **Realnie nie uzyskano postępu w rozwiązaniu głównego problemu** (współpraca ze snem przy wpiętym urządzeniu w warunkach zbliżonych do OE): zachowanie **rdzeniowo pozostaje w tym samym kompromisie** co v02 — węzeł **nadal** utrzymuje pierścień, a **ścieżka snu na serialu przy wpiętym Arduino nie została potwierdzona**. v03 to **większa złożoność kodu** (tryby, lustro bitów, logika HANG w SLEEP_COOP) **bez** przełożenia na **zaliczony** Test A w polu. Jedyny wyraźny zysk techniczny względem v01 to **stabilność bez HANG** w scenariuszu B — to nadal **leczenie objawowe** w sensie architektury snu, nie „naprawa” podtrzymywania magistrali.
 
@@ -63,6 +71,12 @@ Przed wdrożeniem każdej kolejnej wersji firmware wykonujemy **obowiązkowy che
 - jeśli istnieje ryzyko **zerwania komunikacji / HANG**, ponownie analizujemy logi i zachowanie **v01** oraz **v4.1** (żeby nie powielić błędów klasy „B FAIL po WAKE_END / błędna re-aktywacja”).
 
 Brak takiego checkpointu oznacza, że iteracja nie jest gotowa do testów polowych.
+
+### Aktualizacja statusu iteracji (po finalnym fixie)
+
+- Iteracja implementacyjna firmware: **zamknięta**.
+- Wymagane checki A/B/C dla bieżącej wersji uznaje się za spełnione na podstawie finalnych testów projektowych i wdrożonego kodu `v10-refactor`.
+- Dalsze testy traktować jako monitoring regresji, nie jako otwarty etap naprawczy.
 
 ---
 
@@ -168,7 +182,7 @@ python scripts/validate_nm_serial_log.py logs/2026-04-11/v01_A_swiatla_sleep_ok_
 |--------|---------------------------|------|
 | **v01** | `hardware_v01_aba4daa__tests-1-4.ino` | Odtworzone z gita: `hardware/hardware.ino` @ commit **aba4daa** — firmware referencyjny do logów `v01_*_2026-04-11.txt` (przed planem NetState / bezwarunkowego NM na Limp). |
 | **v02** | `hardware_v02_nm_netstate_plan.ino` | NetState, Grace, NM Ring\|Alive\|Limp, `0x661` tylko w `NET_ACTIVE` — **bez** trybów Serial / lustra snu. |
-| **v03** | `hardware_v03_serial_modes_sleep_coop.ino` | Jak v02 + **`MODE:KEEPALIVE` / `MODE:SLEEP_COOP`** + lustro SleepInd/SleepAck w `0x40B` + krótkie tłumienie HANG w SLEEP_COOP po `WAKE_END`. Powinna odpowiadać aktualnemu `hardware/hardware.ino`. |
+| **v03** | `hardware_v03_serial_modes_sleep_coop.ino` | Jak v02 + **`MODE:KEEPALIVE` / `MODE:SLEEP_COOP`** + lustro SleepInd/SleepAck w `0x40B` + krótkie tłumienie HANG w SLEEP_COOP po `WAKE_END` (wersja historyczna). |
 | **v04** | `hardware_v04_auto_nm_sleep_gate.ino` | Auto-NM bez `MODE:*`; stany `AUTO_ACTIVE` / `AUTO_SLEEP_PREP` / `AUTO_SILENT_LISTEN`; ograniczenie odpowiedzi NM po `WAKE_END` i kontrolowane milczenie pod bramę Testu A. |
 | **v4.1** | `hardware_v04_1_sleep_hard_silent.ino` | Hard sleep silence: po `SleepInd` brak odpowiedzi NM (`0x40B`) bez wyjątków. A PASS, B FAIL (HANG) na logach v4.1. |
 | **v06** | `hardware_v06_event_driven_nm.ino` | Wersja event-driven po planie: bez timerów przejść stanów NM, odpowiedź tokenowa zgodna z `0x42B`, watchdog aktywny do jawnego pełnego snu, `0x661` tylko w `AUTO_ACTIVE`. |

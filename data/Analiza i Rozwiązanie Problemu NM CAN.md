@@ -21,6 +21,8 @@ Zrozumienie mechanizmów leżących u podstaw tego paradoksu wymaga dogłębnej 
 
 > **Adnotacja metodyczna (repo):** Dla spójności z pozostałymi materiałami repo przyjmujemy: (1) kanoniczną mapę `0x42B` z `data/id_ramek.txt`, (2) etykiety jakości twierdzeń: **fakt z logów**, **inferencja z kodu**, **hipoteza do potwierdzenia snifferem**. Punkt odniesienia: `logs/2026-04-11/NM_CANONICAL_BASELINE.md`.
 
+> **Aktualizacja końcowa (v10 / v10-refactor):** Problem komunikacji NM został domknięty w aktualnym `hardware/hardware.ino`. Opisane w raporcie sytuacje E1-E4 pozostają materiałem historycznym i anty-regresyjnym, ale nie reprezentują już bieżącego zachowania firmware.
+
 ## **2\. Teoretyczne podstawy protokołu OSEK/VDX Direct Network Management**
 
 Zarządzanie stanami energetycznymi w sieciach VAG PQ35 opiera się na specyfikacji OSEK/VDX (Offene Systeme und deren Schnittstellen für die Elektronik im Kraftfahrzeug / Vehicle Distributed Executive). Standard ten definiuje otwartą architekturę dla rozproszonych jednostek sterujących. W kontekście sieciowym, OSEK NM realizuje strategię Direct Network Management, która wykorzystuje mechanizm dedykowanych ramek transmisyjnych do tworzenia wirtualnego, zdecentralizowanego pierścienia logicznego (Logical Ring).1

@@ -55,6 +55,12 @@ foreach ($f in $files) {
 - **Brama B**: stabilna w v02/v03, ale regresyjna w v01/v4.1.
 - **Brama C**: wymaga równoległego sniffera do twardego werdyktu.
 
+## Domknięcie po wersji finalnej (`v10` / `v10-refactor`)
+
+- Bieżące `hardware/hardware.ino` traktujemy jako build domykający problem komunikacji NM.
+- Baseline `v01-v05` pozostaje materiałem historycznym (mapa porażek i kompromisów), nie aktualnym statusem produktu.
+- Bramy A->B->C pozostają obowiązkowe jako polityka anty-regresyjna dla przyszłych modyfikacji firmware.
+
 ## Warunek wejścia do kolejnej iteracji
 
 Nowy firmware przechodzi dalej tylko, jeśli:

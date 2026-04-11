@@ -269,7 +269,7 @@ W projekcie (aktualnie **v04 Auto-NM**) zastosowano strategię **sleep-first**:
 
 **Konsekwencja dla walidacji:** bramą sukcesu jest teraz Test A (`sleep-path`) na logu z podłączonym Arduino. Dopiero po przejściu tej bramy interpretujemy Test B/C jako wynik produktowy (nie tylko regresję techniczną). Szczegóły i aktualny status: **`logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md`**.
 
-Checklista testów A/B/C: **`logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md`** (kanoniczna kopia przy logach; skrypt: `scripts/validate_nm_serial_log.py`).
+Checklista testów A/B/C: **`logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md`** (kanoniczna kopia przy logach; walidacja ręczna na podstawie logów i snapshotów).
 
 Archiwum ponumerowanych szkiców przy logach: **`hardware_v01_aba4daa__tests-1-4.ino`**, **`hardware_v02_nm_netstate_plan.ino`**, **`hardware_v03_serial_modes_sleep_coop.ino`** i **`hardware_v04_auto_nm_sleep_gate.ino`** w `logs/2026-04-11/`.
 

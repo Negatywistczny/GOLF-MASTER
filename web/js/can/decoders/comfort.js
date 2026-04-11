@@ -335,6 +335,8 @@ export function decodeClima1Data(id, hexData, cardElement) {
     // --- Temperatura Zewnętrzna (Podszybie) ---
     if (fullData.CL1_AussenTemp > 77) {
         html += `<div class="ind active-error full-width">TEMP. ZEWN: BŁĄD CZUJNIKA</div>`;
+    } else if (fullData.CL1_AussenTemp <= -49.5) {
+        html += `<div class="ind full-width">TEMP. ZEWN: INICJALIZACJA / BRAK DANYCH</div>`;
     } else {
         html += `<div class="ind active-blue full-width">TEMP. ZEWN: ${fullData.CL1_AussenTemp.toFixed(1)} °C</div>`;
     }
@@ -376,9 +378,11 @@ export function decodeClima2Data(id, hexData, cardElement) {
     let html = ``;
 
     // --- Temperatura wnętrza ---
-    // Surowe 255 = Fehler; po ×0,5−50 wychodzi poza zakres −50…77 °C (id_ramek)
+    // Surowe 255 = Fehler; surowe 0 daje wartość graniczną -50 (init/brak danych)
     if (fullData.CL2_InnenTemp > 76) {
         html += `<div class="ind active-error full-width">TEMP. WNĘTRZA: BŁĄD CZUJNIKA</div>`;
+    } else if (fullData.CL2_InnenTemp <= -49.5) {
+        html += `<div class="ind full-width">TEMP. WNĘTRZA: INICJALIZACJA / BRAK DANYCH</div>`;
     } else {
         html += `<div class="ind active-blue full-width">TEMP. WNĘTRZA: ${fullData.CL2_InnenTemp.toFixed(1)} °C</div>`;
     }

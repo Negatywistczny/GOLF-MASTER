@@ -913,8 +913,8 @@ const signalMeta = Object.freeze({
     "CL1_AussenTemp": {
         label: "Temperatura powietrza zasysanego (Surowa)",
         unit: " °C",
-        states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" },
-        stateTags: { 255: "error", 77.5: "error" }
+        states: { [-50]: "INICJALIZACJA / BRAK DANYCH", 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" },
+        stateTags: { [-50]: "info", 255: "error", 77.5: "error" }
     },
     "CL1_KaeltemittelDruck": {
         label: "Ciśnienie czynnika chłodniczego",
@@ -995,8 +995,8 @@ const signalMeta = Object.freeze({
     "CL2_InnenTemp": {
         label: "Temperatura wewnątrz pojazdu",
         unit: " °C",
-        states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" },
-        stateTags: { 255: "error", 77.5: "error" }
+        states: { [-50]: "INICJALIZACJA / BRAK DANYCH", 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" },
+        stateTags: { [-50]: "info", 255: "error", 77.5: "error" }
     },
     "CL2_SitzH_links": { label: "Podgrzewanie fotela kierowcy (Poziom)", unit: "" },
     "CL2_SitzH_rechts": { label: "Podgrzewanie fotela pasażera (Poziom)", unit: "" },
@@ -1440,14 +1440,14 @@ const signalMeta = Object.freeze({
     "GWK_AussenTemp_gefiltert": {
         label: "Temperatura zewnętrzna (FIS)",
         unit: " °C",
-        states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" },
-        stateTags: { 255: "error", 77.5: "error" }
+        states: { [-50]: "INICJALIZACJA / BRAK DANYCH", 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" },
+        stateTags: { [-50]: "info", 255: "error", 77.5: "error" }
     },
     "GWK_AussenTemp_ungefiltert": {
         label: "Temperatura zewnętrzna (Surowa)",
         unit: " °C",
-        states: { 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" },
-        stateTags: { 255: "error", 77.5: "error" }
+        states: { [-50]: "INICJALIZACJA / BRAK DANYCH", 255: "BŁĄD SENSORA", 77.5: "BŁĄD SENSORA" },
+        stateTags: { [-50]: "info", 255: "error", 77.5: "error" }
     },
     "GWK_AussenTemp_Fehler": {
         label: "Czujnik temp. zewnętrznej",
@@ -1583,8 +1583,8 @@ const signalMeta = Object.freeze({
     "MO7_Oeltemperatur": {
         label: "Temperatura oleju silnikowego",
         unit: " °C",
-        states: { 0: "Brak czujnika", 1: "Inicjalizacja", 255: "BŁĄD CZUJNIKA", 195: "BŁĄD CZUJNIKA" },
-        stateTags: { 0: "idle", 1: "info", 255: "error", 195: "error" }
+        states: { 0: "Brak czujnika", 1: "Inicjalizacja", [-60]: "Brak czujnika", [-59]: "Inicjalizacja", 255: "BŁĄD CZUJNIKA", 195: "BŁĄD CZUJNIKA" },
+        stateTags: { 0: "idle", 1: "info", [-60]: "idle", [-59]: "info", 255: "error", 195: "error" }
     },
 
     // ==========================================
@@ -1663,8 +1663,8 @@ const signalMeta = Object.freeze({
     "BS2_U_BATT": {
         label: "Napięcie akumulatora (Bordnetz)",
         unit: " V",
-        states: { 255: "BŁĄD DANYCH" },
-        stateTags: { 255: "error" }
+        states: { 255: "BŁĄD DANYCH", 17.75: "BŁĄD DANYCH" },
+        stateTags: { 255: "error", 17.75: "error" }
     }, 
     "BS2_Heckscheibe_aus": { label: "Żądanie wyłączenia ogrz. szyby tył", states: { 0: "Brak żądania", 1: "WYŁĄCZ ODBIORNIK" }, stateTags: { 0: "idle", 1: "warning" } }, 
     "BS2_Frontscheibe_aus": { label: "Żądanie wyłączenia ogrz. szyby przód", states: { 0: "Brak żądania", 1: "WYŁĄCZ ODBIORNIK" }, stateTags: { 0: "idle", 1: "warning" } }, 
@@ -1681,8 +1681,8 @@ const signalMeta = Object.freeze({
     "BS2_U_Start_BATT": {
         label: "Napięcie akumulatora rozruchowego",
         unit: " V",
-        states: { 255: "BŁĄD DANYCH" },
-        stateTags: { 255: "error" }
+        states: { 255: "BŁĄD DANYCH", 17.75: "BŁĄD DANYCH" },
+        stateTags: { 255: "error", 17.75: "error" }
     }, 
     "BS2_Lastman_aktiv": { label: "Zarządzanie obciążeniem włączone", states: { 0: "Nie", 1: "TAK" }, stateTags: { 0: "idle", 1: "info" } }, 
     "BS2_Verbr_ab_aktiv": { label: "Wyłączenie odbiorników aktywne", states: { 0: "Nie", 1: "TAK" }, stateTags: { 0: "idle", 1: "info" } }, 
@@ -3550,6 +3550,8 @@ function decodeClima1Data(id, hexData, cardElement) {
     // --- Temperatura Zewnętrzna (Podszybie) ---
     if (fullData.CL1_AussenTemp > 77) {
         html += `<div class="ind active-error full-width">TEMP. ZEWN: BŁĄD CZUJNIKA</div>`;
+    } else if (fullData.CL1_AussenTemp <= -49.5) {
+        html += `<div class="ind full-width">TEMP. ZEWN: INICJALIZACJA / BRAK DANYCH</div>`;
     } else {
         html += `<div class="ind active-blue full-width">TEMP. ZEWN: ${fullData.CL1_AussenTemp.toFixed(1)} °C</div>`;
     }
@@ -3591,9 +3593,11 @@ function decodeClima2Data(id, hexData, cardElement) {
     let html = ``;
 
     // --- Temperatura wnętrza ---
-    // Surowe 255 = Fehler; po ×0,5−50 wychodzi poza zakres −50…77 °C (id_ramek)
+    // Surowe 255 = Fehler; surowe 0 daje wartość graniczną -50 (init/brak danych)
     if (fullData.CL2_InnenTemp > 76) {
         html += `<div class="ind active-error full-width">TEMP. WNĘTRZA: BŁĄD CZUJNIKA</div>`;
+    } else if (fullData.CL2_InnenTemp <= -49.5) {
+        html += `<div class="ind full-width">TEMP. WNĘTRZA: INICJALIZACJA / BRAK DANYCH</div>`;
     } else {
         html += `<div class="ind active-blue full-width">TEMP. WNĘTRZA: ${fullData.CL2_InnenTemp.toFixed(1)} °C</div>`;
     }
@@ -4580,9 +4584,11 @@ function decodeGWKombiData(id, hexData, cardElement) {
     }
 
     // --- Temperatura zewnętrzna (FIS, gefiltert) ---
-    // Surowe 255 = Fehler; po ×0,5−50 poza zakresem −50…77 °C (id_ramek)
+    // Surowe 255 = Fehler; surowe 0 daje -50 (init/brak danych)
     if (fullData.GWK_AussenTemp_Fehler === 1 || fullData.GWK_AussenTemp_gefiltert > 76) {
         html += `<div class="ind active-error">TEMP: BŁĄD CZUJNIKA</div>`;
+    } else if (fullData.GWK_AussenTemp_gefiltert <= -49.5) {
+        html += `<div class="ind">TEMP: INICJALIZACJA / BRAK DANYCH</div>`;
     } else {
         html += `<div class="ind active-blue">TEMP: ${fullData.GWK_AussenTemp_gefiltert.toFixed(1)} °C</div>`;
     }

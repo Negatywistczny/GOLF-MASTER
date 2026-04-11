@@ -15,7 +15,7 @@ Reguły werdyktu końcowego:
 - PASS skryptu + FAIL systemowy = FAIL końcowy.
 - Urwanie komunikacji bez `ERR:CAN:HANG` = FAIL krytyczny (maskowanie awarii).
 
-## Komenda bazowa
+## Komenda bazowa (archiwum)
 
 ```powershell
 $files = Get-ChildItem "logs/2026-04-11" -Filter "v*.txt" | Sort-Object Name
@@ -24,7 +24,7 @@ foreach ($f in $files) {
   elseif ($f.Name -match "_B_") { $checks = @("--check","no-hang","--check","resilience") }
   elseif ($f.Name -match "_C_") { $checks = @("--check","no-hang") }
   else { $checks = @("--check","no-hang") }
-  python scripts/validate_nm_serial_log.py "$($f.FullName)" @checks
+  # historycznie używano skryptu validate_nm_serial_log.py (obecnie wycofany)
 }
 ```
 
@@ -60,6 +60,7 @@ foreach ($f in $files) {
 - Bieżące `hardware/hardware.ino` traktujemy jako build domykający problem komunikacji NM.
 - Baseline `v01-v05` pozostaje materiałem historycznym (mapa porażek i kompromisów), nie aktualnym statusem produktu.
 - Bramy A->B->C pozostają obowiązkowe jako polityka anty-regresyjna dla przyszłych modyfikacji firmware.
+- Walidator skryptowy został usunięty; bieżąca ocena jest wykonywana ręcznie na logach.
 
 ## Warunek wejścia do kolejnej iteracji
 

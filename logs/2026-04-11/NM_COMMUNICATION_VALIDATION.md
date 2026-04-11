@@ -122,19 +122,18 @@ Brak takiego checkpointu oznacza, że iteracja nie jest gotowa do testów polowy
 | `no-hang` | `v01_A_*` OK; `v01_B_*` FAIL | `v02_*` OK | `v03_*` OK dla B/C | **v4.1: A OK / B FAIL** |
 | Ustawienie bez flash | — | — | `MODE:*` po Serialu | Auto-NM (brak `MODE:*`) |
 
-### Skrypt walidacji
+### Walidacja ręczna (stan obecny)
 
-- Ścieżka: `scripts/validate_nm_serial_log.py` (z katalogu głównego repo).
-- Dla **v02/v03** checki `no-hang` + `resilience` traktuj jako regresję techniczną (bez wnioskowania o śnie).
-- Dla **v04** obowiązuje brama: najpierw `sleep-path` na logu `v04_A_*`, dopiero potem `v04_B_*` / `v04_C_*`.
-- **Fixture CI / smoke:** `scripts/fixtures/nm_min_sleep_path.txt` — minimalny syntetyczny log; `python scripts/validate_nm_serial_log.py scripts/fixtures/nm_min_sleep_path.txt --check sleep-path --check no-hang` musi zwracać `OK`.
-- Pełny **`sleep-path`** na materiale rzeczywistym: logi **v01** (`v01_A_*_sleep_ok_2026-04-11.txt`) lub nagranie **bez** podtrzymującego węzła.
+- Walidator skryptowy został wycofany z repo (nie jest już wymagany do procesu).
+- Dla **v02/v03** ocena `no-hang` i `resilience` pozostaje historyczną regresją techniczną (bez wnioskowania o śnie).
+- Dla **v04+** nadal obowiązuje ta sama logika bram: najpierw A (domknięcie sleep-path), potem B/C.
+- Pełny **`sleep-path`** oceniamy bezpośrednio na materiale rzeczywistym: logi **v01** (`v01_A_*_sleep_ok_2026-04-11.txt`) lub nagranie **bez** podtrzymującego węzła.
 
-### Test B: skrypt vs intencja magistrali
+### Test B: warstwa techniczna vs intencja magistrali
 
-1. **Warstwa skryptu** (`--check no-hang --check resilience`): sprawdza wyłącznie, czy **nie ma** `ERR:CAN:HANG` i czy **po ostatnim** `SYS:CAN:WAKE_END` nadal jest w logu **wystarczająco dużo** ruchu (regresja względem **v01**, gdzie pierścień się rwał i pojawiał się HANG). To jest **minimalny test techniczny** — „czy telemetria się nie wywala”.
-2. **Warstwa merytoryczna (produkt / OE):** jeśli uznajesz za właściwe, żeby magistrala **nie była bez końca podtrzymywana** przez wpięty węzeł odpowiadający na każdy token NM, to **sam wynik OK ze skryptu nie znaczy sukcesu scenariusza B w pełnym sensie**. Nadal działa **świadomy kompromis** v02/v03 **KEEPALIVE** (i częściowo **SLEEP_COOP**, dopóki węzeł aktywnie uczestniczy w pierścieniu): **leczenie objawowe** — usuwasz HANG i utrzymujesz pierścień, **bez** rozwiązania problemu „jak fabryczne radio + sen przy wpiętym urządzeniu”.  
-   **W praktyce:** możesz traktować Test B jako **zaliczony technicznie** (skrypt) i **niezaliczony** pod kątem docelowej architektury snu — obie oceny są spójne z tym dokumentem.
+1. **Warstwa techniczna:** sprawdza wyłącznie, czy **nie ma** `ERR:CAN:HANG` i czy **po ostatnim** `SYS:CAN:WAKE_END` nadal jest w logu **wystarczająco dużo** ruchu (regresja względem **v01**, gdzie pierścień się rwał i pojawiał się HANG). To jest **minimalny test techniczny** — „czy telemetria się nie wywala”.
+2. **Warstwa merytoryczna (produkt / OE):** jeśli uznajesz za właściwe, żeby magistrala **nie była bez końca podtrzymywana** przez wpięty węzeł odpowiadający na każdy token NM, to **sam wynik techniczny nie znaczy sukcesu scenariusza B w pełnym sensie**. Nadal działa **świadomy kompromis** v02/v03 **KEEPALIVE** (i częściowo **SLEEP_COOP**, dopóki węzeł aktywnie uczestniczy w pierścieniu): **leczenie objawowe** — usuwasz HANG i utrzymujesz pierścień, **bez** rozwiązania problemu „jak fabryczne radio + sen przy wpiętym urządzeniu”.  
+   **W praktyce:** możesz traktować Test B jako **zaliczony technicznie** i **niezaliczony** pod kątem docelowej architektury snu — obie oceny są spójne z tym dokumentem.
 
 ## Ważne: polityka NM a pełna sekwencja snu (Test A)
 
@@ -155,21 +154,10 @@ Checki **`no-hang`** i **`resilience`** dla **KEEPALIVE** (i częściowo **SLEEP
 
 Implementacja w repozytorium to tylko część pracy — **zamknięcie w sensie produktowym** wymaga jasnego **wyboru celu** (telemetria vs sen przy wpiętym węźle). Przy celu „**nie zakłamywać** wyniku sztucznym podtrzymaniem” przyjmuje się **bramę**: **najpierw Test A / uśpienie** — patrz [Wnioski ostateczne](#wnioski-ostateczne-stan-na-2026-04-11).
 
-1. **Scenariusz A (`sleep-path`) — brama (gdy ten cel ma znaczenie):** log z wpiętym urządzeniem i przyjętą polityką firmware; walidator: `--check sleep-path` (+ `--check no-hang`). **Bez sensownego przejścia tej bramy** wyniki testów B/C **nie** świadczą o „właściwości” pełnego cyklu magistrali — jedynie o regresji technicznej (HANG, pompa).
-2. **Scenariusz B (warstwa techniczna, opcjonalna po bramie):** jak dotąd — `WAKE_START` → `WAKE_END` → impulsy. W v04 nie ma `MODE:*`; firmware działa w Auto-NM. Walidator:
-
-```text
-python scripts/validate_nm_serial_log.py TWOJ_LOG_B.txt --check no-hang --check resilience
-```
-
-   **Osobno oceń** warstwę merytoryczną — [Test B: skrypt vs intencja magistrali](#test-b-skrypt-vs-intencja-magistrali).
+1. **Scenariusz A (`sleep-path`) — brama (gdy ten cel ma znaczenie):** log z wpiętym urządzeniem i przyjętą polityką firmware. **Bez sensownego przejścia tej bramy** wyniki testów B/C **nie** świadczą o „właściwości” pełnego cyklu magistrali — jedynie o regresji technicznej (HANG, pompa).
+2. **Scenariusz B (warstwa techniczna, opcjonalna po bramie):** jak dotąd — `WAKE_START` → `WAKE_END` → impulsy. W v04 nie ma `MODE:*`; firmware działa w Auto-NM.
+   **Osobno oceń** warstwę merytoryczną — [Test B: warstwa techniczna vs intencja magistrali](#test-b-warstwa-techniczna-vs-intencja-magistrali).
 3. **Scenariusz C** — jak dotąd; sens **ograniczony** bez wcześniejszej bramy snu, jeśli taka brama jest częścią Twojej definicji sukcesu.
-
-Opcjonalnie pełne trzy checki na starym materiale:
-
-```text
-python scripts/validate_nm_serial_log.py logs/2026-04-11/v01_A_swiatla_sleep_ok_2026-04-11.txt
-```
 
 **Archiwum logów (v01):**
 

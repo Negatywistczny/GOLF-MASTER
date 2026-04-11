@@ -53,9 +53,11 @@ export function decodeGWKombiData(id, hexData, cardElement) {
     }
 
     // --- Temperatura zewnętrzna (FIS, gefiltert) ---
-    // Surowe 255 = Fehler; po ×0,5−50 poza zakresem −50…77 °C (id_ramek)
+    // Surowe 255 = Fehler; surowe 0 daje -50 (init/brak danych)
     if (fullData.GWK_AussenTemp_Fehler === 1 || fullData.GWK_AussenTemp_gefiltert > 76) {
         html += `<div class="ind active-error">TEMP: BŁĄD CZUJNIKA</div>`;
+    } else if (fullData.GWK_AussenTemp_gefiltert <= -49.5) {
+        html += `<div class="ind">TEMP: INICJALIZACJA / BRAK DANYCH</div>`;
     } else {
         html += `<div class="ind active-blue">TEMP: ${fullData.GWK_AussenTemp_gefiltert.toFixed(1)} °C</div>`;
     }

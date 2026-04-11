@@ -33,6 +33,18 @@ Nie wolno ponownie wprowadzać wzorców błędów znanych z poprzednich iteracji
 2. przejście `WAKE_END -> kolejne wybudzenie` działa poprawnie stanowo,
 3. poprawka snu nie degraduje stabilności, a poprawka stabilności nie degraduje snu.
 
+### Krytyczny warunek watchdoga (obowiązkowy)
+
+Watchdog (`ERR:CAN:HANG`) może być **uśpiony / wygaszony wyłącznie** po otrzymaniu **jawnej informacji o pełnym uśpieniu magistrali**. Ten warunek jest jedyną poprawną definicją pełnego snu i **żaden inny stan pośredni** (np. `AUTO_SLEEP_PREP`, `AUTO_SILENT_LISTEN`, cisza po `WAKE_END`, brak ramek chwilowo) **nie może** wyłączać watchdoga.
+
+### Zasady projektowe NM (obowiązkowe)
+
+1. **Przejścia stanów NM są wyłącznie zdarzeniowe** — zmiana stanu jest dozwolona tylko po jawnym zdarzeniu z magistrali (ramka/sygnał), nie na podstawie upływu czasu.
+2. **Zakaz timerów sterujących logiką stanów** — timery nie mogą inicjować ani wymuszać przejść `AUTO_ACTIVE` / `AUTO_SLEEP_PREP` / `AUTO_SILENT_LISTEN`.
+3. **Priorytet sygnału nad predykcją** — decyzje o stanie i odpowiedzi NM muszą wynikać z aktualnie odebranych danych (`0x42B`, Sleep/Token), a nie z domyślania się zachowania Gatewaya.
+4. **Watchdog jest jedynym wyjątkiem czasowym** — próg czasowy może być używany wyłącznie do wykrywania utraty komunikacji (`ERR:CAN:HANG`), nie do sterowania polityką NM.
+5. **Próg 2 s pozostaje tymczasowo bez zmian** — obecnie nie jest to przedmiot tej iteracji; krytyczny jest brak maskowania zerwania komunikacji.
+
 ### Reguła analizy przed zmianą polityki NM (obowiązkowa)
 
 Przed wdrożeniem każdej kolejnej wersji firmware wykonujemy **obowiązkowy checkpoint porównawczy**:

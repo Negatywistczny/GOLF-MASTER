@@ -30,11 +30,6 @@ const unsigned long INTERVAL_TJA_ERR_LOG = 5000;
 
 const long CAN_ID_RADIO_STATUS = 0x661;
 const long CAN_ID_SNIFFER_IGNORE_A = 0x531;
-const long CAN_ID_CLUSTER_STATUS = 0x351;
-const long CAN_ID_STATUS_B = 0x651;
-const long CAN_ID_STATUS_C = 0x65D;
-const long CAN_ID_STATUS_D = 0x65F;
-const long CAN_ID_SLEEP_PREP = 0x557;
 
 MCP_CAN CAN0(SPI_CS_PIN);
 
@@ -43,7 +38,7 @@ MCP_CAN CAN0(SPI_CS_PIN);
 unsigned long lastSendTime = 0;
 // Ostatni czas ramki Gateway NM do nas (0x42B→0x0B) — tylko to liczy się do ERR:CAN:HANG i kasowania latcha.
 unsigned long lastGwSelfNmMs = 0;
-// Ostatni bajt 2 z ramki Alive 0x42B→0x0B (nie aktualizowany przy Ring). Bit 0x80 = okno aktywności Infotainment (jak Faza 4).
+// Ostatni bajt 2 z ramki Alive 0x42B→0x0B (nie aktualizowany przy Ring), pomocniczo do diagnostyki.
 byte lastWakeCauseByte = 0x00;
 bool isHanging = false;
 // Flaga tylko dla watchdoga HANG: true po SLEEP_IND, false po Alive.
@@ -65,19 +60,6 @@ bool isDiagFrame(uint32_t id) {
   if (id == 0x300) return true;                // TP 2.0 RX
   if (id >= 0x700 && id <= 0x7FF) return true; // UDS/KWP
   return false;
-}
-
-void maybeExitPassiveStateOnFrame(uint32_t id) {
-  bool isAllowedPassiveId = id == NM_GATEWAY_ID
-      || id == CAN_ID_STATUS_C
-      || id == CAN_ID_STATUS_D
-      || id == CAN_ID_STATUS_B
-      || id == CAN_ID_CLUSTER_STATUS
-      || id == CAN_ID_SLEEP_PREP;
-  if (!isBusActive && !isAllowedPassiveId) {
-    isBusActive = true;
-    Serial.println(F("SYS:CAN:WAKE_START"));
-  }
 }
 
 bool isDelta(uint32_t id, uint8_t len, uint8_t *data) {
@@ -132,9 +114,6 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
       uint32_t wakeCombo = (uint32_t)buf[2] | ((uint32_t)buf[3] << 8) | ((uint32_t)buf[4] << 16);
       static uint32_t prevWakeCombo = 0;
       if (prevWakeCombo == 0 && wakeCombo != 0) {
-        if (!isBusActive) {
-          Serial.println(F("SYS:CAN:BUS_ACTIVE:WAKE"));
-        }
         Serial.println(F("SYS:CAN:WAKE_START"));
         isBusActive = true;
       } else if (prevWakeCombo != 0 && wakeCombo == 0) {
@@ -145,12 +124,10 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
     }
   }
 
-  if (buf[0] == NM_NODE_SELF && (lastWakeCauseByte & 0x80)) {
-    if (cmdLo == NM_CMD_ALIVE || cmdLo == NM_CMD_RING) {
-      unsigned char txBuf[6] = {(unsigned char)NEXT_NODE_ID, NM_CMD_ALIVE, 0, 0, 0, 0};
-      if (buf[1] & NM_MASK_LIMP) txBuf[1] = NM_CMD_RING;
-      CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
-    }
+  if (buf[0] == NM_NODE_SELF && isBusActive && (cmdLo == NM_CMD_ALIVE || cmdLo == NM_CMD_RING)) {
+    unsigned char txBuf[6] = {(unsigned char)NEXT_NODE_ID, NM_CMD_ALIVE, 0, 0, 0, 0};
+    if (buf[1] & NM_MASK_LIMP) txBuf[1] = NM_CMD_RING;
+    CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
   }
 }
 
@@ -238,18 +215,16 @@ void loop() {
 
   while (!digitalRead(CAN_INT_PIN)) {
     if (CAN0.readMsgBuf(&rxId, &len, rxBuf) == CAN_OK) {
-      maybeExitPassiveStateOnFrame((uint32_t)rxId);
       handleGatewayNm((uint32_t)rxId, rxBuf, len);
 
-      if (rxId != CAN_ID_SNIFFER_IGNORE_A && rxId != CAN_ID_RADIO_STATUS && rxId != NM_ARDUINO_ID) {
-        if (isDiagFrame(rxId) || isDelta(rxId, len, rxBuf)) {
-          Serial.print(F("0x")); Serial.print(rxId, HEX); Serial.print(F(":"));
-          for (int i = 0; i < len; i++) {
-            if (rxBuf[i] < 0x10) Serial.print(F("0"));
-            Serial.print(rxBuf[i], HEX); if (i < len - 1) Serial.print(F(" "));
-          }
-          Serial.println();
+      if (rxId != CAN_ID_SNIFFER_IGNORE_A && rxId != CAN_ID_RADIO_STATUS && rxId != NM_ARDUINO_ID
+          && (isDiagFrame(rxId) || isDelta(rxId, len, rxBuf))) {
+        Serial.print(F("0x")); Serial.print(rxId, HEX); Serial.print(F(":"));
+        for (int i = 0; i < len; i++) {
+          if (rxBuf[i] < 0x10) Serial.print(F("0"));
+          Serial.print(rxBuf[i], HEX); if (i < len - 1) Serial.print(F(" "));
         }
+        Serial.println();
       }
     }
     CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00);
@@ -261,7 +236,7 @@ void loop() {
     isHanging = true;
   }
 
-  if ((lastWakeCauseByte & 0x80) && (millis() - lastSendTime >= INTERVAL_RADIO_PUMP)) {
+  if (isBusActive && (millis() - lastSendTime >= INTERVAL_RADIO_PUMP)) {
     lastSendTime = millis();
     unsigned char stRadio[8] = {0x01, 0x01, 0x10, 0, 0, 0, 0, 0};
     CAN0.sendMsgBuf(CAN_ID_RADIO_STATUS, 0, 8, stRadio);

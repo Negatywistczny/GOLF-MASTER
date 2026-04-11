@@ -1,7 +1,7 @@
 /*
  * hardware v02 — plan NM / NetState (Grace, SleepReady), odpowiedź NM na Ring|Alive|Limp bez gatingu isBusActive,
  * pompa 0x661 tylko w NET_ACTIVE. Kopia roboczego hardware/hardware.ino w momencie archiwizacji.
- * Porównanie: hardware_v01_aba4daa__tests-1-4.ino (firmware przy logach test1–4).
+ * Porównanie: hardware_v01_aba4daa__tests-1-4.ino (firmware przy logach `v01_*_2026-04-11.txt`).
  */
 #include <SPI.h>
 #include <mcp_can.h>

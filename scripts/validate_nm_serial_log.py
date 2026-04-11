@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """
 Walidacja logów seriala z firmware PQ35 (zdarzenia SYS:CAN:* + ramki 0x42B).
+Linie zaczynające się od „#” są pomijane — opisy PROBLEM/ZDARZENIA/notatki końcowe zapisuj jako komentarz.
+Checki no-hang / resilience (Test B) to regresja techniczna względem v01 (HANG); nie oznaczają „właściwego” snu magistrali przy wpiętym węźle — patrz NM_COMMUNICATION_VALIDATION.md.
 
 Przykłady:
-  python scripts/validate_nm_serial_log.py logs/2026-04-11/test4.txt --check sleep-path --check no-hang
-  python scripts/validate_nm_serial_log.py logs/2026-04-11/test1.txt --check no-hang
+  python scripts/validate_nm_serial_log.py logs/2026-04-11/v01_A_swiatla_sleep_ok_2026-04-11.txt --check sleep-path --check no-hang
+  python scripts/validate_nm_serial_log.py logs/2026-04-11/v01_B_zamek_hang_2026-04-11.txt --check no-hang
+  python scripts/validate_nm_serial_log.py scripts/fixtures/nm_min_sleep_path.txt --check sleep-path --check no-hang
 """
 
 from __future__ import annotations
@@ -15,8 +18,9 @@ import sys
 from pathlib import Path
 
 
-RE_SYS = re.compile(
-    r"SYS:CAN:(WAKE_START|WAKE_END|SLEEP_IND)|ERR:CAN:HANG"
+# Pełna linia — unikamy RE.search() na polach PROBLEM / szablonie z tekstem „ERR:CAN:HANG”.
+RE_SYS_LINE = re.compile(
+    r"^(?:SYS:CAN:(WAKE_START|WAKE_END|SLEEP_IND)|ERR:CAN:HANG)\s*$"
 )
 RE_42B = re.compile(r"^0x42[bB]:([0-9A-Fa-f\s]+)$")
 
@@ -38,9 +42,11 @@ def parse_log(path: Path) -> dict:
     with path.open(encoding="utf-8", errors="replace") as f:
         for i, raw in enumerate(f, start=1):
             line = raw.strip()
-            m = RE_SYS.search(line)
+            if line.startswith("#"):
+                continue
+            m = RE_SYS_LINE.match(line)
             if m:
-                if "ERR:CAN:HANG" in line:
+                if line.startswith("ERR:CAN:HANG"):
                     sys_events.append((i, "HANG"))
                 else:
                     sys_events.append((i, m.group(1)))

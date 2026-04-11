@@ -10,8 +10,8 @@ SYS:CAN:WAKE_START
 0x65F:00 00 00 00 00 57 56 57
 0x651:80 03 59 AF 29 48
 0x621:00 90 6D 00 00
-0x575:00 20 00 80  # swiatla (test4): stan przed impulsem
-0x575:10 20 00 80  # swiatla (test4): impuls migniecia dlugimi
+0x575:00 20 00 80  # swiatla (v01_A_swiatla_sleep_ok): stan przed impulsem
+0x575:10 20 00 80  # swiatla (v01_A_swiatla_sleep_ok): impuls migniecia dlugimi
 0x42B:0B 02 80 02 00 00
 0x351:01 00 00 00 00 00 00 00
 0x42B:0B 01 00 00 00 00

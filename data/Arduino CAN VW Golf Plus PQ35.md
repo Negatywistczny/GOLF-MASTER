@@ -62,6 +62,10 @@ Aby Arduino mogło skutecznie "oszukać" Gateway i utrzymać magistralę w stani
 W powyższych schematach pierwszy bajt danych wysyłany przez Arduino (0x2B) jest adresem następcy. W najprostszej konfiguracji, gdzie w sieci Infotainment aktywne są tylko Gateway i Arduino, token krąży bezpośrednio między nimi dwoma. Jeśli jednak w aucie zamontowane są inne aktywne moduły (np. fabryczny moduł Bluetooth lub wzmacniacz DSP), Arduino musi dynamicznie uczyć się struktury pierścienia. OSEK NM definiuje, że następcą węzła jest węzeł o najniższym Node ID wyższym od aktualnego; jeśli aktualny węzeł ma najwyższe ID w sieci, token wraca do węzła o najniższym ID.  
 Kolejnym istotnym elementem jest obsługa bitów statusowych. Jeśli Gateway wysyła w bajcie 2 wartość 0x80 lub 0x02 (jak w przykładach użytkownika), są to dane specyficzne dla aplikacji VAG, często informujące o przyczynie wybudzenia (np. zacisk 15, kontakt drzwiowy). Arduino powinno w swoich odpowiedziach dążyć do zachowania bajtów 2-5 jako wyzerowanych, chyba że specyficzna funkcja wymaga zgłoszenia gotowości do uśpienia.
 
+### **Uzupełnienie v03 (implementacja w repozytorium)**
+
+W bieżącym szkicu `hardware/hardware.ino` (wersja **v03**) dodano przełączanie po Serialu (115200, linia zakończona Enter): **`MODE:KEEPALIVE`** — zachowanie jak wcześniejsza iteracja „zawsze utrzymuj pierścień”; **`MODE:SLEEP_COOP`** — w odpowiedzi **`0x40B`** kopiowane są z ramki Gatewaya **`0x42B`** bity **SleepInd** i **SleepAck** w **bajcie 1** (układ jak sygnały **NWM_Radio** w `id_ramek_tylko_radio.txt`, spójny z `mNM_Gateway_I`). Celem jest zbliżenie się do zgłaszania gotowości do snu bez rekompilacji; skutek na żywej magistrali zależy od pojazdu i pozostałych węzłów. Checklista testów i archiwum wersji: `logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md`.
+
 ## **Fizyczna Warstwa Komunikacji i Dobór Komponentów Arduino**
 
 Implementacja odczytu danych CAN w Volkswagenie Golf Plus 2006 wymaga precyzyjnego doboru sprzętu, ze względu na specyfikę magistrali Low-Speed (100 kbit/s). Standardowe moduły CAN dla Arduino, oparte na układzie MCP2515 połączonym z transiwerem TJA1050, są zaprojektowane dla magistral High-Speed (ISO 11898-2). Choć w warunkach laboratoryjnych TJA1050 potrafi odczytać dane z magistrali Low-Speed, nie jest to rozwiązanie zalecane do długotrwałej pracy w pojeździe.  
@@ -263,7 +267,7 @@ W projekcie zastosowano strategię **bez aktywnego podtrzymywania magistrali po 
 
 Checklista testów A/B/C: **`logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md`** (kanoniczna kopia przy logach; skrypt: `scripts/validate_nm_serial_log.py`).
 
-Archiwum ponumerowanych szkiców przy logach: **`hardware_v01_aba4daa__tests-1-4.ino`** (baseline pod test1–4) i **`hardware_v02_nm_netstate_plan.ino`** (plan NetState) w `logs/2026-04-11/`.
+Archiwum ponumerowanych szkiców przy logach: **`hardware_v01_aba4daa__tests-1-4.ino`** (baseline pod logi `v01_*_2026-04-11.txt`) i **`hardware_v02_nm_netstate_plan.ino`** (plan NetState; logi `v02_*_2026-04-11.txt`) w `logs/2026-04-11/`.
 
 #### **Cytowane prace**
 

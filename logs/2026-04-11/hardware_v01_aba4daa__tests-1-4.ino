@@ -1,5 +1,5 @@
 /*
- * hardware v01 — firmware użyty / referencyjny dla logów test1–test4 (PQ35 NM).
+ * hardware v01 — firmware użyty / referencyjny dla logów `v01_*_2026-04-11.txt` (PQ35 NM).
  * Źródło: git commit aba4daa (Hardware: remove heuristic wake path and simplify NM state flow.)
  * Plik archiwum: hardware_v01_aba4daa__tests-1-4.ino (hardware/hardware.ino @ git aba4daa)
  * Różnica względem v02: brak NetState / Grace / bezwarunkowej odpowiedzi NM na Limp; NM tylko przy isBusActive + Ring/Alive.

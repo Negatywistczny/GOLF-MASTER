@@ -1,3 +1,8 @@
+/*
+ * hardware v03 — tryby Serial: MODE:KEEPALIVE (domyślny, jak v02) / MODE:SLEEP_COOP
+ * (lustro SleepInd/SleepAck z 0x42B w bajcie 1 ramki 0x40B wg układu NWM_Radio w id_ramek_tylko_radio.txt).
+ * Kopia roboczego hardware/hardware.ino z momentu tagowania v03.
+ */
 #include <SPI.h>
 #include <mcp_can.h>
 
@@ -303,7 +308,7 @@ void loop() {
     intFrames++;
     handleGatewayNm((uint32_t)rxId, rxBuf, len);
 
-    if (rxId != CAN_ID_SNIFFER_IGNORE_A && rxIdCAN_ID_RADIO_STATUS !=  && rxId != NM_ARDUINO_ID
+    if (rxId != CAN_ID_SNIFFER_IGNORE_A && rxId != CAN_ID_RADIO_STATUS && rxId != NM_ARDUINO_ID
         && (isDiagFrame(rxId) || isDelta(rxId, len, rxBuf))) {
       Serial.print(F("0x")); Serial.print(rxId, HEX); Serial.print(F(":"));
       for (int i = 0; i < len; i++) {

@@ -1,0 +1,9 @@
+Synthetic minimal log for scripts/validate_nm_serial_log.py --check sleep-path --check no-hang
+SYS:CAN:WAKE_START
+0x42B:0B 02 80 02 00 00
+SYS:CAN:WAKE_END
+0x42B:0B 02 00 00 00 00
+0x42B:0B 02 00 00 00 00
+0x42B:0B 04 00 00 00 00
+SYS:CAN:SLEEP_IND
+0x42B:0B 14 00 00 00 00

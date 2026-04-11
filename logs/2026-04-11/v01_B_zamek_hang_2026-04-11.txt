@@ -9,17 +9,17 @@ SYS:CAN:WAKE_START
 0x527:07 00 00 00 00 00 00 00
 0x653:40 00 40
 0x65F:00 00 00 00 00 57 56 57
-0x291:08 55 04 00 00  # zamek (test1): impuls przycisku zamykania
+0x291:08 55 04 00 00  # zamek (v01_B_zamek_hang): impuls przycisku zamykania
 0x651:80 03 59 AF 29 48
 0x351:01 00 00 00 00 00 00 00
 0x621:00 AA 69 00 00
-0x291:08 55 00 00 00  # zamek (test1): powrot po impulsie
+0x291:08 55 00 00 00  # zamek (v01_B_zamek_hang): powrot po impulsie
 0x42B:0B 02 80 02 00 00
 0x42B:0B 01 00 00 00 00
 0x527:00 01 00 00 00 00 00 01
 0x65D:BF 90 78 04 00 C0 38 12
 0x65F:01 5A 5A 5A 31 4B 5A 36
-0x291:08 00 00 00 00  # zamek (test1): stan bazowy po zdarzeniu
+0x291:08 00 00 00 00  # zamek (v01_B_zamek_hang): stan bazowy po zdarzeniu
 0x557:00 00 00 3F 0C 00 00 00
 0x42B:0B 02 80 02 00 00
 0x42B:0B 01 00 00 00 00
@@ -122,7 +122,7 @@ SYS:CAN:WAKE_END
 0x351:01 00 00 00 00 00 00 80
 0x65F:00 00 00 00 00 57 56 57
 # [3] DRUGIE WYBUDZENIE (POWÓD): impuls z przycisku zamykania drzwi (0x291:08 55 04 00 00).
-0x291:08 55 04 00 00  # zamek (test1): ponowne wybudzenie po WAKE_END
+0x291:08 55 04 00 00  # zamek (v01_B_zamek_hang): ponowne wybudzenie po WAKE_END
 0x351:01 00 00 00 00 00 00 00
 0x291:08 55 00 00 00
 0x65D:BF 90 78 04 00 C0 38 15

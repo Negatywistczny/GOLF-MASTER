@@ -1,3 +1,9 @@
+/*
+ * hardware v01 — firmware użyty / referencyjny dla logów test1–test4 (PQ35 NM).
+ * Źródło: git commit aba4daa (Hardware: remove heuristic wake path and simplify NM state flow.)
+ * Plik archiwum: hardware_v01_aba4daa__tests-1-4.ino (hardware/hardware.ino @ git aba4daa)
+ * Różnica względem v02: brak NetState / Grace / bezwarunkowej odpowiedzi NM na Limp; NM tylko przy isBusActive + Ring/Alive.
+ */
 #include <SPI.h>
 #include <mcp_can.h>
 
@@ -16,31 +22,17 @@ const long NM_GATEWAY_ID = 0x42B;
 const long NM_ARDUINO_ID = 0x40B;
 const int NEXT_NODE_ID = 0x2B;
 
-// NM — bajt 1 wg id_ramek.txt (mNM_Gateway_I): CmdRing bit8, CmdAlive bit9, CmdLimpHome bit10,
-// SleepInd bit12, SleepAck bit13 → maski w bajcie 1:
-const uint8_t NM_CMD_RING = 0x01;
+// NM — Bajt 1: typ Alive od Gatewaya = NM_CMD_ALIVE; domyślna odpowiedź Ring w TX = ta sama wartość;
+// NM_CMD_RING = odpowiedź Alive / zejście z Limp Home, gdy ustawiony NM_MASK_LIMP w ramce Gatewaya.
 const uint8_t NM_CMD_ALIVE = 0x02;
-const uint8_t NM_MASK_CMD_LIMP = 0x04;
+const uint8_t NM_CMD_RING = 0x01;
 const uint8_t NM_MASK_SLEEP = 0x10;
+const uint8_t NM_MASK_LIMP = 0x04;
 const uint8_t NM_NODE_SELF = 0x0B;
-
-// Maszyna stanów sieci (bez „zagadywania” po WAKE_END — patrz plan NM / uśpienie).
-enum NetState : uint8_t {
-  NET_SLEEP = 0,       // brak pompy 0x661; NM tylko gdy Gateway nadal adresuje 0x0B
-  NET_ACTIVE,          // pełna komunikacja (wake potwierdzony)
-  NET_GRACE,           // po WAKE_END: krótka synchronizacja, bez pompy radia
-  NET_SLEEP_READY      // po SleepInd lub końcówce Grace — tylko niezbędny NM, bez 0x661
-};
-
-const unsigned long GRACE_AFTER_WAKE_END_MS = 2000;
-const unsigned long SLEEP_READY_TO_SLEEP_MS = 12000;
 
 const unsigned long INTERVAL_RADIO_PUMP = 150;
 const unsigned long INTERVAL_HANG_CHECK = 2000;
 const unsigned long INTERVAL_TJA_ERR_LOG = 5000;
-
-// Ograniczenie czasu w pętli INT — nie blokuj aktualizacji stanu / timerów.
-const uint8_t MAX_FRAMES_PER_INT_LOOP = 48;
 
 const long CAN_ID_RADIO_STATUS = 0x661;
 const long CAN_ID_SNIFFER_IGNORE_A = 0x531;
@@ -57,12 +49,10 @@ byte lastWakeCauseByte = 0x00;
 bool isHanging = false;
 // Flaga tylko dla watchdoga HANG: true po SLEEP_IND, false po Alive.
 bool isSleepIndicated = true;
-// Przyczyna wybudzenia (bajty 2–4 Alive z 0x42B→0x0B): !=0 ⇒ logiczne „bus wybudzony”.
+// Jedyny stan magistrali:
+// true  = aktywna
+// false = oczekiwanie na uśpienie lub już uśpiona (wait / sleep)
 bool isBusActive = false;
-
-NetState netState = NET_SLEEP;
-unsigned long graceStartMs = 0;
-unsigned long sleepReadyStartMs = 0;
 
 // --- LOGIKA DELTA ---
 #define MAX_TRACKED_IDS 60
@@ -100,28 +90,10 @@ bool isDelta(uint32_t id, uint8_t len, uint8_t *data) {
   return true;
 }
 
-// Przejścia czasowe Grace / SleepReady → Sleep (wywołuj z loop).
-void updateNetStateMachine() {
-  unsigned long now = millis();
-  if (netState == NET_GRACE) {
-    if ((now - graceStartMs) >= GRACE_AFTER_WAKE_END_MS) {
-      netState = NET_SLEEP_READY;
-      sleepReadyStartMs = now;
-    }
-  }
-  if (netState == NET_SLEEP_READY) {
-    if ((now - sleepReadyStartMs) >= SLEEP_READY_TO_SLEEP_MS) {
-      netState = NET_SLEEP;
-    }
-  }
-}
-
 void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
   if (id != (uint32_t)NM_GATEWAY_ID || len < 4) return;
 
-  uint8_t b1 = buf[1];
-  // Ring / Alive / LimpHome — dowolna z tych flag w bajcie 1 (id_ramek, bity 8–10).
-  bool gwNmCmd = (b1 & (NM_CMD_RING | NM_CMD_ALIVE | NM_MASK_CMD_LIMP)) != 0;
+  uint8_t cmdLo = buf[1] & 0x0F;
 
   // Tryb snu / watchdog HANG — wyłącznie z Gateway NM do 0x0B (nie z innych ID).
   if (buf[0] == NM_NODE_SELF && len >= 2) {
@@ -129,21 +101,19 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
     isHanging = false;
 
     static bool prevGwSleepBit = false;
-    bool sleepNow = (b1 & NM_MASK_SLEEP) != 0;
+    bool sleepNow = (buf[1] & NM_MASK_SLEEP) != 0;
     if (sleepNow && !prevGwSleepBit) {
       Serial.println(F("SYS:CAN:SLEEP_IND"));
-      netState = NET_SLEEP_READY;
-      sleepReadyStartMs = millis();
     }
     prevGwSleepBit = sleepNow;
     if (sleepNow) {
       isSleepIndicated = true;
-    } else if ((b1 & NM_CMD_ALIVE) != 0) {
+    } else if (cmdLo == NM_CMD_ALIVE) {
       isSleepIndicated = false;
     }
   }
 
-  if (buf[0] == NM_NODE_SELF && (b1 & NM_CMD_ALIVE) != 0) {
+  if (buf[0] == NM_NODE_SELF && cmdLo == NM_CMD_ALIVE) {
     lastWakeCauseByte = buf[2];
 
     if (len >= 5) {
@@ -152,24 +122,17 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
       if (prevWakeCombo == 0 && wakeCombo != 0) {
         Serial.println(F("SYS:CAN:WAKE_START"));
         isBusActive = true;
-        netState = NET_ACTIVE;
       } else if (prevWakeCombo != 0 && wakeCombo == 0) {
         Serial.println(F("SYS:CAN:WAKE_END"));
         isBusActive = false;
-        netState = NET_GRACE;
-        graceStartMs = millis();
       }
       prevWakeCombo = wakeCombo;
     }
   }
 
-  // Odpowiedź NM: zawsze gdy token do nas — nie uzależniaj od isBusActive (po WAKE_END bez tego był HANG przy 0x04).
-  // W NET_SLEEP_READY nadal przekazujemy token (minimum dla sekwencji usypiania).
-  if (buf[0] == NM_NODE_SELF && gwNmCmd) {
+  if (buf[0] == NM_NODE_SELF && isBusActive && (cmdLo == NM_CMD_ALIVE || cmdLo == NM_CMD_RING)) {
     unsigned char txBuf[6] = {(unsigned char)NEXT_NODE_ID, NM_CMD_ALIVE, 0, 0, 0, 0};
-    if (b1 & NM_MASK_CMD_LIMP) {
-      txBuf[1] = NM_CMD_RING;
-    }
+    if (buf[1] & NM_MASK_LIMP) txBuf[1] = NM_CMD_RING;
     CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
   }
 }
@@ -256,24 +219,19 @@ void loop() {
 
   processSerial();
 
-  updateNetStateMachine();
+  while (!digitalRead(CAN_INT_PIN)) {
+    if (CAN0.readMsgBuf(&rxId, &len, rxBuf) == CAN_OK) {
+      handleGatewayNm((uint32_t)rxId, rxBuf, len);
 
-  uint8_t intFrames = 0;
-  while (!digitalRead(CAN_INT_PIN) && intFrames < MAX_FRAMES_PER_INT_LOOP) {
-    if (CAN0.readMsgBuf(&rxId, &len, rxBuf) != CAN_OK) {
-      break;
-    }
-    intFrames++;
-    handleGatewayNm((uint32_t)rxId, rxBuf, len);
-
-    if (rxId != CAN_ID_SNIFFER_IGNORE_A && rxId != CAN_ID_RADIO_STATUS && rxId != NM_ARDUINO_ID
-        && (isDiagFrame(rxId) || isDelta(rxId, len, rxBuf))) {
-      Serial.print(F("0x")); Serial.print(rxId, HEX); Serial.print(F(":"));
-      for (int i = 0; i < len; i++) {
-        if (rxBuf[i] < 0x10) Serial.print(F("0"));
-        Serial.print(rxBuf[i], HEX); if (i < len - 1) Serial.print(F(" "));
+      if (rxId != CAN_ID_SNIFFER_IGNORE_A && rxId != CAN_ID_RADIO_STATUS && rxId != NM_ARDUINO_ID
+          && (isDiagFrame(rxId) || isDelta(rxId, len, rxBuf))) {
+        Serial.print(F("0x")); Serial.print(rxId, HEX); Serial.print(F(":"));
+        for (int i = 0; i < len; i++) {
+          if (rxBuf[i] < 0x10) Serial.print(F("0"));
+          Serial.print(rxBuf[i], HEX); if (i < len - 1) Serial.print(F(" "));
+        }
+        Serial.println();
       }
-      Serial.println();
     }
     CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00);
   }
@@ -284,8 +242,7 @@ void loop() {
     isHanging = true;
   }
 
-  // 0x661 tylko w NET_ACTIVE — po WAKE_END (Grace / SleepReady / Sleep) nie podtrzymujemy „radia”.
-  if (netState == NET_ACTIVE && (millis() - lastSendTime >= INTERVAL_RADIO_PUMP)) {
+  if (isBusActive && (millis() - lastSendTime >= INTERVAL_RADIO_PUMP)) {
     lastSendTime = millis();
     unsigned char stRadio[8] = {0x01, 0x01, 0x10, 0, 0, 0, 0, 0};
     CAN0.sendMsgBuf(CAN_ID_RADIO_STATUS, 0, 8, stRadio);

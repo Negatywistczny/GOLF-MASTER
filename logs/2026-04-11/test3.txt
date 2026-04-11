@@ -1,5 +1,6 @@
 ZDARZENIA: magistrala wybudzona przez przycisk zamykania drzwi 1 raz, potem prawidłowa faza uspiania.
 
+# --- Firmware referencyjny: hardware_v01_aba4daa__tests-1-4.ino (git aba4daa) w tym katalogu ---
 # [1] PIERWSZE WYBUDZENIE: start cyklu aktywności magistrali (SYS:CAN:WAKE_START).
 SYS:CAN:WAKE_START
 0x42B:0B 02 80 02 00 00

@@ -1,6 +1,7 @@
 PROBLEM: stan WAKE_START nie pojawia się ponownie pomimo wybudzenia magistrali, przez co komunikacja jest zerwana z powodu złego trybu pracy.
 ZDARZENIA: magistrala wybudzana przez mignięcie długimi światłami, 1 raz na początku, potem około 2 razy po pojawieniu się WAKE_END.
 
+# --- Firmware referencyjny: hardware_v01_aba4daa__tests-1-4.ino (git aba4daa) w tym katalogu ---
 # [1] PIERWSZE WYBUDZENIE: start cyklu aktywności magistrali (SYS:CAN:WAKE_START).
 SYS:CAN:WAKE_START
 0x42B:0B 02 80 02 00 00

@@ -15,6 +15,7 @@ Dla każdej sytuacji podano:
 - Źródła: wszystkie logi `logs/2026-04-11/v*.txt` (v01, v02, v03, v04, v04_1, v05).
 - `0x40B` i `0x661` nie są widoczne bezpośrednio w serialu (filtrowane przez firmware), więc ich ocena jest pośrednia (na podstawie skutków w `0x42B`, zdarzeń `SYS:*` i kondycji ruchu).
 - Mapowanie bitów NM (`CmdRing`, `CmdAlive`, `CmdLimpHome`, `SleepInd`, `SleepAck`) przyjmujemy z `data/id_ramek.txt` (kanoniczne).
+- Punkt odniesienia dla spójności nazewnictwa i klasyfikacji dowodów: `logs/2026-04-11/NM_CANONICAL_BASELINE.md`.
 
 ---
 

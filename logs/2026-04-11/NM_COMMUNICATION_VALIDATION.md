@@ -2,6 +2,11 @@
 
 Kryteria odnoszą się do firmware w `hardware/hardware.ino` (obecnie **v4.1 hard-sleep-silence** — patrz tabela archiwum; **v04/v03/v02/v01** to archiwum w `logs/2026-04-11/`).
 
+## Canon i klasyfikacja dowodów
+
+- Canon mapy `0x42B` i klasyfikacji fakt/inferencja/hipoteza: `logs/2026-04-11/NM_CANONICAL_BASELINE.md`.
+- Przy każdej rozbieżności opisowej obowiązuje semantyka z `data/id_ramek.txt`.
+
 ## Wnioski ostateczne (stan na 2026-04-11)
 
 ### Co wynika z materiałów w repo

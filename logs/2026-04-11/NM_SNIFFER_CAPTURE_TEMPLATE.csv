@@ -1,0 +1,4 @@
+run_id,test,firmware,serial_log,can_log,start_ts,end_ts,wake_start_ts,wake_end_ts,sleep_ind_ts,hang_ts,seen_42b,seen_40b,seen_661,seen_2c1,seen_291,gate_A,gate_B,gate_C,notes
+nm_sniff_A_vXX_yyyy-mm-dd_r01,A,vXX,<path>,<path>,,,,,,,Y/N,Y/N,Y/N,Y/N,Y/N,PASS/FAIL,N/A,N/A,
+nm_sniff_B_vXX_yyyy-mm-dd_r01,B,vXX,<path>,<path>,,,,,,,Y/N,Y/N,Y/N,Y/N,Y/N,N/A,PASS/FAIL,N/A,
+nm_sniff_C_vXX_yyyy-mm-dd_r01,C,vXX,<path>,<path>,,,,,,,Y/N,Y/N,Y/N,Y/N,Y/N,N/A,N/A,PASS/FAIL,

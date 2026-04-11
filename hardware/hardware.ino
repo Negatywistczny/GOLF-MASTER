@@ -39,6 +39,7 @@ enum NetState : uint8_t {
 const unsigned long GRACE_AFTER_WAKE_END_MS = 2000;
 const unsigned long SLEEP_READY_TO_SLEEP_MS = 12000;
 const unsigned long AUTO_SLEEP_PREP_REPLY_MS = 600;
+const unsigned long AUTO_SLEEP_PREP_RECOVERY_MS = 1800;
 
 const unsigned long INTERVAL_RADIO_PUMP = 150;
 const unsigned long INTERVAL_HANG_CHECK = 2000;
@@ -70,6 +71,7 @@ unsigned long graceStartMs = 0;
 unsigned long sleepReadyStartMs = 0;
 bool hadWakeEndForGrace = false;
 bool sleepAckSeen = false;
+unsigned long autoPrepReplyUntilMs = 0;
 
 enum AutoNmState : uint8_t {
   AUTO_ACTIVE = 0,
@@ -78,6 +80,13 @@ enum AutoNmState : uint8_t {
 };
 
 AutoNmState autoNmState = AUTO_SILENT_LISTEN;
+
+void setAutoNmState(AutoNmState next);
+
+void enterAutoSleepPrep(unsigned long windowMs) {
+  autoPrepReplyUntilMs = millis() + windowMs;
+  setAutoNmState(AUTO_SLEEP_PREP);
+}
 
 void setAutoNmState(AutoNmState next) {
   if (autoNmState == next) return;
@@ -142,7 +151,7 @@ void updateNetStateMachine() {
     }
   }
   if (autoNmState == AUTO_SLEEP_PREP
-      && ((now - graceStartMs) >= AUTO_SLEEP_PREP_REPLY_MS || sleepAckSeen)) {
+      && (now >= autoPrepReplyUntilMs || sleepAckSeen)) {
     setAutoNmState(AUTO_SILENT_LISTEN);
   }
 }
@@ -166,8 +175,8 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
       Serial.println(F("SYS:CAN:SLEEP_IND"));
       netState = NET_SLEEP_READY;
       sleepReadyStartMs = millis();
-      // Twarda reguła: po wejściu w sleep natychmiast przechodzimy do ciszy NM.
-      setAutoNmState(AUTO_SILENT_LISTEN);
+      // Krótka faza PREP na domknięcie ramek sleep, potem cisza.
+      enterAutoSleepPrep(AUTO_SLEEP_PREP_REPLY_MS);
     }
     prevGwSleepBit = sleepNow;
     if (sleepNow) {
@@ -196,15 +205,30 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
         netState = NET_GRACE;
         graceStartMs = millis();
         hadWakeEndForGrace = true;
-        setAutoNmState(AUTO_SLEEP_PREP);
+        enterAutoSleepPrep(AUTO_SLEEP_PREP_REPLY_MS);
       }
       prevWakeCombo = wakeCombo;
     }
   }
 
   bool tokenToSelf = (buf[0] == NM_NODE_SELF && gwNmCmd);
-  // Twarda reguła sleep-first: odpowiadamy NM tylko w aktywnej fazie, nigdy po SleepInd.
-  bool shouldReplyNm = tokenToSelf && (autoNmState == AUTO_ACTIVE) && !isSleepIndicated;
+  if (tokenToSelf && autoNmState == AUTO_SILENT_LISTEN && !isSleepIndicated
+      && (b1 & NM_MASK_CMD_LIMP)) {
+    // Impuls po WAKE_END: krótkie wyjście z ciszy, by nie zerwać pierścienia NM.
+    Serial.println(F("SYS:CAN:NM_RECOVERY"));
+    enterAutoSleepPrep(AUTO_SLEEP_PREP_RECOVERY_MS);
+  }
+
+  bool shouldReplyNm = false;
+  if (tokenToSelf) {
+    if (autoNmState == AUTO_ACTIVE) {
+      shouldReplyNm = !isSleepIndicated;
+    } else if (autoNmState == AUTO_SLEEP_PREP) {
+      bool sleepRelated = (b1 & (NM_MASK_SLEEP | NM_MASK_SLEEP_ACK)) != 0;
+      bool prepRecoveryWindow = !isSleepIndicated && (millis() < autoPrepReplyUntilMs);
+      shouldReplyNm = sleepRelated || prepRecoveryWindow;
+    }
+  }
 
   if (shouldReplyNm) {
     uint8_t txB1 = NM_CMD_ALIVE;
@@ -331,13 +355,10 @@ void loop() {
     CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00);
   }
 
-  // Brak ruchu jest dopuszczalny tylko przy pełnym śnie magistrali.
-  // Pełny sen: stan NET_SLEEP + AUTO_SILENT_LISTEN + SleepInd + brak aktywnego wake.
-  bool fullSleepConfirmed = (netState == NET_SLEEP)
-                            && (autoNmState == AUTO_SILENT_LISTEN)
-                            && isSleepIndicated
-                            && !isBusActive;
-  bool hangSuppressed = fullSleepConfirmed;
+  // W trybach poza ACTIVE dopuszczamy kontrolowaną ciszę NM (sleep-first).
+  bool hangSuppressed = (autoNmState != AUTO_ACTIVE)
+                        || (hadWakeEndForGrace && netState != NET_ACTIVE
+                        && (millis() - graceStartMs) < GRACE_AFTER_WAKE_END_MS && !isSleepIndicated);
 
   if (!hangSuppressed && !isHanging && !isSleepIndicated && lastGwSelfNmMs != 0
       && (millis() - lastGwSelfNmMs > INTERVAL_HANG_CHECK)) {

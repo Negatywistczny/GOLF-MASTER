@@ -30,18 +30,28 @@ const unsigned long INTERVAL_TJA_ERR_LOG = 5000;
 
 const long CAN_ID_RADIO_STATUS = 0x661;
 const long CAN_ID_SNIFFER_IGNORE_A = 0x531;
+const long CAN_ID_CLUSTER_STATUS = 0x351;
+const long CAN_ID_STATUS_B = 0x651;
+const long CAN_ID_STATUS_C = 0x65D;
+const long CAN_ID_STATUS_D = 0x65F;
+const long CAN_ID_SLEEP_PREP = 0x557;
 
 MCP_CAN CAN0(SPI_CS_PIN);
 
 // --- ZMIENNE STANU I TIMERY ---
-// Domyślnie: magistrala uśpiona / brak powodu wybudzenia — bez nadawania NM (0x40B), bez 0x661.
-unsigned long lastRxTime = 0;
+// Domyślnie: brak powodu wybudzenia — bez nadawania NM (0x40B), bez 0x661.
 unsigned long lastSendTime = 0;
+// Ostatni czas ramki Gateway NM do nas (0x42B→0x0B) — tylko to liczy się do ERR:CAN:HANG i kasowania latcha.
+unsigned long lastGwSelfNmMs = 0;
 // Ostatni bajt 2 z ramki Alive 0x42B→0x0B (nie aktualizowany przy Ring). Bit 0x80 = okno aktywności Infotainment (jak Faza 4).
 byte lastWakeCauseByte = 0x00;
 bool isHanging = false;
-// true = cisza traktowana jak OK (watchdog nie krzyczy); Alive 0x42B→0x0B bez NM_MASK_SLEEP ustawia false.
+// Flaga tylko dla watchdoga HANG: true po SLEEP_IND, false po Alive.
 bool isSleepIndicated = true;
+// Jedyny stan magistrali:
+// true  = aktywna
+// false = oczekiwanie na uśpienie lub już uśpiona (wait / sleep)
+bool isBusActive = false;
 
 // --- LOGIKA DELTA ---
 #define MAX_TRACKED_IDS 60
@@ -55,6 +65,22 @@ bool isDiagFrame(uint32_t id) {
   if (id == 0x300) return true;                // TP 2.0 RX
   if (id >= 0x700 && id <= 0x7FF) return true; // UDS/KWP
   return false;
+}
+
+bool isPassiveStateAllowedId(uint32_t id) {
+  return id == NM_GATEWAY_ID
+      || id == CAN_ID_STATUS_C
+      || id == CAN_ID_STATUS_D
+      || id == CAN_ID_STATUS_B
+      || id == CAN_ID_CLUSTER_STATUS
+      || id == CAN_ID_SLEEP_PREP;
+}
+
+void maybeExitPassiveStateOnFrame(uint32_t id) {
+  if (!isBusActive && !isPassiveStateAllowedId(id)) {
+    isBusActive = true;
+    Serial.println(F("SYS:CAN:WAKE_START"));
+  }
 }
 
 bool isDelta(uint32_t id, uint8_t len, uint8_t *data) {
@@ -84,25 +110,39 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
 
   uint8_t cmdLo = buf[1] & 0x0F;
 
-  if (buf[0] == NM_NODE_SELF && cmdLo == NM_CMD_ALIVE) {
-    lastWakeCauseByte = buf[2];
+  // Tryb snu / watchdog HANG — wyłącznie z Gateway NM do 0x0B (nie z innych ID).
+  if (buf[0] == NM_NODE_SELF && len >= 2) {
+    lastGwSelfNmMs = millis();
+    isHanging = false;
 
-    if (buf[1] & NM_MASK_SLEEP) {
-      if (!isSleepIndicated) {
-        isSleepIndicated = true;
-        Serial.println(F("SYS:CAN:SLEEP_IND"));
-      }
-    } else {
+    static bool prevGwSleepBit = false;
+    bool sleepNow = (buf[1] & NM_MASK_SLEEP) != 0;
+    if (sleepNow && !prevGwSleepBit) {
+      Serial.println(F("SYS:CAN:SLEEP_IND"));
+    }
+    prevGwSleepBit = sleepNow;
+    if (sleepNow) {
+      isSleepIndicated = true;
+    } else if (cmdLo == NM_CMD_ALIVE) {
       isSleepIndicated = false;
     }
+  }
+
+  if (buf[0] == NM_NODE_SELF && cmdLo == NM_CMD_ALIVE) {
+    lastWakeCauseByte = buf[2];
 
     if (len >= 5) {
       uint32_t wakeCombo = (uint32_t)buf[2] | ((uint32_t)buf[3] << 8) | ((uint32_t)buf[4] << 16);
       static uint32_t prevWakeCombo = 0;
       if (prevWakeCombo == 0 && wakeCombo != 0) {
+        if (!isBusActive) {
+          Serial.println(F("SYS:CAN:BUS_ACTIVE:WAKE"));
+        }
         Serial.println(F("SYS:CAN:WAKE_START"));
+        isBusActive = true;
       } else if (prevWakeCombo != 0 && wakeCombo == 0) {
         Serial.println(F("SYS:CAN:WAKE_END"));
+        isBusActive = false;
       }
       prevWakeCombo = wakeCombo;
     }
@@ -186,7 +226,6 @@ void setup() {
     CAN0.mcp2515_modifyRegister(0x0F, 0x08, 0x08); // MCP_CANCTRL (One-Shot)
     CAN0.setMode(MCP_NORMAL);
     Serial.println(F("SYS:HW:READY"));
-    lastRxTime = millis();
   } else {
     Serial.println(F("ERR:HW:INIT_FAIL"));
     while (1);
@@ -202,9 +241,7 @@ void loop() {
 
   while (!digitalRead(CAN_INT_PIN)) {
     if (CAN0.readMsgBuf(&rxId, &len, rxBuf) == CAN_OK) {
-      lastRxTime = millis();
-      isHanging = false;
-
+      maybeExitPassiveStateOnFrame((uint32_t)rxId);
       handleGatewayNm((uint32_t)rxId, rxBuf, len);
 
       if (rxId != CAN_ID_SNIFFER_IGNORE_A && rxId != CAN_ID_RADIO_STATUS && rxId != NM_ARDUINO_ID) {
@@ -221,7 +258,8 @@ void loop() {
     CAN0.mcp2515_modifyRegister(0x2D, 0xFF, 0x00);
   }
 
-  if (!isHanging && !isSleepIndicated && (millis() - lastRxTime > INTERVAL_HANG_CHECK)) {
+  if (!isHanging && !isSleepIndicated && lastGwSelfNmMs != 0
+      && (millis() - lastGwSelfNmMs > INTERVAL_HANG_CHECK)) {
     Serial.println(F("ERR:CAN:HANG"));
     isHanging = true;
   }

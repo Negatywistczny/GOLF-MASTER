@@ -67,17 +67,14 @@ bool isDiagFrame(uint32_t id) {
   return false;
 }
 
-bool isPassiveStateAllowedId(uint32_t id) {
-  return id == NM_GATEWAY_ID
+void maybeExitPassiveStateOnFrame(uint32_t id) {
+  bool isAllowedPassiveId = id == NM_GATEWAY_ID
       || id == CAN_ID_STATUS_C
       || id == CAN_ID_STATUS_D
       || id == CAN_ID_STATUS_B
       || id == CAN_ID_CLUSTER_STATUS
       || id == CAN_ID_SLEEP_PREP;
-}
-
-void maybeExitPassiveStateOnFrame(uint32_t id) {
-  if (!isBusActive && !isPassiveStateAllowedId(id)) {
+  if (!isBusActive && !isAllowedPassiveId) {
     isBusActive = true;
     Serial.println(F("SYS:CAN:WAKE_START"));
   }

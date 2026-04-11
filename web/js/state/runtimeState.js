@@ -2,7 +2,7 @@ const activeCards = Object.create(null);
 const errorRegistry = Object.create(null);
 const frameDataCache = Object.create(null);
 const terminalBuffer = [];
-const TERMINAL_MAX_LINES = 300;
+const TERMINAL_MAX_LINES = 3000;
 
 let socket = null;
 let __cachedFrameHex = null;

@@ -2461,7 +2461,7 @@ const activeCards = Object.create(null);
 const errorRegistry = Object.create(null);
 const frameDataCache = Object.create(null);
 const terminalBuffer = [];
-const TERMINAL_MAX_LINES = 300;
+const TERMINAL_MAX_LINES = 3000;
 
 let socket = null;
 let __cachedFrameHex = null;
@@ -5354,9 +5354,15 @@ function startClock() {
 
 // ===== js/ui/actions.js =====
 
-
-
-
+function formatLocalFileTimestamp(date = new Date()) {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    const hh = String(date.getHours()).padStart(2, "0");
+    const mi = String(date.getMinutes()).padStart(2, "0");
+    const ss = String(date.getSeconds()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}_${hh}-${mi}-${ss}`;
+}
 
 function generateSnapshot() {
     let csvContent = "ID RAMKI;NAZWA RAMKI;SYGNAŁ (ID);OPIS SYGNAŁU;WARTOŚĆ\n";
@@ -5379,8 +5385,7 @@ function generateSnapshot() {
     const blob = new Blob(["\ufeff", csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 19).replace(/T/g, "_").replace(/:/g, "-");
+    const dateStr = formatLocalFileTimestamp();
 
     link.setAttribute("href", url);
     link.setAttribute("download", `PQ35_CAN_SNAPSHOT_${dateStr}.csv`);
@@ -5431,8 +5436,7 @@ function downloadTerminalLogs() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
 
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 19).replace(/T/g, "_").replace(/:/g, "-");
+    const dateStr = formatLocalFileTimestamp();
 
     link.setAttribute("href", url);
     link.setAttribute("download", `PQ35_TERMINAL_LOG_${dateStr}.txt`);

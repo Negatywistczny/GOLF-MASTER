@@ -1,0 +1,58 @@
+================================================================================
+TEST 03 — Na aucie: silnik ON (postój)
+================================================================================
+Identyfikator: DTC-T03
+Powiązanie: DTC_REGRESSION_CHECKLIST.md §3
+
+--------------------------------------------------------------------------------
+CEL
+--------------------------------------------------------------------------------
+Sprawdzić skan DTC przy pracującym silniku na biegu jałowym (postój), oraz
+porównać spójność wyników i statusów względem testu 02 (zapłon ON, silnik OFF).
+
+--------------------------------------------------------------------------------
+WYMAGANIA WSTĘPNE
+--------------------------------------------------------------------------------
+- Wykonany lub do porównania: test 02 (DTC-T02) z zapisanymi obserwacjami.
+- Silnik uruchomiony, pojazd w bezpiecznym miejscu (postój, hamulec, warunki zgodne z przepisami).
+
+--------------------------------------------------------------------------------
+INSTRUKCJA WYKONANIA (krok po kroku)
+--------------------------------------------------------------------------------
+1. Uruchom bridge i Web UI (jak w teście 02).
+2. Uruchom silnik; utrzymaj postój (jałowy) przez stabilizację warunków.
+3. Uruchom pełny skan DTC i poczekaj na zakończenie.
+4. Odnieś wyniki do testu 02: te same moduły, zmiany DTC, powtarzalność statusów.
+
+--------------------------------------------------------------------------------
+OCZEKIWANE REZULTATY
+--------------------------------------------------------------------------------
+- Skan kończy się poprawnie (DONE lub kontrolowany błąd z opisem — bez milczącego zawieszenia).
+- Statusy i liczniki są interpretowalne i możliwe do porównania z T02.
+- Ewentualne nowe/znikające DTC są zrozumiałe w kontekście pracy silnika (notatka w obserwacjach).
+
+--------------------------------------------------------------------------------
+LOGI (osobne pliki — dołączasz na bieżąco)
+--------------------------------------------------------------------------------
+- Terminal bridge:   _________________________________________________________
+- Porównanie z T02:  _________________________________________________________
+
+--------------------------------------------------------------------------------
+OBSERWACJE (uzupełniamy podczas / po teście)
+--------------------------------------------------------------------------------
+Data wykonania:        _______________________
+Czas od rozruchu silnika do skanu:  _________________________________________
+
+Różnice vs T02 — liczniki (moduleErrors, modulesWithDtc, totalDtcs):
+
+
+Różnice vs T02 — lista kodów DTC / statusy modułów:
+
+
+Powtarzalność (np. drugi skan zaraz po pierwszym):
+
+
+Odchylenia od oczekiwań / notatki:
+
+
+Werdykt (PASS / FAIL / N/D):  _______________

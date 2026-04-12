@@ -1,0 +1,60 @@
+================================================================================
+TEST 05 — Po wyjęciu kluczyka / stan sleep
+================================================================================
+Identyfikator: DTC-T05
+Powiązanie: DTC_REGRESSION_CHECKLIST.md §5
+
+--------------------------------------------------------------------------------
+CEL
+--------------------------------------------------------------------------------
+Sprawdzić zachowanie skanu DTC gdy pojazd przeszedł w stan uśpienia (np. po
+wyjęciu kluczyka). Część modułów może nie odpowiadać — UI musi to oznaczyć jako
+błąd komunikacji, a nie mylić z „brak DTC / clean”.
+
+--------------------------------------------------------------------------------
+WYMAGANIA WSTĘPNE
+--------------------------------------------------------------------------------
+- Możliwość bezpiecznego doprowadzenia auta do stanu sleep (procedura fabryczna / znana Tobie).
+- Bridge i UI — uruchomienie w momencie, gdy chcesz wykonać skan w tym stanie (dokładny moment zapisz).
+
+--------------------------------------------------------------------------------
+INSTRUKCJA WYKONANIA (krok po kroku)
+--------------------------------------------------------------------------------
+1. Przygotuj pojazd zgodnie z celem testu (np. wyjmij kluczyk, poczekaj na sleep).
+2. Ustal, czy interfejs diagnostyczny pozostaje zasilany — jeśli nie, test może być N/D; zapisz.
+3. Uruchom bridge i Web UI (jeśli jeszcze nie działają) i połącz.
+4. Uruchom pełny skan DTC.
+5. Zwróć uwagę na moduły z comm_error vs moduły „clean” bez komunikacji.
+
+--------------------------------------------------------------------------------
+OCZEKIWANE REZULTATY
+--------------------------------------------------------------------------------
+- Moduły bez odpowiedzi w stanie sleep pokazują wyraźnie problem komunikacji
+  (np. comm_error lub równoważny status), a nie są prezentowane jako „czyste” bez DTC.
+- Raport końcowy jest spójny z rzeczywistym przebiegiem (liczniki błędów vs sukcesów).
+
+--------------------------------------------------------------------------------
+LOGI (osobne pliki — dołączasz na bieżąco)
+--------------------------------------------------------------------------------
+- Terminal bridge:   _________________________________________________________
+- Notatka o stanie auta:  _____________________________________________________
+
+--------------------------------------------------------------------------------
+OBSERWACJE (uzupełniamy podczas / po teście)
+--------------------------------------------------------------------------------
+Data wykonania:        _______________________
+Stan: sleep / częściowy sleep / inny:  _______________________________________
+
+Moduły z comm_error — lista:
+
+
+Czy którykolwiek moduł błędnie wyglądał na „clean” bez komunikacji (TAK/NIE):
+
+
+Zasilanie interfejsu OBD/dongle w tym teście:
+
+
+Odchylenia od oczekiwań / notatki:
+
+
+Werdykt (PASS / FAIL / N/D):  _______________

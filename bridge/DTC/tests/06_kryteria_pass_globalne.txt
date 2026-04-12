@@ -1,0 +1,52 @@
+================================================================================
+PODSUMOWANIE — Kryteria PASS (regresja DTC)
+================================================================================
+Powiązanie: DTC_REGRESSION_CHECKLIST.md §6
+
+To nie jest osobny „scenariusz jazdy”, lecz checklista końcowa po serii testów
+T01–T05 (lub po wybranych podzbiorach). Uzupełnij po zebraniu wyników.
+
+--------------------------------------------------------------------------------
+CEL
+--------------------------------------------------------------------------------
+Potwierdzić brak regresji w całym łańcuchu: CAN live → bridge → eventy JSON → UI.
+
+--------------------------------------------------------------------------------
+KRYTERIA (odhacz po weryfikacji)
+--------------------------------------------------------------------------------
+[ ] Strumień CAN „live” — brak regresji zachowania względem baseline (opisz baseline w obserwacjach).
+[ ] Skan zwraca strukturalne zdarzenia JSON: start, progress, module_result, complete, error
+    (wg aktualnego kontraktu bridge).
+[ ] UI pokazuje wynik per moduł: adres, protokół, kanał TX, status, liczba DTC, szczegóły.
+
+--------------------------------------------------------------------------------
+ODNOŚNIKI DO TESTÓW WYKONANYCH
+--------------------------------------------------------------------------------
+- T01 lokalny:         plik: tests/01_test_lokalny_bez_auta.txt    werdykt: _______
+- T02 zapłon/silnik:   plik: tests/02_zaplon_on_silnik_off.txt      werdykt: _______
+- T03 silnik ON:       plik: tests/03_silnik_on_postoj.txt          werdykt: _______
+- T04 przejazd:        plik: tests/04_przejazd.txt                 werdykt: _______
+- T05 sleep:           plik: tests/05_sleep_kluczyk.txt             werdykt: _______
+
+--------------------------------------------------------------------------------
+LOGI (zbiorczo — osobne pliki dołączane do folderu bridge/DTC lub logs)
+--------------------------------------------------------------------------------
+- Lista plików logów z tej sesji regresji:
+
+
+--------------------------------------------------------------------------------
+OBSERWACJE GLOBALNE
+--------------------------------------------------------------------------------
+Data zamknięcia regresji:  _______________________
+Wersja git / build:        _______________________
+
+Baseline CAN (co porównano):
+
+
+JSON — eventy: zgodne z kontraktem (TAK/NIE / uwagi):
+
+
+UI — kolumny per moduł kompletne (TAK/NIE / uwagi):
+
+
+REGRESJA OGÓLNA: TAK / NIE  (jeśli TAK — opisz):

@@ -80,4 +80,4 @@ To pozwala UI pokazać raport per moduł bez ręcznego parsowania terminala. Szc
 
 Checklistę testów (symulator + auto) znajdziesz w:
 
-- [DTC_REGRESSION_CHECKLIST.md](DTC_REGRESSION_CHECKLIST.md)
+- [DTC_REGRESSION_CHECKLIST.md](DTC/DTC_REGRESSION_CHECKLIST.md)

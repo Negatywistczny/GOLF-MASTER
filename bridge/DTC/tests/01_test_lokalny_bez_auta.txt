@@ -1,0 +1,65 @@
+================================================================================
+TEST 01 — Lokalny (bez auta), symulator
+================================================================================
+Identyfikator: DTC-T01
+Powiązanie: DTC_REGRESSION_CHECKLIST.md §1
+
+--------------------------------------------------------------------------------
+CEL
+--------------------------------------------------------------------------------
+Potwierdzić, że pełny przepływ skanu DTC (bridge + Web UI) działa end-to-end
+na symulatorze, bez pojazdu i bez interfejsu CAN.
+
+--------------------------------------------------------------------------------
+WYMAGANIA WSTĘPNE
+--------------------------------------------------------------------------------
+- Środowisko bridge uruchamialne (Python, zależności z projektu).
+- Dostęp do Web UI zgodnie z dokumentacją bridge (port/adres jak u Ciebie w setupie).
+
+--------------------------------------------------------------------------------
+INSTRUKCJA WYKONANIA (krok po kroku)
+--------------------------------------------------------------------------------
+1. W katalogu projektu uruchom symulator:
+      bridge/test_simulation.py
+2. Uruchom Web UI (tak jak zwykle przy pracy z bridge).
+3. W UI uruchom pełny skan DTC (przycisk „SKANUJ DTC” lub odpowiednik).
+4. Obserwuj przebieg sesji do zakończenia (nie przerywaj wcześniej).
+
+--------------------------------------------------------------------------------
+OCZEKIWANE REZULTATY
+--------------------------------------------------------------------------------
+- Pojawia się panel / sekcja wyników skanu DTC.
+- Status przebiegu przechodzi w kolejności: START → RUNNING → DONE.
+- Dla każdego modułu w przebiegu skanu widać rekord typu module_result
+  (lub równoważna prezentacja per moduł w UI).
+- Po zakończeniu przycisk skanu wraca do stanu aktywnego (można ponowić skan).
+
+--------------------------------------------------------------------------------
+LOGI (osobne pliki — dołączasz na bieżąco)
+--------------------------------------------------------------------------------
+- Terminal / bridge:  _________________________________________________________
+- Web UI / sieć:     _________________________________________________________
+- Inne:              _________________________________________________________
+
+--------------------------------------------------------------------------------
+OBSERWACJE (uzupełniamy podczas / po teście)
+--------------------------------------------------------------------------------
+Data wykonania:        _______________________
+Wersja bridge/UI:      _______________________
+
+Przebieg statusów (START/RUNNING/DONE):
+
+
+Panel wyników — zachowanie / błędy UI:
+
+
+module_result per moduł — czy wszystkie widoczne:
+
+
+Przycisk po DONE — stan:
+
+
+Odchylenia od oczekiwań / notatki:
+
+
+Werdykt (PASS / FAIL / N/D):  _______________

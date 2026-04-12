@@ -1,0 +1,68 @@
+================================================================================
+TEST 02 — Na aucie: zapłon ON, silnik OFF
+================================================================================
+Identyfikator: DTC-T02
+Powiązanie: DTC_REGRESSION_CHECKLIST.md §2
+
+--------------------------------------------------------------------------------
+CEL
+--------------------------------------------------------------------------------
+Zweryfikować pełny skan DTC na żywym pojeździe w stabilnym stanie zasilania
+(zapłon włączony, silnik zgaszony), bez dodatkowego obciążenia napędu.
+
+--------------------------------------------------------------------------------
+WYMAGANIA WSTĘPNE
+--------------------------------------------------------------------------------
+- Interfejs CAN/bridge podłączony i rozpoznawany.
+- Zapłon ON, silnik OFF (pozycja zgodna z procedurą bezpieczeństwa na miejscu).
+- Web UI gotowe do pracy z bridge.
+
+--------------------------------------------------------------------------------
+INSTRUKCJA WYKONANIA (krok po kroku)
+--------------------------------------------------------------------------------
+1. Uruchom bridge:  bridge/bridge.py
+2. Uruchom Web UI i połącz z bridge (jak w Twoim standardowym flow).
+3. Upewnij się: zapłon ON, silnik OFF.
+4. Uruchom pełny skan DTC i poczekaj na zakończenie całej sesji.
+5. Zapisz lub dołącz logi (osobno — patrz niżej).
+
+--------------------------------------------------------------------------------
+OCZEKIWANE REZULTATY
+--------------------------------------------------------------------------------
+- Brak „zawieszenia” sesji bez informacji zwrotnej — ewentualne timeouty są
+  opisane per moduł (nie martwy UI bez końca).
+- Raport końcowy zawiera liczniki: moduleErrors, modulesWithDtc, totalDtcs
+  (w JSON lub w UI w formie zgodnej z tymi polami).
+- Przy błędzie komunikacji widoczny jest konkretny kod przyczyny, np.:
+  gateway_setup_timeout, timing_timeout, incomplete_payload
+  (lub aktualna lista kodów z bridge — wpisz w obserwacjach jeśli inna).
+
+--------------------------------------------------------------------------------
+LOGI (osobne pliki — dołączasz na bieżąco)
+--------------------------------------------------------------------------------
+- Terminal bridge:   _________________________________________________________
+- Eksport UI / JSON: _________________________________________________________
+- CAN / sniff:       _________________________________________________________
+
+--------------------------------------------------------------------------------
+OBSERWACJE (uzupełniamy podczas / po teście)
+--------------------------------------------------------------------------------
+Data wykonania:        _______________________
+Stan auta (km, ECU):   _______________________
+
+Timeouty per moduł — które moduły, jak opisane:
+
+
+moduleErrors / modulesWithDtc / totalDtcs — wartości:
+
+
+Kody błędów komunikacji (jeśli wystąpiły):
+
+
+CAN live / regresja zachowania (krótko):
+
+
+Odchylenia od oczekiwań / notatki:
+
+
+Werdykt (PASS / FAIL / N/D):  _______________

@@ -1,0 +1,17 @@
+================================================================================
+DTC — indeks plików testowych (PQ35)
+================================================================================
+Folder: bridge/DTC/tests/
+Logi z przebiegu testów: osobne pliki (np. bridge/DTC/logs/ lub logs/...) — nie
+edytujemy ich w środku szablonów testów; tylko odnośniki w polach „LOGI”.
+
+Pliki:
+  00_INDEX.txt                      — ten plik
+  01_test_lokalny_bez_auta.txt      — DTC-T01
+  02_zaplon_on_silnik_off.txt       — DTC-T02
+  03_silnik_on_postoj.txt           — DTC-T03
+  04_przejazd.txt                   — DTC-T04
+  05_sleep_kluczyk.txt              — DTC-T05
+  06_kryteria_pass_globalne.txt     — checklista końcowa (§6 checklisty)
+
+Źródło scenariuszy: bridge/DTC/DTC_REGRESSION_CHECKLIST.md

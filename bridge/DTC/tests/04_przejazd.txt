@@ -1,0 +1,60 @@
+================================================================================
+TEST 04 — Na aucie: po krótkim przejeździe
+================================================================================
+Identyfikator: DTC-T04
+Powiązanie: DTC_REGRESSION_CHECKLIST.md §4
+
+--------------------------------------------------------------------------------
+CEL
+--------------------------------------------------------------------------------
+Zweryfikować skan DTC po rozgrzaniu / krótkiej jeździe, przy części modułów
+aktywnych tylko w ruchu — bez konieczności ręcznej analizy surowego terminala.
+
+--------------------------------------------------------------------------------
+WYMAGANIA WSTĘPNE
+--------------------------------------------------------------------------------
+- Bezpieczna trasa / miejsce na krótki przejazd zgodnie z lokalnymi warunkami.
+- Bridge i UI gotowe po zatrzymaniu pojazdu (skan po jeździe, typowo na postoju).
+
+--------------------------------------------------------------------------------
+INSTRUKCJA WYKONANIA (krok po kroku)
+--------------------------------------------------------------------------------
+1. Wykonaj krótki przejazd (ustalony u Ciebie minimalny czas/dystans — zapisz w obserwacjach).
+2. Zatrzymaj pojazd w bezpiecznym miejscu; ewentualnie zapłon zgodnie z procedurą (ON).
+3. Uruchom bridge i Web UI jeśli nie były aktywne.
+4. Uruchom pełny skan DTC po jeździe.
+5. Oceń wyniki wyłącznie z UI/tabeli modułów (bez konieczności parsowania surowego logu).
+
+--------------------------------------------------------------------------------
+OCZEKIWANE REZULTATY
+--------------------------------------------------------------------------------
+- Sesje diagnostyczne nie kończą się masą nieuzasadnionych timeoutów (ew. pojedyncze
+  moduły z uzasadnionym timeoutem — opis per moduł).
+- Kody DTC i statusy modułów są czytelne w tabeli UI (adres, status, liczba DTC, itd.).
+- Nie trzeba sięgać po surowy terminal, żeby zrozumieć wynik całego skanu.
+
+--------------------------------------------------------------------------------
+LOGI (osobne pliki — dołączasz na bieżąco)
+--------------------------------------------------------------------------------
+- Terminal bridge:   _________________________________________________________
+- Zrzut tabeli UI:   _________________________________________________________
+
+--------------------------------------------------------------------------------
+OBSERWACJE (uzupełniamy podczas / po teście)
+--------------------------------------------------------------------------------
+Data wykonania:        _______________________
+Opis przejazdu (czas / tryb):  _______________________________________________
+
+Moduły z timeoutami — lista i czy uzasadnione:
+
+
+Czy wystarczyło samo UI (TAK/NIE — jeśli NIE, co brakowało):
+
+
+Spójność z testami T02/T03 (opcjonalnie):
+
+
+Odchylenia od oczekiwań / notatki:
+
+
+Werdykt (PASS / FAIL / N/D):  _______________

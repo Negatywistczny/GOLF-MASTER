@@ -51,6 +51,7 @@ foreach ($f in $files) {
 
 ## Status baseline
 
+- **v02 (wiersz `v02_A_*`):** FAIL `sleep-path` = **procedura usypiania nie startuje** przy keepalive pierścienia — w logu często brak `SLEEP_IND`, bo **do tej fazy się nie dochodzi**; to **nie** jest błąd logiczny „po SleepInd” (szczegóły: `NM_STATE_SITUATION_CATALOG.md`).
 - **Brama A**: historycznie osiągana, ale niepowtarzalna między wersjami.
 - **Brama B**: stabilna w v02/v03, ale regresyjna w v01/v4.1.
 - **Brama C**: wymaga równoległego sniffera do twardego werdyktu.

@@ -37,29 +37,27 @@ OCZEKIWANE REZULTATY
 --------------------------------------------------------------------------------
 LOGI (osobne pliki — dołączasz na bieżąco)
 --------------------------------------------------------------------------------
-- Terminal / bridge:  _________________________________________________________
-- Web UI / sieć:     _________________________________________________________
-- Inne:              _________________________________________________________
+- Eksport DTC (UI / „zapisz logi”): bridge/DTC/logs/PQ35_DTC_DIAG_2026-04-12_10-43-20.txt
 
 --------------------------------------------------------------------------------
 OBSERWACJE (uzupełniamy podczas / po teście)
 --------------------------------------------------------------------------------
-Data wykonania:        _______________________
-Wersja bridge/UI:      _______________________
+Data wykonania:        2026-04-12
+Wersja bridge/UI:      test_simulation.py + Web UI (lokalnie)
 
 Przebieg statusów (START/RUNNING/DONE):
-
+  Symulator uruchomiony; auto-scan uruchomiony; statusy uznane za prawidłowe (START → RUNNING → DONE).
 
 Panel wyników — zachowanie / błędy UI:
-
+  Wygląda w porządku; brak zgłoszonych problemów.
 
 module_result per moduł — czy wszystkie widoczne:
-
+  Tak — każdy moduł na liście.
 
 Przycisk po DONE — stan:
-
+  Poprawnie zablokowany na czas skanu i odblokowany po zakończeniu.
 
 Odchylenia od oczekiwań / notatki:
+  Brak.
 
-
-Werdykt (PASS / FAIL / N/D):  _______________
+Werdykt (PASS / FAIL / N/D):  PASS

@@ -1,0 +1,552 @@
+﻿=========================================
+   GOLF MASTER v50.0 - LOG DIAGNOZY DTC
+   DATA WYGENEROWANIA: 12.04.2026, 10:43:20
+=========================================
+
+Scan ID: sim-141058276
+Status UI: done
+Moduły (ukończone): 19/19
+Moduły z DTC: 5 | DTC łącznie: 5 | Błędy komunikacji: 0
+Rozpoczęto (timestamp ms): 141058276
+
+--- MODUŁY ---
+
+[1/19] 01 Silnik (Engine)
+  Protokół: KWP
+  Kanał TX: 0x601
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[2/19] 02 Skrzynia Biegów (Auto Trans)
+  Protokół: UDS
+  Kanał TX: 0x602
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[3/19] 03 ABS / ESP / Hamulce
+  Protokół: KWP
+  Kanał TX: 0x603
+  Status: ok
+  Liczba DTC: 1
+    - 0003 | status 0x2F | confirmedDtc
+  Czas trwania (ms): —
+  Payloady (hex):
+    [0] 58 04 00 11 22 33
+
+[4/19] 08 Klimatyzacja (Climatronic)
+  Protokół: UDS
+  Kanał TX: 0x608
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[5/19] 09 Centralna Elektryka (Bordnetz)
+  Protokół: KWP
+  Kanał TX: 0x609
+  Status: ok
+  Liczba DTC: 1
+    - 0009 | status 0x2F | confirmedDtc
+  Czas trwania (ms): —
+  Payloady (hex):
+    [0] 58 04 00 11 22 33
+
+[6/19] 15 Poduszki Powietrzne (Airbag)
+  Protokół: KWP
+  Kanał TX: 0x615
+  Status: ok
+  Liczba DTC: 1
+    - 0015 | status 0x2F | confirmedDtc
+  Czas trwania (ms): —
+  Payloady (hex):
+    [0] 58 04 00 11 22 33
+
+[7/19] 16 Koło Kierownicy (Steering Wheel)
+  Protokół: UDS
+  Kanał TX: 0x616
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[8/19] 17 Zestaw Wskaźników (Instrument Cluster)
+  Protokół: KWP
+  Kanał TX: 0x617
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[9/19] 19 Gateway CAN (J533)
+  Protokół: KWP
+  Kanał TX: 0x619
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[10/19] 25 Immobilizer
+  Protokół: KWP
+  Kanał TX: 0x625
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[11/19] 37 Nawigacja
+  Protokół: KWP
+  Kanał TX: 0x637
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[12/19] 42 Elektronika Drzwi Kierowcy
+  Protokół: UDS
+  Kanał TX: 0x642
+  Status: ok
+  Liczba DTC: 1
+    - 0042 | status 0x2F | confirmedDtc
+  Czas trwania (ms): —
+  Payloady (hex):
+    [0] 58 04 00 11 22 33
+
+[13/19] 44 Wspomaganie Kierownicy (Steering Assist)
+  Protokół: UDS
+  Kanał TX: 0x644
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[14/19] 46 Moduł Komfortu (Central Convenience)
+  Protokół: UDS
+  Kanał TX: 0x646
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[15/19] 52 Elektronika Drzwi Pasażera
+  Protokół: UDS
+  Kanał TX: 0x652
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[16/19] 56 Radio / Infotainment
+  Protokół: UDS
+  Kanał TX: 0x656
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[17/19] 62 Elektronika Drzwi Tylnych Lewych
+  Protokół: UDS
+  Kanał TX: 0x662
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+[18/19] 72 Elektronika Drzwi Tylnych Prawych
+  Protokół: UDS
+  Kanał TX: 0x672
+  Status: ok
+  Liczba DTC: 1
+    - 0072 | status 0x2F | confirmedDtc
+  Czas trwania (ms): —
+  Payloady (hex):
+    [0] 58 04 00 11 22 33
+
+[19/19] 77 Telefon / Bluetooth
+  Protokół: KWP
+  Kanał TX: 0x677
+  Status: clean
+  Liczba DTC: 0
+  Czas trwania (ms): —
+
+--- JSON (pełne obiekty wierszy) ---
+[
+  {
+    "index": 1,
+    "total": 19,
+    "module": {
+      "addr": "01",
+      "name": "Silnik (Engine)"
+    },
+    "status": "clean",
+    "protocol": "KWP",
+    "txChannel": 1537,
+    "txChannelHex": "0x601",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 2,
+    "total": 19,
+    "module": {
+      "addr": "02",
+      "name": "Skrzynia Biegów (Auto Trans)"
+    },
+    "status": "clean",
+    "protocol": "UDS",
+    "txChannel": 1538,
+    "txChannelHex": "0x602",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 3,
+    "total": 19,
+    "module": {
+      "addr": "03",
+      "name": "ABS / ESP / Hamulce"
+    },
+    "status": "ok",
+    "protocol": "KWP",
+    "txChannel": 1539,
+    "txChannelHex": "0x603",
+    "dtcCount": 1,
+    "dtcs": [
+      {
+        "code": "0003",
+        "statusByte": "0x2F",
+        "statusFlags": [
+          "confirmedDtc"
+        ],
+        "source": "KWP"
+      }
+    ],
+    "errors": [],
+    "rawFrames": [
+      "58 04 00 11 22 33"
+    ],
+    "payloadsHex": [
+      "58 04 00 11 22 33"
+    ]
+  },
+  {
+    "index": 4,
+    "total": 19,
+    "module": {
+      "addr": "08",
+      "name": "Klimatyzacja (Climatronic)"
+    },
+    "status": "clean",
+    "protocol": "UDS",
+    "txChannel": 1544,
+    "txChannelHex": "0x608",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 5,
+    "total": 19,
+    "module": {
+      "addr": "09",
+      "name": "Centralna Elektryka (Bordnetz)"
+    },
+    "status": "ok",
+    "protocol": "KWP",
+    "txChannel": 1545,
+    "txChannelHex": "0x609",
+    "dtcCount": 1,
+    "dtcs": [
+      {
+        "code": "0009",
+        "statusByte": "0x2F",
+        "statusFlags": [
+          "confirmedDtc"
+        ],
+        "source": "KWP"
+      }
+    ],
+    "errors": [],
+    "rawFrames": [
+      "58 04 00 11 22 33"
+    ],
+    "payloadsHex": [
+      "58 04 00 11 22 33"
+    ]
+  },
+  {
+    "index": 6,
+    "total": 19,
+    "module": {
+      "addr": "15",
+      "name": "Poduszki Powietrzne (Airbag)"
+    },
+    "status": "ok",
+    "protocol": "KWP",
+    "txChannel": 1557,
+    "txChannelHex": "0x615",
+    "dtcCount": 1,
+    "dtcs": [
+      {
+        "code": "0015",
+        "statusByte": "0x2F",
+        "statusFlags": [
+          "confirmedDtc"
+        ],
+        "source": "KWP"
+      }
+    ],
+    "errors": [],
+    "rawFrames": [
+      "58 04 00 11 22 33"
+    ],
+    "payloadsHex": [
+      "58 04 00 11 22 33"
+    ]
+  },
+  {
+    "index": 7,
+    "total": 19,
+    "module": {
+      "addr": "16",
+      "name": "Koło Kierownicy (Steering Wheel)"
+    },
+    "status": "clean",
+    "protocol": "UDS",
+    "txChannel": 1558,
+    "txChannelHex": "0x616",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 8,
+    "total": 19,
+    "module": {
+      "addr": "17",
+      "name": "Zestaw Wskaźników (Instrument Cluster)"
+    },
+    "status": "clean",
+    "protocol": "KWP",
+    "txChannel": 1559,
+    "txChannelHex": "0x617",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 9,
+    "total": 19,
+    "module": {
+      "addr": "19",
+      "name": "Gateway CAN (J533)"
+    },
+    "status": "clean",
+    "protocol": "KWP",
+    "txChannel": 1561,
+    "txChannelHex": "0x619",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 10,
+    "total": 19,
+    "module": {
+      "addr": "25",
+      "name": "Immobilizer"
+    },
+    "status": "clean",
+    "protocol": "KWP",
+    "txChannel": 1573,
+    "txChannelHex": "0x625",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 11,
+    "total": 19,
+    "module": {
+      "addr": "37",
+      "name": "Nawigacja"
+    },
+    "status": "clean",
+    "protocol": "KWP",
+    "txChannel": 1591,
+    "txChannelHex": "0x637",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 12,
+    "total": 19,
+    "module": {
+      "addr": "42",
+      "name": "Elektronika Drzwi Kierowcy"
+    },
+    "status": "ok",
+    "protocol": "UDS",
+    "txChannel": 1602,
+    "txChannelHex": "0x642",
+    "dtcCount": 1,
+    "dtcs": [
+      {
+        "code": "0042",
+        "statusByte": "0x2F",
+        "statusFlags": [
+          "confirmedDtc"
+        ],
+        "source": "UDS"
+      }
+    ],
+    "errors": [],
+    "rawFrames": [
+      "58 04 00 11 22 33"
+    ],
+    "payloadsHex": [
+      "58 04 00 11 22 33"
+    ]
+  },
+  {
+    "index": 13,
+    "total": 19,
+    "module": {
+      "addr": "44",
+      "name": "Wspomaganie Kierownicy (Steering Assist)"
+    },
+    "status": "clean",
+    "protocol": "UDS",
+    "txChannel": 1604,
+    "txChannelHex": "0x644",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 14,
+    "total": 19,
+    "module": {
+      "addr": "46",
+      "name": "Moduł Komfortu (Central Convenience)"
+    },
+    "status": "clean",
+    "protocol": "UDS",
+    "txChannel": 1606,
+    "txChannelHex": "0x646",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 15,
+    "total": 19,
+    "module": {
+      "addr": "52",
+      "name": "Elektronika Drzwi Pasażera"
+    },
+    "status": "clean",
+    "protocol": "UDS",
+    "txChannel": 1618,
+    "txChannelHex": "0x652",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 16,
+    "total": 19,
+    "module": {
+      "addr": "56",
+      "name": "Radio / Infotainment"
+    },
+    "status": "clean",
+    "protocol": "UDS",
+    "txChannel": 1622,
+    "txChannelHex": "0x656",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 17,
+    "total": 19,
+    "module": {
+      "addr": "62",
+      "name": "Elektronika Drzwi Tylnych Lewych"
+    },
+    "status": "clean",
+    "protocol": "UDS",
+    "txChannel": 1634,
+    "txChannelHex": "0x662",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  },
+  {
+    "index": 18,
+    "total": 19,
+    "module": {
+      "addr": "72",
+      "name": "Elektronika Drzwi Tylnych Prawych"
+    },
+    "status": "ok",
+    "protocol": "UDS",
+    "txChannel": 1650,
+    "txChannelHex": "0x672",
+    "dtcCount": 1,
+    "dtcs": [
+      {
+        "code": "0072",
+        "statusByte": "0x2F",
+        "statusFlags": [
+          "confirmedDtc"
+        ],
+        "source": "UDS"
+      }
+    ],
+    "errors": [],
+    "rawFrames": [
+      "58 04 00 11 22 33"
+    ],
+    "payloadsHex": [
+      "58 04 00 11 22 33"
+    ]
+  },
+  {
+    "index": 19,
+    "total": 19,
+    "module": {
+      "addr": "77",
+      "name": "Telefon / Bluetooth"
+    },
+    "status": "clean",
+    "protocol": "KWP",
+    "txChannel": 1655,
+    "txChannelHex": "0x677",
+    "dtcCount": 0,
+    "dtcs": [],
+    "errors": [],
+    "rawFrames": [],
+    "payloadsHex": []
+  }
+]

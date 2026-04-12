@@ -16,7 +16,7 @@ Zamknąć iterację przez porównanie zachowania względem profili historycznych
 | Profil | Oczekiwany wzorzec | Potwierdzenie |
 |---|---|---|
 | v01 | Sleep działa, impuls B zrywa ring (`ERR:CAN:HANG`) | potwierdzono |
-| v02 | Brak HANG po impulsach, ale brak `SLEEP_IND` | potwierdzono |
+| v02 | Brak HANG po impulsach; A FAIL bo **procedura snu nie startuje** (keepalive pierścienia) — w logu często brak `SLEEP_IND`, bo **do tej fazy się nie dochodzi** (≠ „błąd obsługi SleepInd”) | potwierdzono |
 | v03 | Jak v02 (warianty KA/SC), C bez pełnej obserwacji serialem | potwierdzono |
 | v04_1 | Powrót do A PASS kosztem B FAIL | potwierdzono |
 | v05 | Krytyczne maskowanie (urwanie bez HANG) | potwierdzono |

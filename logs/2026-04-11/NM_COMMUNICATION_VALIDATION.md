@@ -20,14 +20,14 @@ Kryteria odnoszą się do firmware w `hardware/hardware.ino` (obecnie **v10 fina
 ### Co wynika z materiałów w repo
 
 - **v01** na logach `v01_A_*_sleep_ok` pokazuje **pełną ścieżkę snu** (`sleep-path` w skrypcie — OK), przy czym **v01_B** przy impulsach po `WAKE_END` daje **HANG** (zerwany pierścień przez brak NM na Limp).
-- **v02** usuwa **HANG** w scenariuszu B (skrypt `no-hang` / `resilience` na `v02_B_KA_*`), ale przy **wpiętym** węźle i polityce ciągłej odpowiedzi NM **nie** domyka **naturalnego snu** magistrali w logu — magistrala jest **sztucznie podtrzymywana** przez udział w pierścieniu.
+- **v02** usuwa **HANG** w scenariuszu B (skrypt `no-hang` / `resilience` na `v02_B_KA_*`), ale przy **wpiętym** węźle i polityce ciągłej odpowiedzi NM **procedura usypiania magistrali w praktyce nie ma prawa się rozpocząć** — węzeł **sztucznie podtrzymuje pierścień**, więc Gateway **nie wchodzi** w sekwencję kończącą się domknięciem snu. To **nie** jest problem „po `SleepInd`” ani „źle obsłużonego `SleepInd`”: **`SleepInd`** to **późniejsze zdarzenie w już trwającej** koordynacji snu; w profilu v02 **do tego etapu nie dochodzi**, stąd w logu często **brak** `SLEEP_IND` jako **konsekwencja braku startu** procedury (patrz `NM_STATE_SITUATION_CATALOG.md`, rozdział o rozróżnieniu).
 - **v03** dodało tryby Serial i lustro bitów Sleep w `0x40B` (**SLEEP_COOP**), ale na zapisanych logach **`v03_A_*`** `sleep-path` nadal **FAIL**.
 - **v04**: Auto-NM bez `MODE:*`; próba ograniczenia odpowiedzi NM po `WAKE_END`.
 - **v4.1 (hard sleep silence)**: po `SleepInd` brak odpowiedzi `0x40B` (bez wyjątków). **Wynik polowy:** `v04_1_A_sleep_gate_cisza_2026-04-11.txt` = **PASS** (sleep-path), ale `v04_1_B_impulsy_po_Apass_2026-04-11.txt` = **FAIL** (`ERR:CAN:HANG`). W praktyce efekt końcowy jest **równoważny v01** (nie ma jednocześnie „sleep + odporność B”).
 
 ### Ocena postępu v02 → v03 względem zamierzonego celu (historyczna, przed v10)
 
-**Realnie nie uzyskano postępu w rozwiązaniu głównego problemu** (współpraca ze snem przy wpiętym urządzeniu w warunkach zbliżonych do OE): zachowanie **rdzeniowo pozostaje w tym samym kompromisie** co v02 — węzeł **nadal** utrzymuje pierścień, a **ścieżka snu na serialu przy wpiętym Arduino nie została potwierdzona**. v03 to **większa złożoność kodu** (tryby, lustro bitów, logika HANG w SLEEP_COOP) **bez** przełożenia na **zaliczony** Test A w polu. Jedyny wyraźny zysk techniczny względem v01 to **stabilność bez HANG** w scenariuszu B — to nadal **leczenie objawowe** w sensie architektury snu, nie „naprawa” podtrzymywania magistrali.
+**Realnie nie uzyskano postępu w rozwiązaniu głównego problemu** (współpraca ze snem przy wpiętym urządzeniu w warunkach zbliżonych do OE): zachowanie **rdzeniowo pozostaje w tym samym kompromisie** co v02 — węzeł **nadal** utrzymuje pierścień, więc przy tej polityce **procedura usypiania w praktyce nie startuje** (nie chodzi o brak obsługi `SleepInd` — patrz `NM_STATE_SITUATION_CATALOG.md`), a **ścieżka snu na serialu przy wpiętym Arduino nie została potwierdzona**. v03 to **większa złożoność kodu** (tryby, lustro bitów, logika HANG w SLEEP_COOP) **bez** przełożenia na **zaliczony** Test A w polu. Jedyny wyraźny zysk techniczny względem v01 to **stabilność bez HANG** w scenariuszu B — to nadal **leczenie objawowe** w sensie architektury snu, nie „naprawa” podtrzymywania magistrali.
 
 ### Kolejność i sens dalszych testów (stanowisko autora)
 
@@ -91,7 +91,7 @@ Brak takiego checkpointu oznacza, że iteracja nie jest gotowa do testów polowy
 ### v02 — `hardware_v02_nm_netstate_plan.ino` / `hardware/hardware.ino`
 
 - **`v02_A_KA_*` / `v02_B_KA_*` (pole):** `v02_A_KA_swiatla_2026-04-11.txt`, `v02_B_KA_swiatla_impulsy_2026-04-11.txt` — skrypt **`no-hang`** + **`resilience`** → **OK** (brak `ERR:CAN:HANG`, ruch po `WAKE_END`). **Merytorycznie** to nadal **utrzymanie pierścienia przez wpięty węzeł** — patrz [Test B: skrypt vs intencja magistrali](#test-b-skrypt-vs-intencja-magistrali).
-- **`sleep-path`** na logu **z wpiętym** Arduino i **obecną** polityką „zawsze odpowiadaj na token NM” → zwykle **FAIL** (brak `SLEEP_IND`): węzeł **nadal uczestniczy w pierścieniu**, więc Gateway **nie domyka** pełnej procedury usypiania Infotainment „obok” tego urządzenia. Log **nie ma naturalnego końca** — to oczekiwane przy ręcznym zatrzymaniu nagrywania, nie „ucięty plik”.
+- **`sleep-path`** na logu **z wpiętym** Arduino i **obecną** polityką „zawsze odpowiadaj na token NM” → zwykle **FAIL**: węzeł **nadal uczestniczy w pierścieniu**, więc **procedura usypiania nie jest inicjowana** i Gateway **nie domyka** pełnej procedury Infotainment „obok” tego urządzenia. W takim logu często **nie ma** `SLEEP_IND` — bo **do fazy tego bitu się nie dochodzi**, a nie dlatego, że „nie obsłużyliśmy SleepInd”. Log **nie ma naturalnego końca** — to oczekiwane przy ręcznym zatrzymaniu nagrywania, nie „ucięty plik”.
 - Wniosek: **v02** realizuje cel **stabilnej komunikacji i braku HANG**; **wyklucza to samo** co jednoczesne łatwe uzyskanie **pełnego snu magistrali na serialu** bez zmiany polityki (np. celowe wyciszenie NM w fazie gotowości do snu / test bez aktywnego węzła).
 
 ### v03 — `hardware_v03_serial_modes_sleep_coop.ino`
@@ -100,7 +100,7 @@ Brak takiego checkpointu oznacza, że iteracja nie jest gotowa do testów polowy
   - `MODE:KEEPALIVE` — zachowanie jak **v02** (odpowiedź `0x40B` bez bitów Sleep w bajcie 1; domyślne po starcie — linia `SYS:CAN:NM_MODE_KEEPALIVE`).
   - `MODE:SLEEP_COOP` — w odpowiedzi NM **lustruje** bity **SleepInd** (`0x10`) i **SleepAck** (`0x20`) z ramki Gatewaya `0x42B` do bajtu 1 ramki `0x40B`, zgodnie z układem sygnałów **NWM_Radio** w [`data/id_ramek_tylko_radio.txt`](../../data/id_ramek_tylko_radio.txt) (startbity 12–13, jak w `mNM_Gateway_I`).
 - **Watchdog HANG:** w `SLEEP_COOP` krótkie wyciszenie fałszywego HANG w oknie **równym Grace po `WAKE_END`** (`hadWakeEndForGrace` + `!isSleepIndicated`), żeby nie karać przejścia tuż po zaniku wake.
-- **Status empiryczny (zapisane logi):** `v03_A_KA_cisza` / `v03_A_SC_cisza` — **`sleep-path` FAIL** (brak `SLEEP_IND`). **`v03_B_KA_impulsy`** / **`v03_B_SC_impulsy`:** skrypt `no-hang`+`resilience` → OK — **bez** zmiany diagnozy z sekcji [Wnioski ostateczne](#wnioski-ostateczne-stan-na-2026-04-11): **ten sam rdzeniowy problem co v02** względem celu snu przy wpiętym węźle.
+- **Status empiryczny (zapisane logi):** `v03_A_KA_cisza` / `v03_A_SC_cisza` — **`sleep-path` FAIL**; w wariancie zbliżonym do **v02** (`MODE:KEEPALIVE`) przyczyna jest ta sama klasa co w v02: **brak startu** procedury snu przy podtrzymaniu pierścienia, a **nie** „problem z `SleepInd` jako brakującą obsługą”. **`v03_B_KA_impulsy`** / **`v03_B_SC_impulsy`:** skrypt `no-hang`+`resilience` → OK — **bez** zmiany diagnozy z sekcji [Wnioski ostateczne](#wnioski-ostateczne-stan-na-2026-04-11): **rdzeniowo ten sam kompromis co v02** względem celu snu przy wpiętym węźle (szczegóły: `NM_STATE_SITUATION_CATALOG.md`).
 
 ### v04 / v4.1 — `hardware_v04_auto_nm_sleep_gate.ino` / `hardware_v04_1_sleep_hard_silent.ino`
 
@@ -137,7 +137,7 @@ Brak takiego checkpointu oznacza, że iteracja nie jest gotowa do testów polowy
 
 ## Ważne: polityka NM a pełna sekwencja snu (Test A)
 
-Przy polityce typu **„zawsze odpowiadaj NM”** (v02/v03 KEEPALIVE) magistrala pozostaje aktywna z punktu widzenia NM i zwykle nie domyka pełnego snu. Przy polityce **„hard silence po SleepInd”** (v4.1) możliwe jest domknięcie snu, ale rośnie ryzyko HANG przy późniejszych impulsach po `WAKE_END`.
+Przy polityce typu **„zawsze odpowiadaj NM”** (v02/v03 KEEPALIVE) **procedura usypiania zwykle w ogóle się nie rozpoczyna** (węzeł podtrzymuje pierścień) — to **nie** jest sytuacja „mamy już SleepInd i coś poszło nie tak”, lecz **brak wejścia** w sekwencję prowadzącą do późniejszych bitów snu. Przy polityce **„hard silence po SleepInd”** (v4.1) możliwe jest domknięcie snu w logu, ale rośnie ryzyko HANG przy późniejszych impulsach po `WAKE_END`.
 
 Skutek praktyczny (zależny od polityki NM):
 

@@ -17,6 +17,16 @@ Dla każdej sytuacji podano:
 - Mapowanie bitów NM (`CmdRing`, `CmdAlive`, `CmdLimpHome`, `SleepInd`, `SleepAck`) przyjmujemy z `data/id_ramek.txt` (kanoniczne).
 - Punkt odniesienia dla spójności nazewnictwa i klasyfikacji dowodów: `logs/2026-04-11/NM_CANONICAL_BASELINE.md`.
 
+## Rozróżnienie obowiązkowe: procedura usypiania magistrali vs zdarzenie `SleepInd`
+
+Te pojęcia **nie** są zamienne — mylenie ich prowadzi do błędnych wniosków w dokumentacji i interpretacji logów.
+
+1. **Procedura usypiania magistrali** (w sensie Testu A / pełnego cyklu): to **sekwencja stanów i decyzji Gatewaya oraz węzłów**, która **może w ogóle nie zostać rozpoczęta**. W profilu **v02** (ciągła odpowiedź NM na token, „keepalive pierścienia”) węzeł **aktywnie podtrzymuje pierścień**, więc Gateway **nie wchodzi** w dalszą fazę koordynacji snu Infotainment. W takim przypadku **zjawisko usypiania nie ma prawa się rozpocząć** — mówimy o **braku startu procedury**, a nie o „złej obsłudze któregoś kroku po drodze”.
+
+2. **`SleepInd`** (bit w bajcie 1 ramki `0x42B`, zbocze → `SYS:CAN:SLEEP_IND` na serialu): to **konkretne zdarzenie CAN w już trwającej** sekwencji koordynacji snu (po wcześniejszych warunkach systemowych). **Nie** opisuje samego faktu „magistrala zaczęła się usypiać” w abstrakcji — w **v02** typowo **nie występuje**, bo **wcześniejsza faza** (wejście w procedurę prowadzącą do tego bitu) **nie następuje**.
+
+3. **Wniosek dla logów:** **brak `SYS:CAN:SLEEP_IND`** w logu **v02** oznacza najczęściej, że **do etapu, w którym Gateway nadaje `SleepInd`, się nie doszło** — to **nie to samo** co „nie zareagowaliśmy na `SleepInd`” ani „problem po `SleepInd`”.
+
 ---
 
 ## Sytuacja S0: Start firmware i gotowość sesji
@@ -137,7 +147,7 @@ Dla każdej sytuacji podano:
 
 **Jak działać (TX)**
 - Utrzymać poprawną odpowiedź na `CmdLimpHome` (brak zerwania pierścienia).
-- Jednocześnie nie przejść w „always-keepalive”, który blokuje naturalny sen.
+- Jednocześnie nie przejść w „always-keepalive”, który **uniemożliwia rozpoczęcie** procedury usypiania (patrz [Rozróżnienie obowiązkowe](#rozróżnienie-obowiązkowe-procedura-usypiania-magistrali-vs-zdarzenie-sleepind)).
 
 ---
 
@@ -166,11 +176,15 @@ Dla każdej sytuacji podano:
 
 ## Sytuacja E2: Sztuczne podtrzymywanie komunikacji, brak domknięcia snu (A FAIL)
 
-**Sygnatura zdarzeń**
-- `WAKE_END` obecny, ale:
-  - brak `SYS:CAN:SLEEP_IND`,
-  - bardzo długi ogon ramek `0x42B` (`0B 02 00...` + `0B 01...`),
-  - brak `ERR:CAN:HANG`.
+**Istota (profil v02 — kluczowa różnica)**  
+Przy polityce **ciągłej odpowiedzi na token NM** **procedura usypiania magistrali nie jest inicjowana**: węzeł **utrzymuje pierścień**, więc **do fazy, w której pojawiłby się `SleepInd` w `0x42B`, się nie dochodzi**. To **zupełnie inny mechanizm** niż „błąd po `SleepInd`” lub „nieobsłużony `SleepInd`”. Zob. [Rozróżnienie obowiązkowe](#rozróżnienie-obowiązkowe-procedura-usypiania-magistrali-vs-zdarzenie-sleepind).
+
+**Sygnatura zdarzeń (obserwowalna w logu / skrypt A FAIL)**
+- `WAKE_END` może być obecny, ale:
+  - **brak domknięcia** `sleep-path` w sensie produktowym,
+  - w logach v02/v03 często **brak `SYS:CAN:SLEEP_IND`** — jako **konsekwencja**, że sekwencja snu **nie doszła** do etapu tego bitu, a **nie** jako opis „nie złapaliśmy SleepInd po fakcie”.
+- Bardzo długi ogon ramek `0x42B` (`0B 02 00...` + `0B 01...`),
+- brak `ERR:CAN:HANG` (warstwa techniczna B nadal może być OK).
 
 **Ramki magistrali**
 - Wysoka liczba `0x42B` po `WAKE_END` (w v02/v03 setki wpisów).
@@ -182,11 +196,11 @@ Dla każdej sytuacji podano:
 - `v03_A_SC_cisza_2026-04-11.txt`
 
 **Stan magistrali**
-- „Technicznie żyje”, ale produktowo błędny profil (brak naturalnego snu).
+- „Technicznie żyje”, ale produktowo błędny profil (brak naturalnego snu przy wpiętym węźle utrzymującym NM).
 
 **Wniosek i działanie (TX)**
-- Nie utrzymywać pierścienia bezwarunkowo.
-- Odpowiadać NM tylko zgodnie z warunkami protokołu i fazy snu.
+- Nie utrzymywać pierścienia bezwarunkowo (profil keepalive **blokuje start** procedury snu, a nie tylko „psuje obsługę SleepInd”).
+- Odpowiadać NM zgodnie z warunkami protokołu i fazą snu w firmware docelowym.
 
 ---
 
@@ -221,6 +235,8 @@ Dla każdej sytuacji podano:
 - brak `SYS:CAN:SLEEP_IND`
 - brak `ERR:CAN:HANG`
 - komentarz w logu o zerwaniu komunikacji.
+
+**Uwaga semantyczna:** brak `SLEEP_IND` w **E4** (log **v05**) oznacza tu **urwanie ruchu przed domknięciem sekwencji snu** — to **nie** jest ten sam mechanizm co w **E2 / profilu v02**, gdzie brak `SLEEP_IND` wynika z **nie rozpoczęcia** procedury usypiania przy ciągłym podtrzymaniu pierścienia (patrz [Rozróżnienie obowiązkowe](#rozróżnienie-obowiązkowe-procedura-usypiania-magistrali-vs-zdarzenie-sleepind)).
 
 **Ramki magistrali**
 - Po `WAKE_END` krótkie okno `0x42B` (`0B 02 00...`, `0B 01...`), potem urwanie.
@@ -283,7 +299,7 @@ Dla każdej sytuacji podano:
 | S2 po `WAKE_END` | tylko zdarzeniowe NM na token | „domyślne” wyciszenie po czasie |
 | S3 domknięcie snu | minimalne NM potrzebne do domknięcia sleep | podtrzymywanie pierścienia po pełnym śnie |
 | S4 impulsy po `WAKE_END` | utrzymać odpowiedź na Limp/token (bez zerwania) | trwałe milczenie prowadzące do HANG |
-| E2 sztuczne podtrzymanie | ograniczyć odpowiedzi do warunków protokołu | always-keepalive |
+| E2 sztuczne podtrzymanie | ograniczyć odpowiedzi do warunków protokołu | always-keepalive (uniemożliwia **rozpoczęcie** procedury snu — v02; nie mylić z obsługą `SleepInd`) |
 | E3 pętla sleep/wake | stabilizować na zdarzeniach magistrali | flapping stanów |
 | E4 urwanie bez HANG | traktować jako krytyczny fail, watchdog aktywny do pełnego snu | tłumienie watchdoga w stanach pośrednich |
 

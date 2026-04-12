@@ -7,9 +7,13 @@ export {
     dtcScanRegistry,
     dtcScanState,
     TERMINAL_MAX_LINES,
+    frameLastSeenMs,
     getSocket,
     setSocket,
     getCachedFrameHex,
     getCachedFrameBigInt,
-    setCachedFrame
+    setCachedFrame,
+    markFrameSeen,
+    getFrameLastSeenMs,
+    isFrameFresh
 } from "./runtimeState.js";

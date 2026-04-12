@@ -1,7 +1,8 @@
 import {
     activeCards,
     getCachedFrameHex,
-    setCachedFrame
+    setCachedFrame,
+    markFrameSeen
 } from "../state/index.js";
 import { canDictionary, decoderRouter } from "../can/frameRegistry.js";
 import { parseHexToBigInt } from "../shared/canUtils.js";
@@ -126,6 +127,7 @@ function flashCardFrameUpdate(card) {
 
 function decodeSpecificFrame(id, hexData, cardElement) {
     const valElement = cardElement.querySelector(".val");
+    markFrameSeen(id);
     if (getCachedFrameHex() !== hexData) {
         setCachedFrame(hexData, parseHexToBigInt(hexData));
     }

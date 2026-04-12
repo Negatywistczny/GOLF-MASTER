@@ -1070,6 +1070,9 @@ const signalMeta = Object.freeze({
     "NMGW_I_LIN2": { label: "Wybudzenie przez: LIN 2", states: { 0: "Nie", 1: "TAK" }, stateTags: { 0: "idle", 1: "info" } },
     "NMGW_I_WakeUp2": { label: "Wybudzenie: Rezerwa 2", unit: "" },
     "NMGW_I_WakeUp3": { label: "Wybudzenie: Rezerwa 3", unit: "" },
+    "NMGW_I_SUMMARY_BUS_MODE": { label: "Podsumowanie: Tryb magistrali", unit: "" },
+    "NMGW_I_SUMMARY_NM_MODE": { label: "Podsumowanie: Typ ramek NM", unit: "" },
+    "NMGW_I_SUMMARY_WAKE_REASON": { label: "Podsumowanie: Powód wybudzenia", unit: "" },
 
     // ==========================================
     // 0x470 - MODUŁ BORDNETZ / KOMFORT (mBSG_Kombi)
@@ -1579,6 +1582,8 @@ const signalMeta = Object.freeze({
         states: { 0: "Brak czujnika", 1: "Inicjalizacja", [-60]: "Brak czujnika", [-59]: "Inicjalizacja", 255: "BŁĄD CZUJNIKA", 195: "BŁĄD CZUJNIKA" },
         stateTags: { 0: "idle", 1: "info", [-60]: "idle", [-59]: "info", 255: "error", 195: "error" }
     },
+    "MO7_SUMMARY_CHARGING_STATE": { label: "Podsumowanie: Status alternatora", unit: "" },
+    "MO7_SUMMARY_BS2_FRESHNESS": { label: "Podsumowanie: Świeżość danych 0x571", unit: "" },
 
     // ==========================================
     // 0x557 - BŁĘDY MODUŁÓW W SYSTEMIE (mKD_Error)
@@ -2446,7 +2451,10 @@ const signalMeta = Object.freeze({
     "FI1_VIN_14": { label: "Znak VIN (Znak 14)", unit: " (ASCII)" },
     "FI1_VIN_15": { label: "Znak VIN (Znak 15)", unit: " (ASCII)" },
     "FI1_VIN_16": { label: "Znak VIN (Znak 16)", unit: " (ASCII)" },
-    "FI1_VIN_17": { label: "Znak VIN (Znak 17)", unit: " (ASCII)" }
+    "FI1_VIN_17": { label: "Znak VIN (Znak 17)", unit: " (ASCII)" },
+    "FI1_SUMMARY_VIN": { label: "Podsumowanie: Pełny VIN", unit: "" },
+    "FI1_SUMMARY_VIN_STATUS": { label: "Podsumowanie: Status kompletności VIN", unit: "" },
+    "FI1_SUMMARY_MUX_STAGE": { label: "Podsumowanie: Ostatni segment MUX", unit: "" }
 });
 
 export { signalMeta };

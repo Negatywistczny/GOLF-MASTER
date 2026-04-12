@@ -1,5 +1,5 @@
 import { extractCANSignal } from "../../shared/canUtils.js";
-import { signalMeta, frameDataCache } from "../../state/index.js";
+import { signalMeta, frameDataCache, isFrameFresh, getFrameLastSeenMs } from "../../state/index.js";
 
 export function decodeBremseGetriebeData(id, hexData, cardElement) {
     // mGW_Bremse_Getriebe (0x359), DLC 8 B — data/id_ramek.txt (29 sygnałów, bity 0–63)
@@ -279,9 +279,6 @@ export function decodeMotor7Data(id, hexData, cardElement) {
         "MO7_Oeltemperatur": extractCANSignal(hexData, 56, 8, 1, -60)
     };
 
-    // Zapisz do pamięci dla okna Modal
-    frameDataCache[id] = fullData;
-
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
     if (valElement) {
@@ -333,25 +330,43 @@ export function decodeMotor7Data(id, hexData, cardElement) {
     // W praktyce MO7_Ein_Generator często pozostaje 0 mimo prawidłowego ładowania.
     // Dlatego status opieramy na kilku sygnałach: fladze, DFM i napięciu Bordnetz (0x571).
     const bsgData = frameDataCache["0x571"] || frameDataCache["0X571"] || {};
+    const bsgFresh = isFrameFresh("0x571", 2000);
     const bordnetzV = typeof bsgData.BS2_U_BATT === "number" ? bsgData.BS2_U_BATT : null;
     const chargingByFlag = fullData.MO7_Ein_Generator === 1;
     const chargingByDfm = fullData.MO7_DFM > 5.0;
-    const chargingByVoltage = bordnetzV !== null && bordnetzV >= 13.6 && bordnetzV < 17.7;
+    const chargingByVoltage = bsgFresh && bordnetzV !== null && bordnetzV >= 13.6 && bordnetzV < 17.7;
     const chargingConfirmed = chargingByFlag || chargingByDfm || chargingByVoltage;
+    const bsgSeenMs = getFrameLastSeenMs("0x571");
+    const bsgAgeSec = bsgSeenMs === null ? null : (Date.now() - bsgSeenMs) / 1000;
+    let chargingSummary = "";
 
     if (chargingConfirmed) {
         let source = "DFM";
         if (chargingByFlag) source = "FLAGA ECU";
         else if (chargingByVoltage) source = "NAPIĘCIE";
         const vInfo = bordnetzV !== null ? ` | U: ${bordnetzV.toFixed(2)} V` : "";
-        html += `<div class="ind active-green full-width">ALTERNATOR: ŁADOWANIE OK (${source} | DFM: ${fullData.MO7_DFM.toFixed(1)}%${vInfo})</div>`;
+        chargingSummary = `ŁADOWANIE OK (${source} | DFM: ${fullData.MO7_DFM.toFixed(1)}%${vInfo})`;
+        html += `<div class="ind active-green full-width">ALTERNATOR: ${chargingSummary}</div>`;
     } else if (fullData.MO7_Sleep_Ind === 1) {
-        html += `<div class="ind full-width">ALTERNATOR: POSTÓJ / SLEEP</div>`;
+        chargingSummary = "POSTÓJ / SLEEP";
+        html += `<div class="ind full-width">ALTERNATOR: ${chargingSummary}</div>`;
+    } else if (!bsgFresh && !chargingByFlag && !chargingByDfm) {
+        const ageInfo = bsgAgeSec === null ? "BRAK ODCZYTU 0x571" : `NIEŚWIEŻE 0x571 (${bsgAgeSec.toFixed(1)} s)`;
+        chargingSummary = `NIEPEWNE (${ageInfo})`;
+        html += `<div class="ind active-orange full-width">ALTERNATOR: ${chargingSummary}</div>`;
     } else if (bordnetzV !== null && bordnetzV < 12.2 && fullData.MO7_DFM <= 1.0) {
-        html += `<div class="ind active-error full-width">ALTERNATOR: BRAK ŁADOWANIA (DFM 0%, NISKIE NAPIĘCIE)</div>`;
+        chargingSummary = "BRAK ŁADOWANIA (DFM 0%, NISKIE NAPIĘCIE)";
+        html += `<div class="ind active-error full-width">ALTERNATOR: ${chargingSummary}</div>`;
     } else {
-        html += `<div class="ind active-orange full-width">ALTERNATOR: BRAK PEWNEGO POTWIERDZENIA ŁADOWANIA</div>`;
+        chargingSummary = "BRAK PEWNEGO POTWIERDZENIA ŁADOWANIA";
+        html += `<div class="ind active-orange full-width">ALTERNATOR: ${chargingSummary}</div>`;
     }
+
+    fullData.MO7_SUMMARY_CHARGING_STATE = chargingSummary;
+    fullData.MO7_SUMMARY_BS2_FRESHNESS = bsgFresh ? "ŚWIEŻE 0x571" : "NIEŚWIEŻE/BRAK 0x571";
+
+    // Zapisz do pamięci dla okna Modal
+    frameDataCache[id] = fullData;
 
     gridContainer.innerHTML = html;
 }

@@ -6,6 +6,17 @@ import { getResolvedModalValueClass, normalizeModalFrameId } from "./modalColors
 let activeModalFrameIdNorm = null;
 let activeModalFrameIdRaw = null;
 
+function isSummaryKey(key) {
+    return typeof key === "string" && key.includes("_SUMMARY_");
+}
+
+function compareModalSignalKeys(a, b) {
+    const aSummary = isSummaryKey(a);
+    const bSummary = isSummaryKey(b);
+    if (aSummary !== bSummary) return aSummary ? -1 : 1;
+    return a.localeCompare(b);
+}
+
 function setupModal() {
     const modal = document.getElementById("info-modal");
     const close = document.querySelector(".close-btn");
@@ -23,7 +34,7 @@ function setupModal() {
 }
 
 function buildModalTablesHtml(id, data) {
-    const entries = Object.entries(data);
+    const entries = Object.entries(data).sort(([a], [b]) => compareModalSignalKeys(a, b));
     const midIndex = Math.ceil(entries.length / 2);
     const leftData = entries.slice(0, midIndex);
     const rightData = entries.slice(midIndex);

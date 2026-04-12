@@ -129,9 +129,25 @@ export function decodeGateway1Data(id, hexData, cardElement) {
     gridContainer.innerHTML = html;
 }
 
+function buildNmWakeReasons(fullData) {
+    const wakeReasons = [];
+    if (fullData.NMGW_I_Kl_15 === 1) wakeReasons.push("ZAPŁON (KL.15)");
+    if (fullData.NMGW_I_Komfort_CAN === 1) wakeReasons.push("CAN KOMFORT");
+    if (fullData.NMGW_I_Info_CAN === 1) wakeReasons.push("CAN INFO");
+    if (fullData.NMGW_I_Diag_CAN === 1) wakeReasons.push("CAN DIAGNOSTYKA");
+    if (fullData.NMGW_I_CAN === 1) wakeReasons.push("CAN (OGÓLNY)");
+    if (fullData.NMGW_I_Kl_30_Reset === 1) wakeReasons.push("RESET ZASILANIA");
+    if (fullData.NMGW_I_Wake_Up_Ltg === 1) wakeReasons.push("LINIA WAKE-UP");
+    if (fullData.NMGW_I_Fkt_Nachlauf === 1) wakeReasons.push("TIMER (NACHLAUF)");
+    if (fullData.NMGW_I_NWake === 1) wakeReasons.push("NWAKE");
+    if (fullData.NMGW_I_LIN1 === 1) wakeReasons.push("LIN 1");
+    if (fullData.NMGW_I_LIN2 === 1) wakeReasons.push("LIN 2");
+    return wakeReasons;
+}
+
 export function decodeNMGatewayIData(id, hexData, cardElement) {
     // mNM_Gateway_I (0x42B), 6 B — data/id_ramek.txt (19 sygnałów; zarezerwowany bit 11 między LimpHome a SleepInd; bity 27–29 przed Kl.15)
-    const fullData = {
+    const rawData = {
         "NMGW_I_Receiver": extractCANSignal(hexData, 0, 8),
         "NMGW_I_CmdRing": extractCANSignal(hexData, 8, 1),
         "NMGW_I_CmdAlive": extractCANSignal(hexData, 9, 1),
@@ -153,6 +169,54 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
         "NMGW_I_WakeUp3": extractCANSignal(hexData, 40, 8)
     };
 
+    const previousData = frameDataCache[id] || {};
+    const isRingOnlyFrame = rawData.NMGW_I_CmdRing === 1 && rawData.NMGW_I_CmdAlive !== 1;
+    const latchedFields = [
+        "NMGW_I_Kl_30_Reset",
+        "NMGW_I_Fkt_Nachlauf",
+        "NMGW_I_NWake",
+        "NMGW_I_CAN",
+        "NMGW_I_Wake_Up_Ltg",
+        "NMGW_I_Komfort_CAN",
+        "NMGW_I_Info_CAN",
+        "NMGW_I_Kl_15",
+        "NMGW_I_Diag_CAN",
+        "NMGW_I_LIN1",
+        "NMGW_I_LIN2",
+        "NMGW_I_WakeUp2",
+        "NMGW_I_WakeUp3"
+    ];
+
+    const fullData = { ...rawData };
+    // Ramki RING nie niosą stabilnych danych o powodach wybudzenia (bajty 2+),
+    // więc podtrzymujemy ostatni poprawny stan z ALIVE, aby nie zerować widoku.
+    if (isRingOnlyFrame) {
+        for (const fieldName of latchedFields) {
+            if (previousData[fieldName] !== undefined) {
+                fullData[fieldName] = previousData[fieldName];
+            }
+        }
+    }
+
+    let busMode = "AKTYWNA (AWAKE)";
+    if (fullData.NMGW_I_SleepInd === 1 && fullData.NMGW_I_SleepAck === 1) {
+        busMode = "USYPIANIE (SLEEP)";
+    } else if (fullData.NMGW_I_SleepInd === 1 || fullData.NMGW_I_SleepAck === 1) {
+        busMode = "ŻĄDANIE UŚPIENIA";
+    }
+
+    const nmModes = [];
+    if (fullData.NMGW_I_CmdRing === 1) nmModes.push("RING");
+    if (fullData.NMGW_I_CmdAlive === 1) nmModes.push("ALIVE");
+    const nmModeSummary = nmModes.length > 0 ? nmModes.join(" + ") : "BRAK NM";
+
+    const wakeReasons = buildNmWakeReasons(fullData);
+    const wakeSummary = wakeReasons.length > 0 ? wakeReasons.join(", ") : "BRAK POWODU WYBUDZENIA";
+
+    fullData.NMGW_I_SUMMARY_BUS_MODE = busMode;
+    fullData.NMGW_I_SUMMARY_NM_MODE = nmModeSummary;
+    fullData.NMGW_I_SUMMARY_WAKE_REASON = wakeSummary;
+
     // Zapisz do pamięci dla okna Modal
     frameDataCache[id] = fullData;
 
@@ -170,40 +234,16 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
     let html = ``;
 
     // --- Stan Magistrali (Uśpienie / Wybudzenie) ---
-    // Jeśli wskazanie usypiania i potwierdzenie są aktywne:
-    if (fullData.NMGW_I_SleepInd === 1 && fullData.NMGW_I_SleepAck === 1) {
-        html += `<div class="ind active-blue full-width">MAGISTRALA: USYPIANIE (SLEEP)</div>`;
-    } else if (fullData.NMGW_I_SleepInd === 1 || fullData.NMGW_I_SleepAck === 1) {
-        html += `<div class="ind active-orange full-width">MAGISTRALA: ŻĄDANIE UŚPIENIA</div>`;
-    } else {
-        html += `<div class="ind active-blue full-width">MAGISTRALA: AKTYWNA (AWAKE)</div>`;
-    }
+    const busModeClass = fullData.NMGW_I_SUMMARY_BUS_MODE === "ŻĄDANIE UŚPIENIA" ? "active-orange" : "active-blue";
+    html += `<div class="ind ${busModeClass} full-width">MAGISTRALA: ${fullData.NMGW_I_SUMMARY_BUS_MODE}</div>`;
 
     // --- Ramki Ring / Alive (OSEK NM) ---
-    if (fullData.NMGW_I_CmdRing === 1 || fullData.NMGW_I_CmdAlive === 1) {
-        const nmCmd = [];
-        if (fullData.NMGW_I_CmdRing === 1) nmCmd.push("RING");
-        if (fullData.NMGW_I_CmdAlive === 1) nmCmd.push("ALIVE");
-        html += `<div class="ind active-blue full-width">NM: ${nmCmd.join(" + ")}</div>`;
-    }
+    const nmModeClass = fullData.NMGW_I_SUMMARY_NM_MODE === "BRAK NM" ? "" : "active-blue";
+    html += `<div class="ind ${nmModeClass} full-width">NM: ${fullData.NMGW_I_SUMMARY_NM_MODE}</div>`;
 
     // --- Przyczyny wybudzenia (Weckursache) ---
-    let wakeReasons = [];
-    if (fullData.NMGW_I_Kl_15 === 1) wakeReasons.push("ZAPŁON (KL.15)");
-    if (fullData.NMGW_I_Komfort_CAN === 1) wakeReasons.push("CAN KOMFORT");
-    if (fullData.NMGW_I_Info_CAN === 1) wakeReasons.push("CAN INFO");
-    if (fullData.NMGW_I_Diag_CAN === 1) wakeReasons.push("CAN DIAGNOSTYKA");
-    if (fullData.NMGW_I_CAN === 1) wakeReasons.push("CAN (OGÓLNY)");
-    if (fullData.NMGW_I_Kl_30_Reset === 1) wakeReasons.push("RESET ZASILANIA");
-    if (fullData.NMGW_I_Wake_Up_Ltg === 1) wakeReasons.push("LINIA WAKE-UP");
-    if (fullData.NMGW_I_Fkt_Nachlauf === 1) wakeReasons.push("TIMER (NACHLAUF)");
-    if (fullData.NMGW_I_NWake === 1) wakeReasons.push("NWAKE");
-    if (fullData.NMGW_I_LIN1 === 1) wakeReasons.push("LIN 1");
-    if (fullData.NMGW_I_LIN2 === 1) wakeReasons.push("LIN 2");
-
-    if (wakeReasons.length > 0) {
-        html += `<div class="ind active-blue full-width">WAKE-UP: ${wakeReasons.join(", ")}</div>`;
-    }
+    const wakeClass = wakeReasons.length > 0 ? "active-blue" : "";
+    html += `<div class="ind ${wakeClass} full-width">WAKE-UP: ${fullData.NMGW_I_SUMMARY_WAKE_REASON}</div>`;
 
     // --- Tryb Awaryjny (Limp Home) ---
     if (fullData.NMGW_I_CmdLimpHome === 1) {
@@ -601,22 +641,6 @@ export function decodeFzgIdentData(id, hexData, cardElement) {
         fullData["FI1_VIN_17"] = b7;
     }
 
-    // Zapisz zaktualizowany kompletny obiekt do pamięci dla okna Modal
-    frameDataCache[id] = fullData;
-
-    // 3. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
-    const valElement = cardElement.querySelector('.val');
-    if (valElement) {
-        valElement.setAttribute('data-decoded', 'true');
-        valElement.classList.add('hidden-val');
-    }
-
-    const gridContainer = cardElement.querySelector('.grid');
-    if (!gridContainer) return;
-
-
-    let html = ``;
-
     // Budowanie ostatecznego ciągu znaków (String) z wartości ASCII
     let vinString = "";
     let isComplete = true;
@@ -633,13 +657,41 @@ export function decodeFzgIdentData(id, hexData, cardElement) {
         }
     }
 
-    // Zabezpieczenie przed niewyuczonym immo (zgodnie z dokumentacją wyświetli X lub -)
+    let vinStatus = "KOMPLETNY";
     if (vinString.includes("XXX") || vinString.includes("---")) {
-        html += `<div class="ind active-error full-width">BŁĄD WFS (IMMO) / VIN NIEZAKODOWANY!</div>`;
+        vinStatus = "WFS_BŁĄD";
     } else if (!isComplete) {
-        html += `<div class="ind active-orange full-width blink">SKANOWANIE VIN: ${vinString}</div>`;
+        vinStatus = "SKANOWANIE";
+    }
+
+    fullData.FI1_SUMMARY_VIN = vinString;
+    fullData.FI1_SUMMARY_VIN_STATUS = vinStatus;
+    fullData.FI1_SUMMARY_MUX_STAGE = `MUX ${mux}`;
+
+    // Zapisz zaktualizowany kompletny obiekt do pamięci dla okna Modal
+    frameDataCache[id] = fullData;
+
+    // 3. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
+    const valElement = cardElement.querySelector('.val');
+    if (valElement) {
+        valElement.setAttribute('data-decoded', 'true');
+        valElement.classList.add('hidden-val');
+    }
+
+    const gridContainer = cardElement.querySelector('.grid');
+    if (!gridContainer) return;
+
+
+    let html = ``;
+
+    // Zabezpieczenie przed niewyuczonym immo (zgodnie z dokumentacją wyświetli X lub -)
+    if (fullData.FI1_SUMMARY_VIN_STATUS === "WFS_BŁĄD") {
+        html += `<div class="ind active-error full-width">BŁĄD WFS (IMMO) / VIN NIEZAKODOWANY!</div>`;
+        html += `<div class="ind full-width">VIN: ${fullData.FI1_SUMMARY_VIN}</div>`;
+    } else if (fullData.FI1_SUMMARY_VIN_STATUS === "SKANOWANIE") {
+        html += `<div class="ind active-orange full-width blink">SKANOWANIE VIN: ${fullData.FI1_SUMMARY_VIN}</div>`;
     } else {
-        html += `<div class="ind active-blue full-width">${vinString}</div>`;
+        html += `<div class="ind active-blue full-width">${fullData.FI1_SUMMARY_VIN}</div>`;
         html += `<div class="ind full-width">NUMER NADWOZIA ZWERYFIKOWANY</div>`;
     }
 

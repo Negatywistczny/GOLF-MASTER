@@ -3,6 +3,17 @@ import { canDictionary } from "../can/frameRegistry.js";
 import { formatSignalValue } from "../shared/canUtils.js";
 import { logError, logTerminal, updateStatus } from "./statusLogs.js";
 
+function isSummaryKey(key) {
+    return typeof key === "string" && key.includes("_SUMMARY_");
+}
+
+function compareSnapshotSignalKeys(a, b) {
+    const aSummary = isSummaryKey(a);
+    const bSummary = isSummaryKey(b);
+    if (aSummary !== bSummary) return aSummary ? -1 : 1;
+    return a.localeCompare(b);
+}
+
 function formatLocalFileTimestamp(date = new Date()) {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -20,7 +31,7 @@ function generateSnapshot() {
     sortedIds.forEach((id) => {
         const frameName = canDictionary[id] ? canDictionary[id].name : "NIEZNANA RAMKA";
         const frameData = frameDataCache[id];
-        const sortedSignals = Object.keys(frameData).sort();
+        const sortedSignals = Object.keys(frameData).sort(compareSnapshotSignalKeys);
 
         sortedSignals.forEach((sigKey) => {
             const val = frameData[sigKey];

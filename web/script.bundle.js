@@ -1077,6 +1077,9 @@ const signalMeta = Object.freeze({
     "NMGW_I_LIN2": { label: "Wybudzenie przez: LIN 2", states: { 0: "Nie", 1: "TAK" }, stateTags: { 0: "idle", 1: "info" } },
     "NMGW_I_WakeUp2": { label: "Wybudzenie: Rezerwa 2", unit: "" },
     "NMGW_I_WakeUp3": { label: "Wybudzenie: Rezerwa 3", unit: "" },
+    "NMGW_I_SUMMARY_BUS_MODE": { label: "Podsumowanie: Tryb magistrali", unit: "" },
+    "NMGW_I_SUMMARY_NM_MODE": { label: "Podsumowanie: Typ ramek NM", unit: "" },
+    "NMGW_I_SUMMARY_WAKE_REASON": { label: "Podsumowanie: Powód wybudzenia", unit: "" },
 
     // ==========================================
     // 0x470 - MODUŁ BORDNETZ / KOMFORT (mBSG_Kombi)
@@ -1586,6 +1589,8 @@ const signalMeta = Object.freeze({
         states: { 0: "Brak czujnika", 1: "Inicjalizacja", [-60]: "Brak czujnika", [-59]: "Inicjalizacja", 255: "BŁĄD CZUJNIKA", 195: "BŁĄD CZUJNIKA" },
         stateTags: { 0: "idle", 1: "info", [-60]: "idle", [-59]: "info", 255: "error", 195: "error" }
     },
+    "MO7_SUMMARY_CHARGING_STATE": { label: "Podsumowanie: Status alternatora", unit: "" },
+    "MO7_SUMMARY_BS2_FRESHNESS": { label: "Podsumowanie: Świeżość danych 0x571", unit: "" },
 
     // ==========================================
     // 0x557 - BŁĘDY MODUŁÓW W SYSTEMIE (mKD_Error)
@@ -2453,13 +2458,17 @@ const signalMeta = Object.freeze({
     "FI1_VIN_14": { label: "Znak VIN (Znak 14)", unit: " (ASCII)" },
     "FI1_VIN_15": { label: "Znak VIN (Znak 15)", unit: " (ASCII)" },
     "FI1_VIN_16": { label: "Znak VIN (Znak 16)", unit: " (ASCII)" },
-    "FI1_VIN_17": { label: "Znak VIN (Znak 17)", unit: " (ASCII)" }
+    "FI1_VIN_17": { label: "Znak VIN (Znak 17)", unit: " (ASCII)" },
+    "FI1_SUMMARY_VIN": { label: "Podsumowanie: Pełny VIN", unit: "" },
+    "FI1_SUMMARY_VIN_STATUS": { label: "Podsumowanie: Status kompletności VIN", unit: "" },
+    "FI1_SUMMARY_MUX_STAGE": { label: "Podsumowanie: Ostatni segment MUX", unit: "" }
 });
 
 // ===== js/state/runtimeState.js =====
 const activeCards = Object.create(null);
 const errorRegistry = Object.create(null);
 const frameDataCache = Object.create(null);
+const frameLastSeenMs = Object.create(null);
 const terminalBuffer = [];
 const dtcScanRegistry = Object.create(null);
 const dtcScanState = {
@@ -2497,6 +2506,33 @@ function getCachedFrameBigInt() {
 function setCachedFrame(hex, dataBigInt) {
     __cachedFrameHex = hex;
     __cachedFrameBigInt = dataBigInt;
+}
+
+function normalizeFrameIdKey(id) {
+    const s = String(id || "").trim();
+    if (!s) return s;
+    const n = Number.parseInt(s, 16);
+    if (Number.isNaN(n)) return s;
+    return `0x${n.toString(16).toUpperCase()}`;
+}
+
+function markFrameSeen(id, nowMs = Date.now()) {
+    const key = normalizeFrameIdKey(id);
+    if (!key) return;
+    frameLastSeenMs[key] = nowMs;
+}
+
+function getFrameLastSeenMs(id) {
+    const key = normalizeFrameIdKey(id);
+    if (!key) return null;
+    const seenMs = frameLastSeenMs[key];
+    return typeof seenMs === "number" ? seenMs : null;
+}
+
+function isFrameFresh(id, maxAgeMs, nowMs = Date.now()) {
+    const seenMs = getFrameLastSeenMs(id);
+    if (seenMs === null) return false;
+    return nowMs - seenMs <= maxAgeMs;
 }
 
 // ===== js/state/index.js =====
@@ -2706,9 +2742,25 @@ function decodeGateway1Data(id, hexData, cardElement) {
     gridContainer.innerHTML = html;
 }
 
+function buildNmWakeReasons(fullData) {
+    const wakeReasons = [];
+    if (fullData.NMGW_I_Kl_15 === 1) wakeReasons.push("ZAPŁON (KL.15)");
+    if (fullData.NMGW_I_Komfort_CAN === 1) wakeReasons.push("CAN KOMFORT");
+    if (fullData.NMGW_I_Info_CAN === 1) wakeReasons.push("CAN INFO");
+    if (fullData.NMGW_I_Diag_CAN === 1) wakeReasons.push("CAN DIAGNOSTYKA");
+    if (fullData.NMGW_I_CAN === 1) wakeReasons.push("CAN (OGÓLNY)");
+    if (fullData.NMGW_I_Kl_30_Reset === 1) wakeReasons.push("RESET ZASILANIA");
+    if (fullData.NMGW_I_Wake_Up_Ltg === 1) wakeReasons.push("LINIA WAKE-UP");
+    if (fullData.NMGW_I_Fkt_Nachlauf === 1) wakeReasons.push("TIMER (NACHLAUF)");
+    if (fullData.NMGW_I_NWake === 1) wakeReasons.push("NWAKE");
+    if (fullData.NMGW_I_LIN1 === 1) wakeReasons.push("LIN 1");
+    if (fullData.NMGW_I_LIN2 === 1) wakeReasons.push("LIN 2");
+    return wakeReasons;
+}
+
 function decodeNMGatewayIData(id, hexData, cardElement) {
     // mNM_Gateway_I (0x42B), 6 B — data/id_ramek.txt (19 sygnałów; zarezerwowany bit 11 między LimpHome a SleepInd; bity 27–29 przed Kl.15)
-    const fullData = {
+    const rawData = {
         "NMGW_I_Receiver": extractCANSignal(hexData, 0, 8),
         "NMGW_I_CmdRing": extractCANSignal(hexData, 8, 1),
         "NMGW_I_CmdAlive": extractCANSignal(hexData, 9, 1),
@@ -2730,6 +2782,54 @@ function decodeNMGatewayIData(id, hexData, cardElement) {
         "NMGW_I_WakeUp3": extractCANSignal(hexData, 40, 8)
     };
 
+    const previousData = frameDataCache[id] || {};
+    const isRingOnlyFrame = rawData.NMGW_I_CmdRing === 1 && rawData.NMGW_I_CmdAlive !== 1;
+    const latchedFields = [
+        "NMGW_I_Kl_30_Reset",
+        "NMGW_I_Fkt_Nachlauf",
+        "NMGW_I_NWake",
+        "NMGW_I_CAN",
+        "NMGW_I_Wake_Up_Ltg",
+        "NMGW_I_Komfort_CAN",
+        "NMGW_I_Info_CAN",
+        "NMGW_I_Kl_15",
+        "NMGW_I_Diag_CAN",
+        "NMGW_I_LIN1",
+        "NMGW_I_LIN2",
+        "NMGW_I_WakeUp2",
+        "NMGW_I_WakeUp3"
+    ];
+
+    const fullData = { ...rawData };
+    // Ramki RING nie niosą stabilnych danych o powodach wybudzenia (bajty 2+),
+    // więc podtrzymujemy ostatni poprawny stan z ALIVE, aby nie zerować widoku.
+    if (isRingOnlyFrame) {
+        for (const fieldName of latchedFields) {
+            if (previousData[fieldName] !== undefined) {
+                fullData[fieldName] = previousData[fieldName];
+            }
+        }
+    }
+
+    let busMode = "AKTYWNA (AWAKE)";
+    if (fullData.NMGW_I_SleepInd === 1 && fullData.NMGW_I_SleepAck === 1) {
+        busMode = "USYPIANIE (SLEEP)";
+    } else if (fullData.NMGW_I_SleepInd === 1 || fullData.NMGW_I_SleepAck === 1) {
+        busMode = "ŻĄDANIE UŚPIENIA";
+    }
+
+    const nmModes = [];
+    if (fullData.NMGW_I_CmdRing === 1) nmModes.push("RING");
+    if (fullData.NMGW_I_CmdAlive === 1) nmModes.push("ALIVE");
+    const nmModeSummary = nmModes.length > 0 ? nmModes.join(" + ") : "BRAK NM";
+
+    const wakeReasons = buildNmWakeReasons(fullData);
+    const wakeSummary = wakeReasons.length > 0 ? wakeReasons.join(", ") : "BRAK POWODU WYBUDZENIA";
+
+    fullData.NMGW_I_SUMMARY_BUS_MODE = busMode;
+    fullData.NMGW_I_SUMMARY_NM_MODE = nmModeSummary;
+    fullData.NMGW_I_SUMMARY_WAKE_REASON = wakeSummary;
+
     // Zapisz do pamięci dla okna Modal
     frameDataCache[id] = fullData;
 
@@ -2747,40 +2847,16 @@ function decodeNMGatewayIData(id, hexData, cardElement) {
     let html = ``;
 
     // --- Stan Magistrali (Uśpienie / Wybudzenie) ---
-    // Jeśli wskazanie usypiania i potwierdzenie są aktywne:
-    if (fullData.NMGW_I_SleepInd === 1 && fullData.NMGW_I_SleepAck === 1) {
-        html += `<div class="ind active-blue full-width">MAGISTRALA: USYPIANIE (SLEEP)</div>`;
-    } else if (fullData.NMGW_I_SleepInd === 1 || fullData.NMGW_I_SleepAck === 1) {
-        html += `<div class="ind active-orange full-width">MAGISTRALA: ŻĄDANIE UŚPIENIA</div>`;
-    } else {
-        html += `<div class="ind active-blue full-width">MAGISTRALA: AKTYWNA (AWAKE)</div>`;
-    }
+    const busModeClass = fullData.NMGW_I_SUMMARY_BUS_MODE === "ŻĄDANIE UŚPIENIA" ? "active-orange" : "active-blue";
+    html += `<div class="ind ${busModeClass} full-width">MAGISTRALA: ${fullData.NMGW_I_SUMMARY_BUS_MODE}</div>`;
 
     // --- Ramki Ring / Alive (OSEK NM) ---
-    if (fullData.NMGW_I_CmdRing === 1 || fullData.NMGW_I_CmdAlive === 1) {
-        const nmCmd = [];
-        if (fullData.NMGW_I_CmdRing === 1) nmCmd.push("RING");
-        if (fullData.NMGW_I_CmdAlive === 1) nmCmd.push("ALIVE");
-        html += `<div class="ind active-blue full-width">NM: ${nmCmd.join(" + ")}</div>`;
-    }
+    const nmModeClass = fullData.NMGW_I_SUMMARY_NM_MODE === "BRAK NM" ? "" : "active-blue";
+    html += `<div class="ind ${nmModeClass} full-width">NM: ${fullData.NMGW_I_SUMMARY_NM_MODE}</div>`;
 
     // --- Przyczyny wybudzenia (Weckursache) ---
-    let wakeReasons = [];
-    if (fullData.NMGW_I_Kl_15 === 1) wakeReasons.push("ZAPŁON (KL.15)");
-    if (fullData.NMGW_I_Komfort_CAN === 1) wakeReasons.push("CAN KOMFORT");
-    if (fullData.NMGW_I_Info_CAN === 1) wakeReasons.push("CAN INFO");
-    if (fullData.NMGW_I_Diag_CAN === 1) wakeReasons.push("CAN DIAGNOSTYKA");
-    if (fullData.NMGW_I_CAN === 1) wakeReasons.push("CAN (OGÓLNY)");
-    if (fullData.NMGW_I_Kl_30_Reset === 1) wakeReasons.push("RESET ZASILANIA");
-    if (fullData.NMGW_I_Wake_Up_Ltg === 1) wakeReasons.push("LINIA WAKE-UP");
-    if (fullData.NMGW_I_Fkt_Nachlauf === 1) wakeReasons.push("TIMER (NACHLAUF)");
-    if (fullData.NMGW_I_NWake === 1) wakeReasons.push("NWAKE");
-    if (fullData.NMGW_I_LIN1 === 1) wakeReasons.push("LIN 1");
-    if (fullData.NMGW_I_LIN2 === 1) wakeReasons.push("LIN 2");
-
-    if (wakeReasons.length > 0) {
-        html += `<div class="ind active-blue full-width">WAKE-UP: ${wakeReasons.join(", ")}</div>`;
-    }
+    const wakeClass = wakeReasons.length > 0 ? "active-blue" : "";
+    html += `<div class="ind ${wakeClass} full-width">WAKE-UP: ${fullData.NMGW_I_SUMMARY_WAKE_REASON}</div>`;
 
     // --- Tryb Awaryjny (Limp Home) ---
     if (fullData.NMGW_I_CmdLimpHome === 1) {
@@ -3178,22 +3254,6 @@ function decodeFzgIdentData(id, hexData, cardElement) {
         fullData["FI1_VIN_17"] = b7;
     }
 
-    // Zapisz zaktualizowany kompletny obiekt do pamięci dla okna Modal
-    frameDataCache[id] = fullData;
-
-    // 3. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
-    const valElement = cardElement.querySelector('.val');
-    if (valElement) {
-        valElement.setAttribute('data-decoded', 'true');
-        valElement.classList.add('hidden-val');
-    }
-
-    const gridContainer = cardElement.querySelector('.grid');
-    if (!gridContainer) return;
-
-
-    let html = ``;
-
     // Budowanie ostatecznego ciągu znaków (String) z wartości ASCII
     let vinString = "";
     let isComplete = true;
@@ -3210,13 +3270,41 @@ function decodeFzgIdentData(id, hexData, cardElement) {
         }
     }
 
-    // Zabezpieczenie przed niewyuczonym immo (zgodnie z dokumentacją wyświetli X lub -)
+    let vinStatus = "KOMPLETNY";
     if (vinString.includes("XXX") || vinString.includes("---")) {
-        html += `<div class="ind active-error full-width">BŁĄD WFS (IMMO) / VIN NIEZAKODOWANY!</div>`;
+        vinStatus = "WFS_BŁĄD";
     } else if (!isComplete) {
-        html += `<div class="ind active-orange full-width blink">SKANOWANIE VIN: ${vinString}</div>`;
+        vinStatus = "SKANOWANIE";
+    }
+
+    fullData.FI1_SUMMARY_VIN = vinString;
+    fullData.FI1_SUMMARY_VIN_STATUS = vinStatus;
+    fullData.FI1_SUMMARY_MUX_STAGE = `MUX ${mux}`;
+
+    // Zapisz zaktualizowany kompletny obiekt do pamięci dla okna Modal
+    frameDataCache[id] = fullData;
+
+    // 3. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
+    const valElement = cardElement.querySelector('.val');
+    if (valElement) {
+        valElement.setAttribute('data-decoded', 'true');
+        valElement.classList.add('hidden-val');
+    }
+
+    const gridContainer = cardElement.querySelector('.grid');
+    if (!gridContainer) return;
+
+
+    let html = ``;
+
+    // Zabezpieczenie przed niewyuczonym immo (zgodnie z dokumentacją wyświetli X lub -)
+    if (fullData.FI1_SUMMARY_VIN_STATUS === "WFS_BŁĄD") {
+        html += `<div class="ind active-error full-width">BŁĄD WFS (IMMO) / VIN NIEZAKODOWANY!</div>`;
+        html += `<div class="ind full-width">VIN: ${fullData.FI1_SUMMARY_VIN}</div>`;
+    } else if (fullData.FI1_SUMMARY_VIN_STATUS === "SKANOWANIE") {
+        html += `<div class="ind active-orange full-width blink">SKANOWANIE VIN: ${fullData.FI1_SUMMARY_VIN}</div>`;
     } else {
-        html += `<div class="ind active-blue full-width">${vinString}</div>`;
+        html += `<div class="ind active-blue full-width">${fullData.FI1_SUMMARY_VIN}</div>`;
         html += `<div class="ind full-width">NUMER NADWOZIA ZWERYFIKOWANY</div>`;
     }
 
@@ -4291,9 +4379,6 @@ function decodeMotor7Data(id, hexData, cardElement) {
         "MO7_Oeltemperatur": extractCANSignal(hexData, 56, 8, 1, -60)
     };
 
-    // Zapisz do pamięci dla okna Modal
-    frameDataCache[id] = fullData;
-
     // 2. AKTUALIZACJA GŁÓWNEGO KAFELKA NA EKRANIE
     const valElement = cardElement.querySelector('.val');
     if (valElement) {
@@ -4345,25 +4430,43 @@ function decodeMotor7Data(id, hexData, cardElement) {
     // W praktyce MO7_Ein_Generator często pozostaje 0 mimo prawidłowego ładowania.
     // Dlatego status opieramy na kilku sygnałach: fladze, DFM i napięciu Bordnetz (0x571).
     const bsgData = frameDataCache["0x571"] || frameDataCache["0X571"] || {};
+    const bsgFresh = isFrameFresh("0x571", 2000);
     const bordnetzV = typeof bsgData.BS2_U_BATT === "number" ? bsgData.BS2_U_BATT : null;
     const chargingByFlag = fullData.MO7_Ein_Generator === 1;
     const chargingByDfm = fullData.MO7_DFM > 5.0;
-    const chargingByVoltage = bordnetzV !== null && bordnetzV >= 13.6 && bordnetzV < 17.7;
+    const chargingByVoltage = bsgFresh && bordnetzV !== null && bordnetzV >= 13.6 && bordnetzV < 17.7;
     const chargingConfirmed = chargingByFlag || chargingByDfm || chargingByVoltage;
+    const bsgSeenMs = getFrameLastSeenMs("0x571");
+    const bsgAgeSec = bsgSeenMs === null ? null : (Date.now() - bsgSeenMs) / 1000;
+    let chargingSummary = "";
 
     if (chargingConfirmed) {
         let source = "DFM";
         if (chargingByFlag) source = "FLAGA ECU";
         else if (chargingByVoltage) source = "NAPIĘCIE";
         const vInfo = bordnetzV !== null ? ` | U: ${bordnetzV.toFixed(2)} V` : "";
-        html += `<div class="ind active-green full-width">ALTERNATOR: ŁADOWANIE OK (${source} | DFM: ${fullData.MO7_DFM.toFixed(1)}%${vInfo})</div>`;
+        chargingSummary = `ŁADOWANIE OK (${source} | DFM: ${fullData.MO7_DFM.toFixed(1)}%${vInfo})`;
+        html += `<div class="ind active-green full-width">ALTERNATOR: ${chargingSummary}</div>`;
     } else if (fullData.MO7_Sleep_Ind === 1) {
-        html += `<div class="ind full-width">ALTERNATOR: POSTÓJ / SLEEP</div>`;
+        chargingSummary = "POSTÓJ / SLEEP";
+        html += `<div class="ind full-width">ALTERNATOR: ${chargingSummary}</div>`;
+    } else if (!bsgFresh && !chargingByFlag && !chargingByDfm) {
+        const ageInfo = bsgAgeSec === null ? "BRAK ODCZYTU 0x571" : `NIEŚWIEŻE 0x571 (${bsgAgeSec.toFixed(1)} s)`;
+        chargingSummary = `NIEPEWNE (${ageInfo})`;
+        html += `<div class="ind active-orange full-width">ALTERNATOR: ${chargingSummary}</div>`;
     } else if (bordnetzV !== null && bordnetzV < 12.2 && fullData.MO7_DFM <= 1.0) {
-        html += `<div class="ind active-error full-width">ALTERNATOR: BRAK ŁADOWANIA (DFM 0%, NISKIE NAPIĘCIE)</div>`;
+        chargingSummary = "BRAK ŁADOWANIA (DFM 0%, NISKIE NAPIĘCIE)";
+        html += `<div class="ind active-error full-width">ALTERNATOR: ${chargingSummary}</div>`;
     } else {
-        html += `<div class="ind active-orange full-width">ALTERNATOR: BRAK PEWNEGO POTWIERDZENIA ŁADOWANIA</div>`;
+        chargingSummary = "BRAK PEWNEGO POTWIERDZENIA ŁADOWANIA";
+        html += `<div class="ind active-orange full-width">ALTERNATOR: ${chargingSummary}</div>`;
     }
+
+    fullData.MO7_SUMMARY_CHARGING_STATE = chargingSummary;
+    fullData.MO7_SUMMARY_BS2_FRESHNESS = bsgFresh ? "ŚWIEŻE 0x571" : "NIEŚWIEŻE/BRAK 0x571";
+
+    // Zapisz do pamięci dla okna Modal
+    frameDataCache[id] = fullData;
 
     gridContainer.innerHTML = html;
 }
@@ -5085,6 +5188,17 @@ function getResolvedModalValueClass(frameId, signalKey, rawValue, displayVal, me
 let activeModalFrameIdNorm = null;
 let activeModalFrameIdRaw = null;
 
+function isSummaryKey(key) {
+    return typeof key === "string" && key.includes("_SUMMARY_");
+}
+
+function compareModalSignalKeys(a, b) {
+    const aSummary = isSummaryKey(a);
+    const bSummary = isSummaryKey(b);
+    if (aSummary !== bSummary) return aSummary ? -1 : 1;
+    return a.localeCompare(b);
+}
+
 function setupModal() {
     const modal = document.getElementById("info-modal");
     const close = document.querySelector(".close-btn");
@@ -5102,7 +5216,7 @@ function setupModal() {
 }
 
 function buildModalTablesHtml(id, data) {
-    const entries = Object.entries(data);
+    const entries = Object.entries(data).sort(([a], [b]) => compareModalSignalKeys(a, b));
     const midIndex = Math.ceil(entries.length / 2);
     const leftData = entries.slice(0, midIndex);
     const rightData = entries.slice(midIndex);
@@ -5298,6 +5412,7 @@ function flashCardFrameUpdate(card) {
 
 function decodeSpecificFrame(id, hexData, cardElement) {
     const valElement = cardElement.querySelector(".val");
+    markFrameSeen(id);
     if (getCachedFrameHex() !== hexData) {
         setCachedFrame(hexData, parseHexToBigInt(hexData));
     }
@@ -5475,6 +5590,17 @@ function startClock() {
 
 
 
+function isSummaryKey(key) {
+    return typeof key === "string" && key.includes("_SUMMARY_");
+}
+
+function compareSnapshotSignalKeys(a, b) {
+    const aSummary = isSummaryKey(a);
+    const bSummary = isSummaryKey(b);
+    if (aSummary !== bSummary) return aSummary ? -1 : 1;
+    return a.localeCompare(b);
+}
+
 function formatLocalFileTimestamp(date = new Date()) {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -5492,7 +5618,7 @@ function generateSnapshot() {
     sortedIds.forEach((id) => {
         const frameName = canDictionary[id] ? canDictionary[id].name : "NIEZNANA RAMKA";
         const frameData = frameDataCache[id];
-        const sortedSignals = Object.keys(frameData).sort();
+        const sortedSignals = Object.keys(frameData).sort(compareSnapshotSignalKeys);
 
         sortedSignals.forEach((sigKey) => {
             const val = frameData[sigKey];

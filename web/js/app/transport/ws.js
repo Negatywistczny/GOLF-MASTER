@@ -104,10 +104,6 @@ export function connectWebSocket() {
 
     socket.onmessage = (event) => {
         parseIncomingData(event.data);
-        if (event.data.includes("AUTO-SKAN ZAKOŃCZONY")) {
-            setDtcScanButtonLoading(false);
-            updateStatus("AUTO-SKAN ZAKOŃCZONY", "var(--green)");
-        }
     };
 
     socket.onclose = () => {

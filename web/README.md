@@ -79,7 +79,7 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 - Po wyłączeniu bridge status przechodzi na błąd i po chwili następuje ponowne połączenie (ok. 3 s).
 
 ### C. Interakcje dashboardu
-- Klik `🛠️ SKANUJ DTC`:
+- Klik `🛠️ SKANUJ DTC` (nad tabelą w sekcji wyniku auto-skanu DTC, obok `📝 LOG DTC`):
   - przycisk zmienia stan na skanowanie,
   - brak błędów referencji w konsoli.
 - Klik `📸 SNAPSHOT`:

@@ -32,11 +32,15 @@ function _renderRows() {
         const details = row.errors && row.errors.length
             ? row.errors.map((e) => `${e.protocol}:${e.code}`).join(", ")
             : (row.dtcCount > 0 ? row.dtcs.map((d) => d.code).slice(0, 3).join(", ") : "—");
+        const txCh = row.txChannelHex != null && row.txChannelHex !== ""
+            ? row.txChannelHex
+            : "—";
 
         tr.innerHTML = `
             <td>${row.module.addr}</td>
             <td>${row.module.name}</td>
             <td>${row.protocol || "N/A"}</td>
+            <td>${txCh}</td>
             <td class="${_statusClass(row.status)}">${_statusLabel(row.status)}</td>
             <td>${row.dtcCount ?? 0}</td>
             <td title="${details}">${details}</td>

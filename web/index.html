@@ -12,7 +12,6 @@
     <header class="header">
         <h1>GOLF MASTER v50.0</h1>
         <div class="header-actions">
-            <button id="btn-scan-all" class="btn-diag">🛠️ SKANUJ DTC</button>
             <button id="btn-snapshot" class="btn-snap">📸 SNAPSHOT</button>
             <button id="btn-download-logs" class="btn-log">📝 ZAPISZ LOGI</button>
             <div id="sim-clock">--:--:--</div>
@@ -81,7 +80,13 @@
         </div>
 
         <div class="diag-section dtc-scan-section" id="dtc-scan-panel">
-            <div class="section-label">🧰 WYNIK AUTO-SKANU DTC</div>
+            <div class="dtc-section-head">
+                <div class="section-label">🧰 WYNIK AUTO-SKANU DTC</div>
+                <div class="header-actions">
+                    <button id="btn-scan-all" type="button" class="btn-diag">🛠️ SKANUJ DTC</button>
+                    <button id="btn-download-dtc-log" type="button" class="btn-log">📝 LOG DTC</button>
+                </div>
+            </div>
             <div id="dtc-scan-summary" class="dtc-summary">Scan: IDLE | Moduły: 0/0 | DTC moduły: 0 | DTC łącznie: 0 | Błędy komunikacji: 0</div>
             <div class="table-scroll dtc-scroll">
                 <table>
@@ -90,6 +95,7 @@
                             <th>ADR</th>
                             <th>MODUŁ</th>
                             <th>PROTOKÓŁ</th>
+                            <th>KANAŁ TX</th>
                             <th>STATUS</th>
                             <th>DTC</th>
                             <th>SZCZEGÓŁY</th>

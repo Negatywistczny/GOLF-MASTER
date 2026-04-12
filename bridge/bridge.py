@@ -321,13 +321,12 @@ async def _wait_for_frame(
             return can_id, data, line
 
 
-async def _tp20_open_session(module: ModuleSpec, websocket) -> int:
+async def _tp20_open_session(module: ModuleSpec) -> int:
     addr_int = int(module.addr_hex, 16)
     rx_id_expected = 0x200 + addr_int
 
     _flush_rx_queue()
 
-    await log_and_send(websocket, f"SYS:PYTHON: [1/4] Łączenie z {module.name} (0x{module.addr_hex})...")
     await _queue_can_tx(0x200, [addr_int, 0xC0, 0x00, 0x10, 0x00, 0x03, 0x01])
 
     def setup_predicate(can_id, data, _line):
@@ -338,7 +337,6 @@ async def _tp20_open_session(module: ModuleSpec, websocket) -> int:
     except SessionError as exc:
         raise SessionError("gateway_setup_timeout", f"Brak D0 z gateway dla {module.addr_hex}") from exc
     tx_channel = (setup_data[5] << 8) | setup_data[4]
-    await log_and_send(websocket, f"SYS:PYTHON: [2/4] Zgoda! Kanał TX to 0x{tx_channel:X}")
 
     def timing_predicate(can_id, data, _line):
         return can_id == 0x300 and len(data) >= 1 and data[0] == 0xA8
@@ -347,7 +345,6 @@ async def _tp20_open_session(module: ModuleSpec, websocket) -> int:
         await _wait_for_frame(timing_predicate, TP_TIMING_TIMEOUT_S)
     except SessionError as exc:
         raise SessionError("timing_timeout", f"Brak A8 (timing) dla {module.addr_hex}") from exc
-    await log_and_send(websocket, "SYS:PYTHON: [3/4] Potwierdzam Timingi (A0)...")
     await _queue_can_tx(tx_channel, [0xA0, 0x0F, 0x8A, 0xFF, 0x32, 0xFF])
     await asyncio.sleep(0.05)
     return tx_channel
@@ -366,12 +363,7 @@ def _request_for_protocol(protocol: str) -> List[int]:
     return [0x11, 0x04, 0x18, 0x00, 0x00, 0x00]
 
 
-async def _read_dtc_payloads(protocol: str, tx_channel: int, websocket) -> Dict[str, Any]:
-    if protocol == "uds":
-        await log_and_send(websocket, "SYS:PYTHON: [4/4] Żądam DTC UDS (0x19)...")
-    else:
-        await log_and_send(websocket, "SYS:PYTHON: [4/4] Żądam DTC KWP2000 (0x18)...")
-
+async def _read_dtc_payloads(protocol: str, tx_channel: int) -> Dict[str, Any]:
     await _queue_can_tx(tx_channel, _request_for_protocol(protocol))
 
     assembler = PayloadAssembler()
@@ -422,16 +414,17 @@ async def _scan_module_protocol(
     tx_channel = None
     started_ms = _now_ms()
     try:
-        tx_channel = await _tp20_open_session(module, websocket)
-        read_result = await _read_dtc_payloads(protocol, tx_channel, websocket)
+        tx_channel = await _tp20_open_session(module)
+        read_result = await _read_dtc_payloads(protocol, tx_channel)
         await _tp20_close_session(tx_channel)
-        await log_and_send(websocket, "SYS:PYTHON: Sesja zamknięta. Przechodzę dalej...")
 
         dtcs = read_result["dtcs"]
         status = "ok" if dtcs else "clean"
         return {
             "status": status,
             "protocol": protocol.upper(),
+            "txChannel": tx_channel,
+            "txChannelHex": f"0x{tx_channel:X}",
             "dtcs": dtcs,
             "dtcCount": len(dtcs),
             "rawFrames": read_result["rawFrames"],
@@ -475,18 +468,10 @@ async def _scan_module_with_fallback(
                 "errors": protocol_errors,
             }
             await _send_event(websocket, "module_result", result_payload)
-            if result["dtcCount"] > 0:
-                await log_and_send(websocket, f"SYS:PYTHON: ✅ Odebrano {result['dtcCount']} DTC z {module.name}.")
-            else:
-                await log_and_send(websocket, f"SYS:PYTHON: ✅ {module.name} jest czysty (Brak DTC).")
             return result_payload
         except SessionError as exc:
             protocol_errors.append(
                 {"protocol": protocol.upper(), "code": exc.code, "message": exc.message}
-            )
-            await log_and_send(
-                websocket,
-                f"SYS:PYTHON: ⚠️ {module.name} / {protocol.upper()} - {exc.code}: {exc.message}",
             )
             continue
 
@@ -496,6 +481,8 @@ async def _scan_module_with_fallback(
         "module": {"addr": module.addr_hex, "name": module.name},
         "status": "comm_error",
         "protocol": module.protocols[0].upper(),
+        "txChannel": None,
+        "txChannelHex": None,
         "dtcs": [],
         "dtcCount": 0,
         "rawFrames": [],
@@ -504,7 +491,6 @@ async def _scan_module_with_fallback(
         "errors": protocol_errors,
     }
     await _send_event(websocket, "module_result", failure_payload)
-    await log_and_send(websocket, f"SYS:PYTHON: ❌ Brak komunikacji z {module.name}.")
     return failure_payload
 
 
@@ -528,7 +514,6 @@ async def perform_full_scan(websocket):
                 "startedAt": scan_started,
             },
         )
-        await log_and_send(websocket, "SYS:PYTHON: --- START AUTO-SKAN (KWP/UDS over TP2.0) ---")
 
         module_results: List[Dict[str, Any]] = []
         for idx, module in enumerate(MODULES, start=1):
@@ -554,7 +539,6 @@ async def perform_full_scan(websocket):
                 "totalDtcs": total_dtcs,
             },
         )
-        await log_and_send(websocket, "SYS:PYTHON: --- AUTO-SKAN ZAKOŃCZONY ---")
     except Exception as exc:
         await _send_event(
             websocket,

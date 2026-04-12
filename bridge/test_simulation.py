@@ -135,49 +135,35 @@ async def simulate_can_bus():
         else:
             await asyncio.sleep(1)
 
-async def simulate_tp20_read_dtc(addr_hex, name, websocket, protocol: str):
+async def simulate_tp20_read_dtc(addr_hex: str, protocol: str) -> dict:
     """
     Symulacja odpowiednika tp20_read_dtc() z bridge.py.
-    Nie komunikuje się z hardware - jedynie emituje analogiczne logi i ramki.
+    Nie komunikuje się z hardware — emituje te same pola co bridge (w tym kanał TX).
     """
-    await log_and_send(websocket, f"SYS:PYTHON: [1/4] Łączenie z {name} (0x{addr_hex})...")
     await asyncio.sleep(0.08)
-
-    tx_channel = f"{int(addr_hex, 16) + 0x300:03X}".lstrip("0")
-    await log_and_send(websocket, f"SYS:PYTHON: [2/4] Zgoda! Kanał TX to 0x{tx_channel}")
-
-    await asyncio.sleep(0.05)
-    await log_and_send(websocket, "SYS:PYTHON: [3/4] Potwierdzam Timingi (A0)...")
-    await asyncio.sleep(0.05)
-
-    if protocol == "uds":
-        await log_and_send(websocket, "SYS:PYTHON: [4/4] Żądam DTC UDS (0x19)...")
-    else:
-        await log_and_send(websocket, "SYS:PYTHON: [4/4] Żądam Kody DTC KWP2000...")
-    await asyncio.sleep(0.08)
+    tx_channel = 0x600 + int(addr_hex, 16)
+    await asyncio.sleep(0.13)
 
     # Prosta, deterministyczna symulacja: niektóre moduły zwracają DTC.
     has_dtc = int(addr_hex, 16) % 3 == 0
     if has_dtc:
         dtc_frame = f"0x300: 58 04 {addr_hex} 00 11 22 33"
         await broadcast(dtc_frame)
-        await log_and_send(websocket, f"SYS:PYTHON: ⚠️ OTRZYMANO DANE DTC: {dtc_frame}")
-        await log_and_send(websocket, f"SYS:PYTHON: ✅ Odebrano 1 ramek z kodami DTC z {name}!")
         dtcs = [{"code": f"{int(addr_hex, 16):04X}", "statusByte": "0x2F", "statusFlags": ["confirmedDtc"], "source": protocol.upper()}]
     else:
-        await log_and_send(websocket, f"SYS:PYTHON: ✅ {name} jest czysty (Brak DTC).")
         dtcs = []
 
-    await log_and_send(websocket, "SYS:PYTHON: Sesja zamknięta. Przechodzę dalej...")
     await asyncio.sleep(0.12)
     return {
         "status": "ok" if dtcs else "clean",
         "protocol": protocol.upper(),
+        "txChannel": tx_channel,
+        "txChannelHex": f"0x{tx_channel:X}",
         "dtcCount": len(dtcs),
         "dtcs": dtcs,
         "errors": [],
         "rawFrames": ["58 04 00 11 22 33"] if dtcs else [],
-        "payloadsHex": ["58 04 00 11 22 33"] if dtcs else []
+        "payloadsHex": ["58 04 00 11 22 33"] if dtcs else [],
     }
 
 async def perform_full_scan(websocket):
@@ -218,8 +204,6 @@ async def perform_full_scan(websocket):
             "moduleTotal": len(modules),
             "startedAt": started_at
         })
-        await log_and_send(websocket, "SYS:PYTHON: --- START AUTO-SKAN (KWP/UDS over TP2.0) ---")
-
         module_results = []
         for idx, (addr, name) in enumerate(modules.items(), start=1):
             protocol = "uds" if int(addr, 16) % 2 == 0 else "kwp"
@@ -229,7 +213,7 @@ async def perform_full_scan(websocket):
                 "module": {"addr": addr, "name": name},
                 "protocol": protocol.upper()
             })
-            result = await simulate_tp20_read_dtc(addr, name, websocket, protocol)
+            result = await simulate_tp20_read_dtc(addr, protocol)
             payload = {
                 "index": idx,
                 "total": len(modules),
@@ -253,7 +237,6 @@ async def perform_full_scan(websocket):
             "modulesWithDtc": modules_with_dtc,
             "totalDtcs": total_dtcs
         })
-        await log_and_send(websocket, "SYS:PYTHON: --- AUTO-SKAN ZAKOŃCZONY ---")
     finally:
         is_scanning = False
 

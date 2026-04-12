@@ -260,6 +260,21 @@ td { padding: 8px; border-bottom: 1px solid var(--border); }
     margin-top: var(--space-lg);
 }
 
+.dtc-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.dtc-section-head .section-label {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 180px;
+}
+
 .dtc-summary {
     font-family: "Consolas", monospace;
     font-size: 0.8em;

@@ -5646,7 +5646,6 @@ function requestFullDtcScan() {
     const socket = getSocket();
     if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send("CMD:REQ_FULL_SCAN");
-        logTerminal("SYS:JS: Inicjowanie pełnego Auto-Skanu DTC...");
         updateStatus("SKANOWANIE MODUŁÓW (TP 2.0)...", "var(--orange)");
         setDtcScanButtonLoading(true);
     } else {
@@ -5696,6 +5695,74 @@ function downloadTerminalLogs() {
     updateStatus("LOGI TERMINALA ZAPISANE DO PLIKU", "var(--green)");
 }
 
+function downloadDtcDiagnosisLog() {
+    const rows = Object.values(dtcScanRegistry).sort((a, b) => (a.index || 0) - (b.index || 0));
+    if (rows.length === 0) {
+        alert("Brak wyników skanu DTC. Uruchom najpierw auto-skan (lub poczekaj na pierwsze wyniki modułów).");
+        return;
+    }
+
+    let text = "";
+    text += "=========================================\n";
+    text += "   GOLF MASTER v50.0 - LOG DIAGNOZY DTC\n";
+    text += `   DATA WYGENEROWANIA: ${new Date().toLocaleString("pl-PL")}\n`;
+    text += "=========================================\n\n";
+
+    text += `Scan ID: ${dtcScanState.scanId ?? "(brak)"}\n`;
+    text += `Status UI: ${dtcScanState.status}\n`;
+    text += `Moduły (ukończone): ${dtcScanState.moduleDone}/${dtcScanState.moduleTotal}\n`;
+    text += `Moduły z DTC: ${dtcScanState.modulesWithDtc} | DTC łącznie: ${dtcScanState.totalDtcs} | Błędy komunikacji: ${dtcScanState.moduleErrors}\n`;
+    if (dtcScanState.startedAt != null) {
+        text += `Rozpoczęto (timestamp ms): ${dtcScanState.startedAt}\n`;
+    }
+    text += "\n--- MODUŁY ---\n\n";
+
+    for (const row of rows) {
+        text += `[${row.index}/${row.total}] ${row.module?.addr ?? "?"} ${row.module?.name ?? ""}\n`;
+        text += `  Protokół: ${row.protocol ?? "N/A"}\n`;
+        text += `  Kanał TX: ${row.txChannelHex != null && row.txChannelHex !== "" ? row.txChannelHex : "—"}\n`;
+        text += `  Status: ${row.status}\n`;
+        text += `  Liczba DTC: ${row.dtcCount ?? 0}\n`;
+        if (row.dtcs && row.dtcs.length) {
+            for (const d of row.dtcs) {
+                const flags = Array.isArray(d.statusFlags) ? d.statusFlags.join(", ") : "";
+                text += `    - ${d.code} | status ${d.statusByte ?? ""}${flags ? ` | ${flags}` : ""}\n`;
+            }
+        }
+        if (row.errors && row.errors.length) {
+            text += "  Błędy sesji (próby protokołu):\n";
+            for (const e of row.errors) {
+                text += `    - ${e.protocol}: ${e.code} — ${e.message}\n`;
+            }
+        }
+        text += `  Czas trwania (ms): ${row.durationMs ?? "—"}\n`;
+        if (row.payloadsHex && row.payloadsHex.length) {
+            text += "  Payloady (hex):\n";
+            row.payloadsHex.forEach((p, i) => {
+                text += `    [${i}] ${p}\n`;
+            });
+        }
+        text += "\n";
+    }
+
+    text += "--- JSON (pełne obiekty wierszy) ---\n";
+    text += JSON.stringify(rows, null, 2);
+    text += "\n";
+
+    const blob = new Blob(["\ufeff", text], { type: "text/plain;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const dateStr = formatLocalFileTimestamp();
+    link.setAttribute("href", url);
+    link.setAttribute("download", `PQ35_DTC_DIAG_${dateStr}.txt`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    updateStatus("LOG DTC ZAPISANY DO PLIKU", "var(--green)");
+}
+
 // ===== js/ui/dtcPanel.js =====
 
 
@@ -5731,11 +5798,15 @@ function _renderRows() {
         const details = row.errors && row.errors.length
             ? row.errors.map((e) => `${e.protocol}:${e.code}`).join(", ")
             : (row.dtcCount > 0 ? row.dtcs.map((d) => d.code).slice(0, 3).join(", ") : "—");
+        const txCh = row.txChannelHex != null && row.txChannelHex !== ""
+            ? row.txChannelHex
+            : "—";
 
         tr.innerHTML = `
             <td>${row.module.addr}</td>
             <td>${row.module.name}</td>
             <td>${row.protocol || "N/A"}</td>
+            <td>${txCh}</td>
             <td class="${_statusClass(row.status)}">${_statusLabel(row.status)}</td>
             <td>${row.dtcCount ?? 0}</td>
             <td title="${details}">${details}</td>
@@ -5902,10 +5973,6 @@ function connectWebSocket() {
 
     socket.onmessage = (event) => {
         parseIncomingData(event.data);
-        if (event.data.includes("AUTO-SKAN ZAKOŃCZONY")) {
-            setDtcScanButtonLoading(false);
-            updateStatus("AUTO-SKAN ZAKOŃCZONY", "var(--green)");
-        }
     };
 
     socket.onclose = () => {
@@ -5943,6 +6010,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnDownloadLogs = document.getElementById("btn-download-logs");
     if (btnDownloadLogs) {
         btnDownloadLogs.addEventListener("click", downloadTerminalLogs);
+    }
+
+    const btnDownloadDtcLog = document.getElementById("btn-download-dtc-log");
+    if (btnDownloadDtcLog) {
+        btnDownloadDtcLog.addEventListener("click", downloadDtcDiagnosisLog);
     }
 });
 

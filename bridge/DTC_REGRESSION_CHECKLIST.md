@@ -37,4 +37,4 @@ Szybka walidacja, że pełny skan DTC działa poprawnie po zmianach bridge/web.
 ## 6) Kryteria PASS
 - Brak regresji w strumieniu CAN live.
 - Skan zwraca strukturalne eventy JSON (`start/progress/module_result/complete/error`).
-- UI pokazuje wynik per moduł (adres, protokół, status, liczba DTC, szczegóły).
+- UI pokazuje wynik per moduł (adres, protokół, kanał TX, status, liczba DTC, szczegóły).

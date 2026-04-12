@@ -50,9 +50,10 @@ Dla modułu można skonfigurować kolejność protokołów (np. `UDS -> KWP` lub
 Bridge zwraca:
 
 - status per moduł (`ok`, `clean`, `comm_error`),
+- negocjowany kanał TP2.0 (`txChannel` / `txChannelHex`; przy `comm_error` wartości są `null`),
 - licznik i listę DTC,
 - surowe payloady i ramki (debug),
-- kody błędów komunikacji.
+- kody błędów komunikacji (przy nieudanych próbach protokołu).
 
 ## 4. Kontrakt WebSocket (DTC)
 
@@ -66,7 +67,7 @@ Poza klasycznymi liniami `SYS:/ERR:/0x...`, bridge wysyła strukturalne eventy J
 }
 ```
 
-To pozwala UI pokazać raport per moduł bez ręcznego parsowania terminala.
+To pozwala UI pokazać raport per moduł bez ręcznego parsowania terminala. Szczegóły sesji (krok [1/4] itd.) nie są duplikowane w strumieniu tekstowym — wystarczą eventy JSON i tabela wyników.
 
 ## 5. Ograniczenia i interpretacja
 

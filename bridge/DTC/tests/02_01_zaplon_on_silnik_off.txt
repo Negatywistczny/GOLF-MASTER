@@ -1,0 +1,121 @@
+================================================================================
+TEST 02 — Na aucie: zapłon ON, silnik OFF        arkusz 02_01
+================================================================================
+Identyfikator: DTC-T02
+Wersja arkusza: 01 (kolejne próby: 02_02_…)
+Powiązanie: DTC_REGRESSION_CHECKLIST.md §2
+
+--------------------------------------------------------------------------------
+CEL
+--------------------------------------------------------------------------------
+Zweryfikować pełny skan DTC na żywym pojeździe w stabilnym stanie zasilania
+(zapłon włączony, silnik zgaszony), bez dodatkowego obciążenia napędu.
+
+--------------------------------------------------------------------------------
+WYMAGANIA WSTĘPNE
+--------------------------------------------------------------------------------
+- Interfejs CAN/bridge podłączony i rozpoznawany.
+- Zapłon ON, silnik OFF (pozycja zgodna z procedurą bezpieczeństwa na miejscu).
+- Web UI gotowe do pracy z bridge.
+- Bridge z podniesionym domyślnie GOLF_TP_TIMING_TIMEOUT_S (8.0 s) — po arkuszu 02_00.
+
+--------------------------------------------------------------------------------
+INSTRUKCJA WYKONANIA (krok po kroku)
+--------------------------------------------------------------------------------
+1. Uruchom bridge:  bridge/bridge.py
+2. Uruchom Web UI i połącz z bridge (jak w Twoim standardowym flow).
+3. Upewnij się: zapłon ON, silnik OFF.
+4. Uruchom pełny skan DTC i poczekaj na zakończenie całej sesji.
+5. Zapisz lub dołącz logi (osobno — patrz niżej).
+
+--------------------------------------------------------------------------------
+OCZEKIWANE REZULTATY
+--------------------------------------------------------------------------------
+- Brak „zawieszenia” sesji bez informacji zwrotnej — ewentualne timeouty są
+  opisane per moduł (nie martwy UI bez końca).
+- Raport końcowy zawiera liczniki: moduleErrors, modulesWithDtc, totalDtcs
+  (w JSON lub w UI w formie zgodnej z tymi polami).
+- Przy błędzie komunikacji widoczny jest konkretny kod przyczyny, np.:
+  gateway_setup_timeout, timing_timeout, incomplete_payload
+  (lub aktualna lista kodów z bridge — wpisz w obserwacjach jeśli inna).
+
+--------------------------------------------------------------------------------
+LOGI (osobne pliki — dołączasz na bieżąco)
+--------------------------------------------------------------------------------
+- Terminal / CAN (UI): bridge/DTC/logs/PQ35_TERMINAL_LOG_2026-04-12_15-46-54.txt
+- Eksport DTC (UI):    bridge/DTC/logs/PQ35_DTC_DIAG_2026-04-12_15-46-59.txt
+
+--------------------------------------------------------------------------------
+ŚLEDZENIE RAMEK (TP2.0 / skan DTC) — arkusz 02_01
+--------------------------------------------------------------------------------
+Źródło: PQ35_TERMINAL_LOG_2026-04-12_15-46-54.txt — pełne przeszukanie 0x201, 0x203, 0x209,
+0x225, 0x300.
+
+Porównanie z arkuszem 02_00: ten sam zestaw ID (201/203/209/225/300); w tym logu jest jedna
+ramka 0x300 więcej niż w 02_00 (tu 4× A8, w 02_00 było 3×) — nadal brak „nowych” ID poza tym zestawem.
+
+--- Liczba ramek per ID (w tym logu) ---
+  0x201  →  1 ramka
+  0x203  →  1 ramka
+  0x209  →  1 ramka
+  0x225  →  1 ramka
+  0x300  →  4 ramki
+  RAZEM  →  8 ramek
+
+--- Chronologicznie (wszystkie wystąpienia) ---
+  [15:45:53.717] 0x201: 00 D0 00 03 40 07 01
+  [15:45:54.823] 0x300: A8
+  [15:45:59.600] 0x203: 00 D0 00 03 90 07 01
+  [15:46:00.699] 0x300: A8
+  [15:46:05.468] 0x209: 00 D0 00 03 A8 07 01
+  [15:46:06.590] 0x300: A8
+  [15:46:20.592] 0x225: 00 D0 00 03 16 03 01
+  [15:46:21.459] 0x300: A8
+
+--------------------------------------------------------------------------------
+Ramka 0x557 (mKD_Error) — gateway / błędy sieci vs DTC w bridge
+--------------------------------------------------------------------------------
+Źródło: ten sam log terminala PQ35_TERMINAL_LOG_2026-04-12_15-46-54.txt
+
+--- Wszystkie wystąpienia 0x557 w tym pliku ---
+  [15:45:42.243] 0x557: 21 00 00 3F 4C 00 00 00
+  (łącznie w pliku: 1 wiersz z ID 0x557)
+
+W sesji 02_00 (log 15-31-21) na początku nagrania były 3 ramki 0x557 (m.in. 20/21 … 3F 0C / 4C).
+W 02_01 w zapisanym pliku jest jedna ramka 0x557 — użytkownik widzi w UI „błędy” z tej ramki
+(kafelek 0x557 → sygnały EKD_* w signalMeta.js: „BŁĘDY MODUŁÓW W SYSTEMIE”).
+
+Dlaczego nie ma tego w „rejestrze DTC” / eksporcie skanu:
+  - Skan DTC w bridge buduje listę kodów wyłącznie z odpowiedzi diagnostycznych po sesji TP2.0
+    (żądanie UDS 0x19 / KWP 0x18 na skonfigurowanym kanale TX, ramki zbierane z ID 0x300
+    jako payloady aplikacyjne — patrz bridge.py).
+  - 0x557 to oddzielna, cykliczna ramka statusowa gateway (J533) — bitmapa / komunikaty typu
+    mKD_Error (dok. projektu: data/Arduino CAN VW Golf Plus PQ35.md, sekcja o 0x557).
+  - Odebranie ustawionych bitów EKD w 0x557 nie jest równoznaczne z odczytem pamięci DTC z ECU
+    i nie jest dziś mapowane do exportu „LOG DIAGNOZY DTC”.
+
+--------------------------------------------------------------------------------
+OBSERWACJE (uzupełniamy podczas / po teście)
+--------------------------------------------------------------------------------
+Data wykonania:        2026-04-12
+Stan auta (km, ECU):   (nie podano)
+
+Wynik skanu (z PQ35_DTC_DIAG_2026-04-12_15-46-59.txt):
+  Moduły ukończone 19/19, UI done.
+  moduleErrors: 15 | modulesWithDtc: 0 | totalDtcs: 0
+  Moduły ze statusem clean (sesja TP2.0 + odczyt DTC OK, brak kodów): 01, 03, 09, 25
+    (kanały TX m.in. 0x740, 0x790, 0x7A8, 0x316)
+  Pozostałe moduły: comm_error, głównie gateway_setup_timeout (brak D0 w oknie dla danego adresu).
+
+Timeouty / komunikacja:
+  Poprawa względem 02_00: część modułów przechodzi pełną ścieżkę (clean); nadal 15 modułów bez sesji.
+
+0x557 vs DTC:
+  Użytkownik: widoczne błędy z 0x557 w UI, brak ich w eksporcie DTC — zgodne z architekturą bridge
+  (powyżej).
+
+Odchylenia od oczekiwań / notatki:
+  Zestaw ID 201/203/209/225/300 bez zmian; liczba 0x300:A8 w tym pliku = 4 (w 02_00 było 3).
+  Skan nadal niepełny (15 comm_error).
+
+Werdykt (PASS / FAIL / N/D):  FAIL (4/19 modułów clean; wymaganie regresji: pełniejszy skan / T02 PASS)

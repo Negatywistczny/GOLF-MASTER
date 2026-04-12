@@ -23,10 +23,12 @@ Konfiguracja przez zmienne środowiskowe:
 - `GOLF_BAUD_RATE` (domyślnie `115200`)
 - `GOLF_WS_HOST` (domyślnie `localhost`)
 - `GOLF_WS_PORT` (domyślnie `8765`)
-- `GOLF_TP_SETUP_TIMEOUT_S` (domyślnie `1.5`)
-- `GOLF_TP_TIMING_TIMEOUT_S` (domyślnie `1.0`)
+- `GOLF_TP_SETUP_TIMEOUT_S` (domyślnie `2.5`)
+- `GOLF_TP_TIMING_TIMEOUT_S` (domyślnie `8.0`)
 - `GOLF_TP_RESPONSE_WINDOW_S` (domyślnie `1.6`)
 - `GOLF_TP_IDLE_GAP_S` (domyślnie `0.35`)
+- `GOLF_DTC_INTER_MODULE_GAP_S` (domyślnie `0.25`) — pauza sekundy między modułami w auto-skanie DTC
+- `GOLF_DTC_KD557_FILTER` (domyślnie `1`) — gdy `1`, skan DTC obejmuje tylko moduły z ustawionym bitem błędu w ostatniej ramce **0x557** (mKD_Error), wg mapy jak `web/js/can/decoders/system.js` (`decodeKDErrorData`). Gdy brak ramki 0x557, brak bitów lub brak przecięcia z listą — **pełna** lista modułów. Ustaw `0`, aby zawsze skanować wszystkie moduły.
 
 ## 3. Silnik DTC (stan bieżący)
 
@@ -49,7 +51,11 @@ Dla modułu można skonfigurować kolejność protokołów (np. `UDS -> KWP` lub
 
 Bridge zwraca:
 
-- status per moduł (`ok`, `clean`, `comm_error`),
+- status per moduł (`ok`, `no_dtc`, `no_data`, `comm_error`):
+  - `ok` — zdekodowano co najmniej jeden kod DTC,
+  - `no_dtc` — sesja TP2.0 OK, ECU zwróciło dane (ramki/payloady), ale lista kodów jest pusta,
+  - `no_data` — sesja TP2.0 OK, lecz nie złapano treści odpowiedzi na żądanie Read DTC (nie mylić z „brakiem usterek”),
+  - `comm_error` — niepowodzenie sesji (timeouty itd.),
 - negocjowany kanał TP2.0 (`txChannel` / `txChannelHex`; przy `comm_error` wartości są `null`),
 - licznik i listę DTC,
 - surowe payloady i ramki (debug),

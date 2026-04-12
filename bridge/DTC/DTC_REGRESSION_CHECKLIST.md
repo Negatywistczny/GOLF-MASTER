@@ -3,6 +3,10 @@
 ## Cel
 Szybka walidacja, że pełny skan DTC działa poprawnie po zmianach bridge/web.
 
+## Arkusze i kolejność
+- Arkusze w `bridge/DTC/tests/`: nazwa `TT_VV_…` (np. `02_00`, `02_01` — kolejne próby tego samego testu).
+- **Nie** startuj testu o numerze wyższym, dopóki poprzedni nie ma werdyktu **PASS** w najnowszej wersji arkusza. Szczegóły: `tests/00_INDEX.txt`.
+
 ## 1) Test lokalny (bez auta)
 - Uruchom `bridge/test_simulation.py`.
 - Uruchom Web UI i kliknij `SKANUJ DTC`.
@@ -32,7 +36,7 @@ Szybka walidacja, że pełny skan DTC działa poprawnie po zmianach bridge/web.
 
 ## 5) Test po wyjęciu kluczyka / sleep
 - Po przejściu auta do stanu sleep uruchom skan.
-- Oczekiwane: część modułów może zwrócić `comm_error`; UI ma to jasno oznaczyć, bez mylenia z `clean`.
+- Oczekiwane: część modułów może zwrócić `comm_error`; UI ma to jasno oznaczyć, bez mylenia z `no_data` / `no_dtc`.
 
 ## 6) Kryteria PASS
 - Brak regresji w strumieniu CAN live.

@@ -155,7 +155,7 @@ async def simulate_tp20_read_dtc(addr_hex: str, protocol: str) -> dict:
 
     await asyncio.sleep(0.12)
     return {
-        "status": "ok" if dtcs else "clean",
+        "status": "ok" if dtcs else "no_data",
         "protocol": protocol.upper(),
         "txChannel": tx_channel,
         "txChannelHex": f"0x{tx_channel:X}",

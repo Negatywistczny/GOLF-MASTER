@@ -1,0 +1,109 @@
+================================================================================
+TEST 02 — Na aucie: zapłon ON, silnik OFF        arkusz 02_00
+================================================================================
+Identyfikator: DTC-T02
+Wersja arkusza: 00 (kolejne próby: skopiuj → 02_01_…, 02_02_…)
+Powiązanie: DTC_REGRESSION_CHECKLIST.md §2
+
+--------------------------------------------------------------------------------
+CEL
+--------------------------------------------------------------------------------
+Zweryfikować pełny skan DTC na żywym pojeździe w stabilnym stanie zasilania
+(zapłon włączony, silnik zgaszony), bez dodatkowego obciążenia napędu.
+
+--------------------------------------------------------------------------------
+WYMAGANIA WSTĘPNE
+--------------------------------------------------------------------------------
+- Interfejs CAN/bridge podłączony i rozpoznawany.
+- Zapłon ON, silnik OFF (pozycja zgodna z procedurą bezpieczeństwa na miejscu).
+- Web UI gotowe do pracy z bridge.
+
+--------------------------------------------------------------------------------
+INSTRUKCJA WYKONANIA (krok po kroku)
+--------------------------------------------------------------------------------
+1. Uruchom bridge:  bridge/bridge.py
+2. Uruchom Web UI i połącz z bridge (jak w Twoim standardowym flow).
+3. Upewnij się: zapłon ON, silnik OFF.
+4. Uruchom pełny skan DTC i poczekaj na zakończenie całej sesji.
+5. Zapisz lub dołącz logi (osobno — patrz niżej).
+
+--------------------------------------------------------------------------------
+OCZEKIWANE REZULTATY
+--------------------------------------------------------------------------------
+- Brak „zawieszenia” sesji bez informacji zwrotnej — ewentualne timeouty są
+  opisane per moduł (nie martwy UI bez końca).
+- Raport końcowy zawiera liczniki: moduleErrors, modulesWithDtc, totalDtcs
+  (w JSON lub w UI w formie zgodnej z tymi polami).
+- Przy błędzie komunikacji widoczny jest konkretny kod przyczyny, np.:
+  gateway_setup_timeout, timing_timeout, incomplete_payload
+  (lub aktualna lista kodów z bridge — wpisz w obserwacjach jeśli inna).
+
+--------------------------------------------------------------------------------
+LOGI (osobne pliki — dołączasz na bieżąco)
+--------------------------------------------------------------------------------
+- Terminal / CAN (UI): bridge/DTC/logs/PQ35_TERMINAL_LOG_2026-04-12_15-31-21.txt
+- Eksport DTC (UI):    bridge/DTC/logs/PQ35_DTC_DIAG_2026-04-12_15-32-23.txt
+
+--------------------------------------------------------------------------------
+ŚLEDZENIE RAMEK (TP2.0 / skan DTC) — arkusz 02_00
+--------------------------------------------------------------------------------
+Źródło: PQ35_TERMINAL_LOG_2026-04-12_15-31-21.txt (pełne przeszukanie ID 0x201, 0x203, 0x209,
+0x225, 0x300 — tyle wystąpień jest w tym pliku; przy kolejnych wersjach 02_01… dopisz nowy blok).
+
+Znaczenie skrótowe:
+  0x200+N  — odpowiedź gateway/setup dla modułu o adresie N (tu: 01→0x201, 03→0x203, 09→0x209, 25→0x225)
+  0x300    — kanał diagnostyczny (m.in. pierwszy bajt 0xA8 = timing w logice bridge)
+
+--- Liczba ramek per ID (w tym logu) ---
+  0x201  →  1 ramka
+  0x203  →  1 ramka
+  0x209  →  1 ramka
+  0x225  →  1 ramka
+  0x300  →  3 ramki
+  RAZEM  →  7 ramek
+
+--- Chronologicznie (wszystkie wystąpienia) ---
+  [15:30:23.434] 0x201: 00 D0 00 03 40 07 01
+  [15:30:29.022] 0x203: 00 D0 00 03 90 07 01
+  [15:30:30.116] 0x300: A8
+  [15:30:34.571] 0x209: 00 D0 00 03 A8 07 01
+  [15:30:35.669] 0x300: A8
+  [15:30:49.175] 0x225: 00 D0 00 03 16 03 01
+  [15:30:50.285] 0x300: A8
+
+--------------------------------------------------------------------------------
+OBSERWACJE (uzupełniamy podczas / po teście)
+--------------------------------------------------------------------------------
+Data wykonania:        2026-04-12
+Stan auta (km, ECU):   (nie podano)
+
+Timeouty per moduł — które moduły, jak opisane:
+  Wszystkie 19/19 modułów: status comm_error w UI („brak komunikacji”). Skan UI: done.
+  W eksporcie DTC: moduleErrors=19, modulesWithDtc=0, totalDtcs=0.
+
+moduleErrors / modulesWithDtc / totalDtcs — wartości:
+  19 / 0 / 0
+
+Kody błędów komunikacji (jeśli wystąpiły):
+  Dominują: gateway_setup_timeout („Brak D0 z gateway”), timing_timeout („Brak A8 (timing)”).
+  Przykład moduł 01: UDS → timing_timeout; KWP → gateway_setup_timeout.
+
+CAN live / regresja zachowania (krótko):
+  Na szynie widać m.in. odpowiedzi pod ID związanymi z TP2.0: 0x201, 0x203, 0x209, 0x225 (D0
+  w payload), oraz 0x300:A8 — użytkownik potwierdził „kilka ramek” mimo pełnego comm_error w skanie.
+
+  Wyjaśnienie techniczne (bridge): „Komunikacja” w wyniku modułu = pełna sekwencja TP2.0 w kodzie
+  bridge.py: po ramce setup (0x200+addr z bajtem D0 na 0x200+addr) bridge czeka na ramkę CAN ID
+  dokładnie 0x300 z pierwszym bajtem 0xA8 (timing), w oknie GOLF_TP_TIMING_TIMEOUT_S.
+  W tej sesji bridge miał domyślnie 1.0 s (przed zmianą w repo).
+  W logu terminala: 0x201:…D0… o 15:30:23.434, a pierwszy 0x300:A8 dopiero o 15:30:30.116 (~6.7 s
+  później) → przy 1.0 s wypada timing_timeout mimo obecności D0/A8 na szynie w innej skali czasu.
+  Ramki 0x3C3 z A8 w danych nie spełniają predykatu (filtrowane jest tylko ID 0x300).
+
+Odchylenia od oczekiwań / notatki:
+  Sygnalizacja błędów per moduł działa (kody gateway_setup_timeout / timing_timeout widoczne).
+  Po tym arkuszu: w bridge.py domyślne GOLF_TP_TIMING_TIMEOUT_S podniesione do 8.0 s — kolejną próbę
+  T02 zapisz jako nowy plik 02_01_zaplon_on_silnik_off.txt (nie przechodzimy do T03 bez PASS T02).
+  Ewentualnie zweryfikować na sniffie kolejność 0x200 TX → D0 → 0x300 A8 w czasie rzeczywistym.
+
+Werdykt (PASS / FAIL / N/D):  FAIL (dane DTC nie uzyskane; diagnostyka błędów działa)

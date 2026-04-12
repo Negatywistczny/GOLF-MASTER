@@ -1,0 +1,76 @@
+================================================================================
+TEST 02 — Na aucie: zapłon ON, silnik OFF        arkusz 02_02
+================================================================================
+Identyfikator: DTC-T02
+Wersja arkusza: 02 (kolejne próby: 02_03_…)
+Powiązanie: DTC_REGRESSION_CHECKLIST.md §2
+
+--------------------------------------------------------------------------------
+CEL
+--------------------------------------------------------------------------------
+Zweryfikować pełny skan DTC na żywym pojeździe w stabilnym stanie zasilania
+(zapłon włączony, silnik zgaszony), bez dodatkowego obciążenia napędu.
+
+--------------------------------------------------------------------------------
+WYMAGANIA WSTĘPNE
+--------------------------------------------------------------------------------
+- Interfejs CAN/bridge podłączony i rozpoznawany.
+- Zapłon ON, silnik OFF.
+- Bridge po zmianach w repo: domyślnie GOLF_TP_TIMING_TIMEOUT_S=8.0 s, GOLF_TP_SETUP_TIMEOUT_S=2.5 s,
+  GOLF_DTC_INTER_MODULE_GAP_S=0.25 s (pauza między modułami w skanie).
+
+--------------------------------------------------------------------------------
+INSTRUKCJA WYKONANIA (krok po kroku)
+--------------------------------------------------------------------------------
+1. Uruchom bridge:  bridge/bridge.py (najlepiej z kodu po powyższych zmianach).
+2. Web UI, SKANUJ DTC, zapisz log terminala + eksport DTC.
+
+--------------------------------------------------------------------------------
+LOGI (osobne pliki — dołączasz na bieżąco)
+--------------------------------------------------------------------------------
+- Terminal / CAN (UI): bridge/DTC/logs/PQ35_TERMINAL_LOG_2026-04-12_15-59-13.txt
+- Eksport DTC (UI):    bridge/DTC/logs/PQ35_DTC_DIAG_2026-04-12_15-59-16.txt
+
+--------------------------------------------------------------------------------
+ŚLEDZENIE RAMEK (TP2.0 / skan DTC) — arkusz 02_02
+--------------------------------------------------------------------------------
+Źródło: PQ35_TERMINAL_LOG_2026-04-12_15-59-13.txt — przeszukanie 0x201, 0x203, 0x209, 0x225, 0x300.
+
+Uwaga: w tym eksporcie terminala (pełny plik ~3000 linii) znaleziono TYLKO:
+  0x225 — 1 wystąpienie
+  0x300 — 1 wystąpienie (A8)
+  Brak jakichkolwiek linii z 0x201 / 0x203 / 0x209 mimo że raport DTC pokazuje clean dla 01, 03, 09
+  (sesje te musiały wygenerować D0 na 0x201/203/209 — albo poza zakresem bufora UI w momencie eksportu,
+  albo inny mechanizm gubienia ramek w ścieżce do pliku). Do porównań etapów lepiej mieć log z całą sesją.
+
+--- Liczba ramek per ID (w tym pliku, zestaw śledzony) ---
+  0x201  →  0
+  0x203  →  0
+  0x209  →  0
+  0x225  →  1 ramka
+  0x300  →  1 ramka
+  RAZEM  →  2 ramki
+
+--- Chronologicznie (wszystkie wystąpienia z zestawu) ---
+  [15:58:21.419] 0x225: 00 D0 00 03 16 03 01
+  [15:58:22.528] 0x300: A8
+
+--------------------------------------------------------------------------------
+OBSERWACJE
+--------------------------------------------------------------------------------
+Data: 2026-04-12
+
+Wynik skanu (PQ35_DTC_DIAG_2026-04-12_15-59-16.txt):
+  moduleErrors: 15 | modulesWithDtc: 0 | totalDtcs: 0 | moduły 19/19, UI done.
+  Clean (jak w 02_01): 01, 03, 09, 25 — te same czasy ~2,8 s ± kilkanaście ms.
+  Pozostałe: comm_error, gateway_setup_timeout (UDS+KWP).
+
+Porównanie z 02_01:
+  Brak poprawy liczby modułów — zmiany bridge (setup 2.5 s, przerwa 0.25 s) w tej sesji nie zwiększyły
+  liczby udanych sesji względem 02_01. Warto potwierdzić, że uruchomiono bridge z aktualnym kodem.
+
+Terminal vs DTC:
+  Niepełna zgodność eksportu terminala z oczekiwanymi ramkami D0 dla modułów clean — rozważyć dłuższy
+  bufor przy eksporcie lub log po stronie konsoli bridge.
+
+Werdykt: FAIL (nadal 15 comm_error; T02 niezaliczony)

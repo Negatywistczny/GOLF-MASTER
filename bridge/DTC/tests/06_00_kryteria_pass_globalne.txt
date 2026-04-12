@@ -1,10 +1,12 @@
 ================================================================================
-PODSUMOWANIE — Kryteria PASS (regresja DTC)
+PODSUMOWANIE — Kryteria PASS (regresja DTC)      arkusz 06_00
 ================================================================================
 Powiązanie: DTC_REGRESSION_CHECKLIST.md §6
+Wersja arkusza: 00 (kolejne podsumowania: 06_01_…)
 
 To nie jest osobny „scenariusz jazdy”, lecz checklista końcowa po serii testów
 T01–T05 (lub po wybranych podzbiorach). Uzupełnij po zebraniu wyników.
+Polityka kolejności: patrz tests/00_INDEX.txt (test N+1 dopiero po PASS testu N).
 
 --------------------------------------------------------------------------------
 CEL
@@ -22,11 +24,12 @@ KRYTERIA (odhacz po weryfikacji)
 --------------------------------------------------------------------------------
 ODNOŚNIKI DO TESTÓW WYKONANYCH
 --------------------------------------------------------------------------------
-- T01 lokalny:         plik: tests/01_test_lokalny_bez_auta.txt    werdykt: _______
-- T02 zapłon/silnik:   plik: tests/02_zaplon_on_silnik_off.txt      werdykt: _______
-- T03 silnik ON:       plik: tests/03_silnik_on_postoj.txt          werdykt: _______
-- T04 przejazd:        plik: tests/04_przejazd.txt                 werdykt: _______
-- T05 sleep:           plik: tests/05_sleep_kluczyk.txt             werdykt: _______
+(Wpisz faktyczną ścieżkę arkusza — najwyższa wersja VV z werdyktem PASS dla danego T.)
+- T01 lokalny:         plik: tests/01_00_test_lokalny_bez_auta.txt    werdykt: _______
+- T02 zapłon/silnik:   plik: tests/02_00_zaplon_on_silnik_off.txt    werdykt: _______
+- T03 silnik ON:       plik: tests/03_00_silnik_on_postoj.txt        werdykt: _______
+- T04 przejazd:        plik: tests/04_00_przejazd.txt                werdykt: _______
+- T05 sleep:           plik: tests/05_00_sleep_kluczyk.txt           werdykt: _______
 
 --------------------------------------------------------------------------------
 LOGI (zbiorczo — osobne pliki dołączane do folderu bridge/DTC lub logs)

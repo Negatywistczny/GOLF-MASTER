@@ -1,57 +1,56 @@
 ================================================================================
-TEST 05 — Po wyjęciu kluczyka / stan sleep
+TEST 03 — Na aucie: silnik ON (postój)           arkusz 03_00
 ================================================================================
-Identyfikator: DTC-T05
-Powiązanie: DTC_REGRESSION_CHECKLIST.md §5
+Identyfikator: DTC-T03
+Wersja arkusza: 00 (kolejne próby: skopiuj → 03_01_…, 03_02_…)
+Powiązanie: DTC_REGRESSION_CHECKLIST.md §3
 
 --------------------------------------------------------------------------------
 CEL
 --------------------------------------------------------------------------------
-Sprawdzić zachowanie skanu DTC gdy pojazd przeszedł w stan uśpienia (np. po
-wyjęciu kluczyka). Część modułów może nie odpowiadać — UI musi to oznaczyć jako
-błąd komunikacji, a nie mylić z „brak DTC / clean”.
+Sprawdzić skan DTC przy pracującym silniku na biegu jałowym (postój), oraz
+porównać spójność wyników i statusów względem testu 02 (zapłon ON, silnik OFF).
 
 --------------------------------------------------------------------------------
 WYMAGANIA WSTĘPNE
 --------------------------------------------------------------------------------
-- Możliwość bezpiecznego doprowadzenia auta do stanu sleep (procedura fabryczna / znana Tobie).
-- Bridge i UI — uruchomienie w momencie, gdy chcesz wykonać skan w tym stanie (dokładny moment zapisz).
+- Wykonany lub do porównania: test 02 (DTC-T02) z zapisanymi obserwacjami.
+- Silnik uruchomiony, pojazd w bezpiecznym miejscu (postój, hamulec, warunki zgodne z przepisami).
 
 --------------------------------------------------------------------------------
 INSTRUKCJA WYKONANIA (krok po kroku)
 --------------------------------------------------------------------------------
-1. Przygotuj pojazd zgodnie z celem testu (np. wyjmij kluczyk, poczekaj na sleep).
-2. Ustal, czy interfejs diagnostyczny pozostaje zasilany — jeśli nie, test może być N/D; zapisz.
-3. Uruchom bridge i Web UI (jeśli jeszcze nie działają) i połącz.
-4. Uruchom pełny skan DTC.
-5. Zwróć uwagę na moduły z comm_error vs moduły „clean” bez komunikacji.
+1. Uruchom bridge i Web UI (jak w teście 02).
+2. Uruchom silnik; utrzymaj postój (jałowy) przez stabilizację warunków.
+3. Uruchom pełny skan DTC i poczekaj na zakończenie.
+4. Odnieś wyniki do testu 02: te same moduły, zmiany DTC, powtarzalność statusów.
 
 --------------------------------------------------------------------------------
 OCZEKIWANE REZULTATY
 --------------------------------------------------------------------------------
-- Moduły bez odpowiedzi w stanie sleep pokazują wyraźnie problem komunikacji
-  (np. comm_error lub równoważny status), a nie są prezentowane jako „czyste” bez DTC.
-- Raport końcowy jest spójny z rzeczywistym przebiegiem (liczniki błędów vs sukcesów).
+- Skan kończy się poprawnie (DONE lub kontrolowany błąd z opisem — bez milczącego zawieszenia).
+- Statusy i liczniki są interpretowalne i możliwe do porównania z T02.
+- Ewentualne nowe/znikające DTC są zrozumiałe w kontekście pracy silnika (notatka w obserwacjach).
 
 --------------------------------------------------------------------------------
 LOGI (osobne pliki — dołączasz na bieżąco)
 --------------------------------------------------------------------------------
 - Terminal bridge:   _________________________________________________________
-- Notatka o stanie auta:  _____________________________________________________
+- Porównanie z T02:  _________________________________________________________
 
 --------------------------------------------------------------------------------
 OBSERWACJE (uzupełniamy podczas / po teście)
 --------------------------------------------------------------------------------
 Data wykonania:        _______________________
-Stan: sleep / częściowy sleep / inny:  _______________________________________
+Czas od rozruchu silnika do skanu:  _________________________________________
 
-Moduły z comm_error — lista:
-
-
-Czy którykolwiek moduł błędnie wyglądał na „clean” bez komunikacji (TAK/NIE):
+Różnice vs T02 — liczniki (moduleErrors, modulesWithDtc, totalDtcs):
 
 
-Zasilanie interfejsu OBD/dongle w tym teście:
+Różnice vs T02 — lista kodów DTC / statusy modułów:
+
+
+Powtarzalność (np. drugi skan zaraz po pierwszym):
 
 
 Odchylenia od oczekiwań / notatki:

@@ -1,15 +1,34 @@
 import { dtcScanRegistry, dtcScanState } from "../state/index.js";
 
+function _formatDtcDetail(d) {
+    if (!d || !d.code) return "";
+    const flags = Array.isArray(d.statusFlags) ? d.statusFlags.join(", ") : "";
+    const src = d.source ? ` | ${d.source}` : "";
+    return `${d.code} ${d.statusByte || ""}${flags ? ` (${flags})` : ""}${src}`.trim();
+}
+
+function _dtcDetailsCell(row) {
+    if (row.dtcCount > 0 && row.dtcs && row.dtcs.length) {
+        return row.dtcs.map((d) => _formatDtcDetail(d)).join(" · ");
+    }
+    if (row.errors && row.errors.length) {
+        return row.errors.map((e) => `${e.protocol}:${e.code}`).join(", ");
+    }
+    return "—";
+}
+
 function _statusLabel(status) {
     if (status === "ok") return "DTC WYKRYTE";
-    if (status === "clean") return "CZYSTY";
+    if (status === "no_dtc") return "BRAK KODÓW (ODPOWIEDŹ)";
+    if (status === "no_data" || status === "clean") return "BRAK DANYCH ODPOWIEDZI";
     if (status === "comm_error") return "BRAK KOMUNIKACJI";
     return status || "N/A";
 }
 
 function _statusClass(status) {
     if (status === "ok") return "dtc-status-warning";
-    if (status === "clean") return "dtc-status-ok";
+    if (status === "no_dtc") return "dtc-status-info";
+    if (status === "no_data" || status === "clean") return "dtc-status-idle";
     if (status === "comm_error") return "dtc-status-error";
     return "dtc-status-idle";
 }
@@ -29,9 +48,7 @@ function _renderRows() {
     const rows = Object.values(dtcScanRegistry).sort((a, b) => a.index - b.index);
     for (const row of rows) {
         const tr = document.createElement("tr");
-        const details = row.errors && row.errors.length
-            ? row.errors.map((e) => `${e.protocol}:${e.code}`).join(", ")
-            : (row.dtcCount > 0 ? row.dtcs.map((d) => d.code).slice(0, 3).join(", ") : "—");
+        const details = _dtcDetailsCell(row);
         const txCh = row.txChannelHex != null && row.txChannelHex !== ""
             ? row.txChannelHex
             : "—";

@@ -1,7 +1,8 @@
 ================================================================================
-TEST 04 — Na aucie: po krótkim przejeździe
+TEST 04 — Na aucie: po krótkim przejeździe        arkusz 04_00
 ================================================================================
 Identyfikator: DTC-T04
+Wersja arkusza: 00 (kolejne próby: skopiuj → 04_01_…, 04_02_…)
 Powiązanie: DTC_REGRESSION_CHECKLIST.md §4
 
 --------------------------------------------------------------------------------

@@ -306,6 +306,12 @@ td { padding: 8px; border-bottom: 1px solid var(--border); }
     font-weight: 700;
 }
 
+/* Skan DTC: ECU odpowiedziało, lista kodów pusta */
+.dtc-status-info {
+    color: var(--orange);
+    font-weight: 700;
+}
+
 .msg-row-system { color: var(--green); }
 .msg-row-error { color: var(--red); }
 

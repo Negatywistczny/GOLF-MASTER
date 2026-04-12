@@ -3,7 +3,7 @@ import json
 import os
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import serial
 import websockets
@@ -14,10 +14,16 @@ BAUD_RATE = int(os.getenv("GOLF_BAUD_RATE", "115200"))
 WS_HOST = os.getenv("GOLF_WS_HOST", "localhost")
 WS_PORT = int(os.getenv("GOLF_WS_PORT", "8765"))
 
-TP_SETUP_TIMEOUT_S = float(os.getenv("GOLF_TP_SETUP_TIMEOUT_S", "1.5"))
-TP_TIMING_TIMEOUT_S = float(os.getenv("GOLF_TP_TIMING_TIMEOUT_S", "1.0"))
+TP_SETUP_TIMEOUT_S = float(os.getenv("GOLF_TP_SETUP_TIMEOUT_S", "2.5"))
+TP_TIMING_TIMEOUT_S = float(os.getenv("GOLF_TP_TIMING_TIMEOUT_S", "8.0"))
 TP_RESPONSE_WINDOW_S = float(os.getenv("GOLF_TP_RESPONSE_WINDOW_S", "1.6"))
 TP_IDLE_GAP_S = float(os.getenv("GOLF_TP_IDLE_GAP_S", "0.35"))
+# Pauza między modułami w pełnym skanie DTC — daje czas gateway (J533) między sesjami TP2.0.
+DTC_INTER_MODULE_GAP_S = float(os.getenv("GOLF_DTC_INTER_MODULE_GAP_S", "0.25"))
+# Ostatnia pełna ramka 0x557 (mKD_Error) z szyny — używana do filtrowania listy modułów w skanie DTC.
+last_kd557_bytes: Optional[List[int]] = None
+# Gdy 1: skanuj tylko moduły z ustawionym bitem EKD odpowiadającym adresowi (mapa jak web/js/can/decoders/system.js).
+KD557_FILTER_ENABLED = os.getenv("GOLF_DTC_KD557_FILTER", "1").lower() in ("1", "true", "yes")
 
 TP_CONTROL_BYTES = {0xA0, 0xA1, 0xA4, 0xA8, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5}
 
@@ -56,6 +62,93 @@ MODULES: Tuple[ModuleSpec, ...] = (
     ModuleSpec("72", "Elektronika Drzwi Tylnych Prawych", ("kwp", "uds")),
     ModuleSpec("77", "Telefon / Bluetooth", ("uds", "kwp")),
 )
+
+
+def _kd557_payload_to_u64(data: List[int]) -> int:
+    v = 0
+    for i, b in enumerate(data[:8]):
+        v |= (int(b) & 0xFF) << (i * 8)
+    return v
+
+
+def _kd557_bit(value: int, bit_index: int) -> bool:
+    return bool((value >> bit_index) & 1)
+
+
+def _addrs_from_kd557(value: int) -> Set[str]:
+    """
+    Bity EKD jak decodeKDErrorData (0x557) → adresy hex z MODULES.
+    Skrót z aktywnych błędów w UI (system.js): silnik/skrezynia/ABS/… + drzwi/infotainment/osobno.
+    """
+    addrs: Set[str] = set()
+    if _kd557_bit(value, 0):
+        addrs.add("01")
+    if _kd557_bit(value, 1):
+        addrs.add("02")
+    if _kd557_bit(value, 2):
+        addrs.add("03")
+    if _kd557_bit(value, 3) or _kd557_bit(value, 22):
+        addrs.add("17")
+    if _kd557_bit(value, 4) or _kd557_bit(value, 34):
+        addrs.add("16")
+    if _kd557_bit(value, 5):
+        addrs.add("15")
+    if _kd557_bit(value, 6):
+        addrs.add("44")
+    if _kd557_bit(value, 21) or _kd557_bit(value, 53):
+        addrs.add("25")
+    if _kd557_bit(value, 24):
+        addrs.add("09")
+    if _kd557_bit(value, 25):
+        addrs.add("46")
+    if _kd557_bit(value, 26):
+        addrs.add("42")
+    if _kd557_bit(value, 27):
+        addrs.add("52")
+    if _kd557_bit(value, 28):
+        addrs.add("62")
+    if _kd557_bit(value, 29):
+        addrs.add("72")
+    if _kd557_bit(value, 35):
+        addrs.add("19")
+    if _kd557_bit(value, 36):
+        addrs.add("08")
+    if _kd557_bit(value, 56) or _kd557_bit(value, 62):
+        addrs.add("56")
+    if _kd557_bit(value, 59):
+        addrs.add("37")
+    if _kd557_bit(value, 63):
+        addrs.add("77")
+    return addrs
+
+
+def _capture_kd557_line(line: str) -> None:
+    global last_kd557_bytes
+    parsed = _parse_can_line(line)
+    if not parsed:
+        return
+    can_id, data = parsed
+    if can_id == 0x557 and len(data) >= 8:
+        last_kd557_bytes = data[:8]
+
+
+def _dtc_scan_modules() -> Tuple[ModuleSpec, ...]:
+    if not KD557_FILTER_ENABLED:
+        return MODULES
+    if last_kd557_bytes is None or len(last_kd557_bytes) < 8:
+        print("SYS:PY:DTC_KD557_FILTER_SKIP brak_pełnej_ramki_0x557 — pełna lista modułów")
+        return MODULES
+    want = _addrs_from_kd557(_kd557_payload_to_u64(last_kd557_bytes))
+    if not want:
+        print("SYS:PY:DTC_KD557_FILTER_SKIP brak_bitów_EKD — pełna lista modułów")
+        return MODULES
+    filtered = tuple(m for m in MODULES if m.addr_hex in want)
+    if not filtered:
+        print("SYS:PY:DTC_KD557_FILTER_SKIP brak_dopasowania_do_MODULES — pełna lista modułów")
+        return MODULES
+    key = lambda h: int(h, 16)
+    print(f"SYS:PY:DTC_KD557_FILTER addrs={sorted(want, key=key)} count={len(filtered)}")
+    return filtered
 
 
 class SessionError(Exception):
@@ -288,6 +381,7 @@ async def handle_serial():
                         line = line_bytes.decode("utf-8", errors="ignore").strip()
                         if line:
                             await broadcast(line)
+                            _capture_kd557_line(line)
                             await rx_queue.put(line)
                 await asyncio.sleep(0.005)
 
@@ -419,7 +513,15 @@ async def _scan_module_protocol(
         await _tp20_close_session(tx_channel)
 
         dtcs = read_result["dtcs"]
-        status = "ok" if dtcs else "clean"
+        has_capture = bool(read_result.get("rawFrames")) or bool(
+            read_result.get("payloadsHex") and any((p or "").strip() for p in read_result["payloadsHex"])
+        )
+        if dtcs:
+            status = "ok"
+        elif has_capture:
+            status = "no_dtc"
+        else:
+            status = "no_data"
         return {
             "status": status,
             "protocol": protocol.upper(),
@@ -503,6 +605,7 @@ async def perform_full_scan(websocket):
     is_scanning = True
     scan_started = _now_ms()
     scan_id = f"scan-{scan_started}"
+    module_list = _dtc_scan_modules()
 
     try:
         await _send_event(
@@ -510,15 +613,18 @@ async def perform_full_scan(websocket):
             "start",
             {
                 "scanId": scan_id,
-                "moduleTotal": len(MODULES),
+                "moduleTotal": len(module_list),
                 "startedAt": scan_started,
             },
         )
 
         module_results: List[Dict[str, Any]] = []
-        for idx, module in enumerate(MODULES, start=1):
-            module_result = await _scan_module_with_fallback(module, websocket, idx, len(MODULES))
+        total_modules = len(module_list)
+        for idx, module in enumerate(module_list, start=1):
+            module_result = await _scan_module_with_fallback(module, websocket, idx, total_modules)
             module_results.append(module_result)
+            if idx < total_modules and DTC_INTER_MODULE_GAP_S > 0:
+                await asyncio.sleep(DTC_INTER_MODULE_GAP_S)
 
         comm_errors = sum(1 for r in module_results if r["status"] == "comm_error")
         modules_with_dtc = sum(1 for r in module_results if r["dtcCount"] > 0)
@@ -533,7 +639,7 @@ async def perform_full_scan(websocket):
                 "startedAt": scan_started,
                 "finishedAt": finished_ms,
                 "durationMs": finished_ms - scan_started,
-                "moduleTotal": len(MODULES),
+                "moduleTotal": len(module_list),
                 "moduleErrors": comm_errors,
                 "modulesWithDtc": modules_with_dtc,
                 "totalDtcs": total_dtcs,

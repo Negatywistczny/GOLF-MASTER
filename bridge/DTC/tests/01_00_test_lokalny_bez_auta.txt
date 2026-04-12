@@ -1,7 +1,8 @@
 ================================================================================
-TEST 01 — Lokalny (bez auta), symulator
+TEST 01 — Lokalny (bez auta), symulator          arkusz 01_00
 ================================================================================
 Identyfikator: DTC-T01
+Wersja arkusza: 00 (kolejne próby: skopiuj → 01_01_…, 01_02_…)
 Powiązanie: DTC_REGRESSION_CHECKLIST.md §1
 
 --------------------------------------------------------------------------------

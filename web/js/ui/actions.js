@@ -134,12 +134,23 @@ function downloadDtcDiagnosisLog() {
         text += `[${row.index}/${row.total}] ${row.module?.addr ?? "?"} ${row.module?.name ?? ""}\n`;
         text += `  Protokół: ${row.protocol ?? "N/A"}\n`;
         text += `  Kanał TX: ${row.txChannelHex != null && row.txChannelHex !== "" ? row.txChannelHex : "—"}\n`;
-        text += `  Status: ${row.status}\n`;
+        const statusPl =
+            row.status === "ok"
+                ? "ok (DTC wykryte)"
+                : row.status === "no_dtc"
+                  ? "no_dtc (brak kodów, odpowiedź ECU)"
+                  : row.status === "no_data" || row.status === "clean"
+                    ? "no_data (brak uchwyconej odpowiedzi DTC)"
+                    : row.status === "comm_error"
+                      ? "comm_error"
+                      : row.status;
+        text += `  Status: ${statusPl}\n`;
         text += `  Liczba DTC: ${row.dtcCount ?? 0}\n`;
         if (row.dtcs && row.dtcs.length) {
             for (const d of row.dtcs) {
                 const flags = Array.isArray(d.statusFlags) ? d.statusFlags.join(", ") : "";
-                text += `    - ${d.code} | status ${d.statusByte ?? ""}${flags ? ` | ${flags}` : ""}\n`;
+                const src = d.source ? ` | ${d.source}` : "";
+                text += `    - ${d.code} | ${d.statusByte ?? ""}${flags ? ` | ${flags}` : ""}${src}\n`;
             }
         }
         if (row.errors && row.errors.length) {

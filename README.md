@@ -1,6 +1,6 @@
 # GOLF MASTER v50.0 — system zarządzania magistralą CAN
 
-**GOLF MASTER** to zaawansowany ekosystem inżynieryjny przeznaczony do monitorowania, diagnostyki i zarządzania magistralą **CAN-Infotainment** w samochodach grupy VAG (platforma **PQ35**, m.in. VW Golf V, Passat B6, Leon II).
+**GOLF MASTER** to ekosystem inżynieryjny przeznaczony do monitorowania i zarządzania magistralą **CAN-Infotainment** w samochodach grupy VAG (platforma **PQ35**, m.in. VW Golf V, Passat B6, Leon II).
 
 System łączy precyzję sprzętową mikrokontrolera z nowoczesnym interfejsem webowym, umożliwiając bezpieczną komunikację z autem bez ryzyka rozładowania akumulatora.
 
@@ -11,8 +11,8 @@ System łączy precyzję sprzętową mikrokontrolera z nowoczesnym interfejsem w
 Projekt składa się z trzech współpracujących warstw:
 
 1. **Hardware (Arduino + MCP2515 + TJA1055)** — fizyczny mostek wpięty w kable samochodu. Firmware realizuje Auto-NM na podstawie `0x42B` (Gateway): stany `AUTO_ACTIVE` / `AUTO_SLEEP_PREP` / `AUTO_SILENT_LISTEN`, zdarzenia `SYS:CAN:WAKE_*`, `SYS:CAN:SLEEP_IND`, odpowiedzi `0x40B` zależne od tokenu i flag `Cmd*`/`Sleep*`, oraz pompa `0x661` tylko w `NET_ACTIVE`. Szczegóły i ograniczenia obserwowalności logów: [hardware/README.md](hardware/README.md), a zasady walidacji i anty-regresji: [logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md](logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md).
-2. **Bridge (Python)** — asynchroniczny serwer zarządzający przepływem danych, obsługujący diagnostykę TP 2.0 oraz automatyczne zwalnianie portów.
-3. **Smart UI (Web)** — responsywny dashboard w czasie rzeczywistym oraz pełne skany DTC. Szczegóły: [web/README.md](web/README.md).
+2. **Bridge (Python)** — asynchroniczny serwer zarządzający przepływem danych oraz automatyczne zwalnianie portów.
+3. **Smart UI (Web)** — responsywny dashboard w czasie rzeczywistym. Szczegóły: [web/README.md](web/README.md).
 
 ---
 
@@ -21,7 +21,7 @@ Projekt składa się z trzech współpracujących warstw:
 Każdy folder ma dedykowaną dokumentację:
 
 - [hardware](hardware/README.md) — kod Arduino, schematy, konfiguracja transceivera TJA.
-- [bridge](bridge/README.md) — Python, WebSocket, TP 2.0.
+- [bridge](bridge/README.md) — Python, WebSocket.
 - [web](web/README.md) — interfejs użytkownika, dekodery, terminal na żywo.
 - [data](data/README.md) — bazy DBC, mapy adresów, opisy sygnałów.
 - [MESSAGES.md](MESSAGES.md) — słownik komunikatów SYS/ERR w całym systemie.

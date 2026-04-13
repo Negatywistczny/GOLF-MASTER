@@ -4,9 +4,7 @@ import {
     startClock,
     startMessageRegistryTicker,
     generateSnapshot,
-    requestFullDtcScan,
-    downloadTerminalLogs,
-    downloadDtcDiagnosisLog
+    downloadTerminalLogs
 } from "../ui/index.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -20,18 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
         btnSnapshot.addEventListener("click", generateSnapshot);
     }
 
-    const btnScanAll = document.getElementById("btn-scan-all");
-    if (btnScanAll) {
-        btnScanAll.addEventListener("click", requestFullDtcScan);
-    }
-
     const btnDownloadLogs = document.getElementById("btn-download-logs");
     if (btnDownloadLogs) {
         btnDownloadLogs.addEventListener("click", downloadTerminalLogs);
-    }
-
-    const btnDownloadDtcLog = document.getElementById("btn-download-dtc-log");
-    if (btnDownloadDtcLog) {
-        btnDownloadDtcLog.addEventListener("click", downloadDtcDiagnosisLog);
     }
 });

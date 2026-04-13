@@ -358,7 +358,7 @@ export function decodeKDErrorData(id, hexData, cardElement) {
 
     // --- Wizualizacja Błędów ---
     if (activeErrors.length > 0) {
-        html += `<div class="ind active-error full-width blink">WYKRYTO BŁĘDY (DTC)!</div>`;
+        html += `<div class="ind active-error full-width blink">WYKRYTO BŁĘDY MODUŁÓW!</div>`;
         
         // Wypisanie skróconej listy modułów z usterkami
         html += `<div class="ind active-error full-width">Moduły: ${activeErrors.join(', ')}</div>`;
@@ -473,7 +473,7 @@ export function decodeSysteminfo1Data(id, hexData, cardElement) {
     }
     
     if (fullData.SY1_KD_Fehler === 1) {
-         html += `<div class="ind active-error">BŁĄD GATEWAY (DTC)</div>`;
+         html += `<div class="ind active-error">BŁĄD GATEWAY</div>`;
     }
 
     gridContainer.innerHTML = html;

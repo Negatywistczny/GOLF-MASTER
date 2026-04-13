@@ -4,8 +4,6 @@ export {
     errorRegistry,
     frameDataCache,
     terminalBuffer,
-    dtcScanRegistry,
-    dtcScanState,
     TERMINAL_MAX_LINES,
     frameLastSeenMs,
     getSocket,

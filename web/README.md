@@ -1,7 +1,7 @@
 # Dokumentacja Smart UI (Web) — GOLF MASTER
 
 ## 1. Rola modułu
-Folder `web` zawiera frontend typu SPA (Vanilla JS + WebSocket) do wizualizacji ramek CAN, diagnostyki i eksportu danych.
+Folder `web` zawiera frontend typu SPA (Vanilla JS + WebSocket) do wizualizacji ramek CAN i eksportu danych.
 
 ## 2. Architektura kodu (moduły z bundlowaniem offline)
 Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwera używany jest wygenerowany bundle:
@@ -17,7 +17,7 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 - `js/ui/core.js` — rdzeń dashboardu (obsługa ramek, tworzenie kafelków, routing dekoderów).
 - `js/ui/modal.js` — logika okna szczegółów ramki.
 - `js/ui/statusLogs.js` — status LIVE, logowanie błędów i terminal.
-- `js/ui/actions.js` — akcje użytkownika (snapshot, pełny skan DTC, eksport logów).
+- `js/ui/actions.js` — akcje użytkownika (snapshot, eksport logów).
 - `js/ui/modalColors/modalColorRules.js` — kolory wartości w modalu: override ramki, opcjonalne `stateTags` w meta sygnału, heurystyka po `displayVal`.
 - `js/ui/modalColors/modalColorOverrides.js` — jawne wyjątki per `ramka → sygnał → wartość`.
 - `js/can/frameRegistry.js` — centralny rejestr ramek (`ID CAN → name/zone/decoder`) oraz mapy `canDictionary` i `decoderRouter`.
@@ -79,9 +79,6 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 - Po wyłączeniu bridge status przechodzi na błąd i po chwili następuje ponowne połączenie (ok. 3 s).
 
 ### C. Interakcje dashboardu
-- Klik `🛠️ SKANUJ DTC` (nad tabelą w sekcji wyniku auto-skanu DTC, obok `📝 LOG DTC`):
-  - przycisk zmienia stan na skanowanie,
-  - brak błędów referencji w konsoli.
 - Klik `📸 SNAPSHOT`:
   - generuje plik CSV do pobrania.
 - Klik `📝 ZAPISZ LOGI`:
@@ -113,7 +110,7 @@ Poniższy standard jest obowiązujący dla wszystkich dekoderów (`drive`, `comf
   - Przykłady: `ABS AKTYWNY`, `ESP INTERWENIUJE`, `KIERUNKOWSKAZ`, `SWIATLO STOP WLACZONE`, `TRYB TRANSPORTOWY`.
 
 - **Czerwony (`active-error` / `active-red`)** — błąd krytyczny, alarm lub awaria.
-  - Przykłady: `CRASH DETECTED`, `LIMP HOME`, `BRAK LADOWANIA`, `BLEDY DTC`, `BLEDY CZUJNIKOW`.
+  - Przykłady: `CRASH DETECTED`, `LIMP HOME`, `BRAK LADOWANIA`, `BLEDY CZUJNIKOW`.
 
 - **Szary (brak klasy `active-*`)** — neutralne OFF/idle/brak akcji/oczekiwanie na dane oraz informacje stałe (konfiguracja/kodowanie).
   - Przykłady: `PILOT: BRAK AKCJI`, `KIERUNKI WYL.`, `KLIMATYZACJA: WYL`, `HAMULEC ZWOLNIONY`, `ZAKODOWANO: ...`.

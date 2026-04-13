@@ -256,62 +256,6 @@ table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
 th { text-align: left; color: var(--text-dim); padding: 8px; border-bottom: 1px solid var(--border); }
 td { padding: 8px; border-bottom: 1px solid var(--border); }
 
-.dtc-scan-section {
-    margin-top: var(--space-lg);
-}
-
-.dtc-section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-md);
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-}
-
-.dtc-section-head .section-label {
-    margin-bottom: 0;
-    flex: 1;
-    min-width: 180px;
-}
-
-.dtc-summary {
-    font-family: "Consolas", monospace;
-    font-size: 0.8em;
-    margin-bottom: 10px;
-    color: var(--text-main);
-}
-
-.dtc-scroll {
-    max-height: 260px;
-}
-
-.dtc-status-ok {
-    color: var(--green);
-    font-weight: 700;
-}
-
-.dtc-status-warning {
-    color: var(--orange);
-    font-weight: 700;
-}
-
-.dtc-status-error {
-    color: var(--red);
-    font-weight: 700;
-}
-
-.dtc-status-idle {
-    color: var(--text-dim);
-    font-weight: 700;
-}
-
-/* Skan DTC: ECU odpowiedziało, lista kodów pusta */
-.dtc-status-info {
-    color: var(--orange);
-    font-weight: 700;
-}
-
 .msg-row-system { color: var(--green); }
 .msg-row-error { color: var(--red); }
 
@@ -477,22 +421,6 @@ td { padding: 8px; border-bottom: 1px solid var(--border); }
 .btn-snap:hover {
     background: var(--accent);
     box-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
-}
-
-/* --- PRZYCISK DIAGNOSTYKI AKTYWNEJ --- */
-.btn-diag {
-    background: var(--accent-dark);
-    color: var(--text-inverse);
-    border: 1px solid var(--accent);
-}
-
-.btn-diag:hover {
-    background: var(--accent);
-    box-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
-}
-
-.btn-diag:active {
-    transform: scale(0.95);
 }
 
 /* --- PRZYCISK LOGÓW TERMINALA --- */

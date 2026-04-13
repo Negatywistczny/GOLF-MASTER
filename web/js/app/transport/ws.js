@@ -5,9 +5,7 @@ import {
     logSystem,
     clearMessage,
     logTerminal,
-    updateStatus,
-    handleDtcScanEvent,
-    setDtcScanButtonLoading
+    updateStatus
 } from "../../ui/index.js";
 
 const WS_URL = "ws://localhost:8765";
@@ -37,28 +35,6 @@ function ttlForError(src, code) {
 }
 
 function parseIncomingData(raw) {
-    if (raw.startsWith("{")) {
-        try {
-            const event = JSON.parse(raw);
-            if (event.type === "dtc_scan") {
-                handleDtcScanEvent(event.event, event.payload || {});
-                if (event.event === "start") {
-                    setDtcScanButtonLoading(true);
-                    updateStatus("SKAN DTC: START", "var(--orange)");
-                } else if (event.event === "complete") {
-                    setDtcScanButtonLoading(false);
-                    updateStatus("AUTO-SKAN ZAKOŃCZONY", "var(--green)");
-                } else if (event.event === "error") {
-                    setDtcScanButtonLoading(false);
-                    updateStatus("BŁĄD SKANU DTC", "var(--red)");
-                }
-                return;
-            }
-        } catch (_err) {
-            // Fallback do klasycznego parsera tekstowego.
-        }
-    }
-
     logTerminal(raw);
 
     if (raw.startsWith("CLR:")) {
@@ -107,7 +83,6 @@ export function connectWebSocket() {
     };
 
     socket.onclose = () => {
-        setDtcScanButtonLoading(false);
         updateStatus("UTRACO_POŁĄCZENIE Z PYTHONEM", "var(--red)");
         logError("JS", "WS_DISCONNECTED", "Brak połączenia z bridge.py", { ttlMs: MESSAGE_TTL_MS.ERR_WS_DISCONNECTED });
         setTimeout(connectWebSocket, 3000);

@@ -3,17 +3,6 @@ const errorRegistry = Object.create(null);
 const frameDataCache = Object.create(null);
 const frameLastSeenMs = Object.create(null);
 const terminalBuffer = [];
-const dtcScanRegistry = Object.create(null);
-const dtcScanState = {
-    scanId: null,
-    startedAt: null,
-    status: "idle",
-    moduleTotal: 0,
-    moduleDone: 0,
-    moduleErrors: 0,
-    modulesWithDtc: 0,
-    totalDtcs: 0
-};
 const TERMINAL_MAX_LINES = 3000;
 
 let socket = null;
@@ -74,8 +63,6 @@ export {
     frameDataCache,
     frameLastSeenMs,
     terminalBuffer,
-    dtcScanRegistry,
-    dtcScanState,
     TERMINAL_MAX_LINES,
     getSocket,
     setSocket,

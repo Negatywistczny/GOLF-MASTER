@@ -2470,17 +2470,6 @@ const errorRegistry = Object.create(null);
 const frameDataCache = Object.create(null);
 const frameLastSeenMs = Object.create(null);
 const terminalBuffer = [];
-const dtcScanRegistry = Object.create(null);
-const dtcScanState = {
-    scanId: null,
-    startedAt: null,
-    status: "idle",
-    moduleTotal: 0,
-    moduleDone: 0,
-    moduleErrors: 0,
-    modulesWithDtc: 0,
-    totalDtcs: 0
-};
 const TERMINAL_MAX_LINES = 3000;
 
 let socket = null;
@@ -2971,7 +2960,7 @@ function decodeKDErrorData(id, hexData, cardElement) {
 
     // --- Wizualizacja Błędów ---
     if (activeErrors.length > 0) {
-        html += `<div class="ind active-error full-width blink">WYKRYTO BŁĘDY (DTC)!</div>`;
+        html += `<div class="ind active-error full-width blink">WYKRYTO BŁĘDY MODUŁÓW!</div>`;
         
         // Wypisanie skróconej listy modułów z usterkami
         html += `<div class="ind active-error full-width">Moduły: ${activeErrors.join(', ')}</div>`;
@@ -3086,7 +3075,7 @@ function decodeSysteminfo1Data(id, hexData, cardElement) {
     }
     
     if (fullData.SY1_KD_Fehler === 1) {
-         html += `<div class="ind active-error">BŁĄD GATEWAY (DTC)</div>`;
+         html += `<div class="ind active-error">BŁĄD GATEWAY</div>`;
     }
 
     gridContainer.innerHTML = html;
@@ -5642,25 +5631,6 @@ function generateSnapshot() {
     updateStatus("SNAPSHOT ZAPISANY DO PLIKU", "var(--accent)");
 }
 
-function requestFullDtcScan() {
-    const socket = getSocket();
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send("CMD:REQ_FULL_SCAN");
-        updateStatus("SKANOWANIE MODUŁÓW (TP 2.0)...", "var(--orange)");
-        setDtcScanButtonLoading(true);
-    } else {
-        logError("JS", "WS_OFFLINE", "Brak połączenia z Pythonem.");
-    }
-}
-
-function setDtcScanButtonLoading(isLoading) {
-    const btnScanAll = document.getElementById("btn-scan-all");
-    if (!btnScanAll) return;
-    btnScanAll.disabled = !!isLoading;
-    btnScanAll.style.opacity = isLoading ? "0.5" : "1";
-    btnScanAll.textContent = isLoading ? "⏳ SKANOWANIE..." : "🛠️ SKANUJ DTC";
-}
-
 function downloadTerminalLogs() {
     const term = document.getElementById("term-stream");
     if (!term) return;
@@ -5693,211 +5663,6 @@ function downloadTerminalLogs() {
     document.body.removeChild(link);
 
     updateStatus("LOGI TERMINALA ZAPISANE DO PLIKU", "var(--green)");
-}
-
-function downloadDtcDiagnosisLog() {
-    const rows = Object.values(dtcScanRegistry).sort((a, b) => (a.index || 0) - (b.index || 0));
-    if (rows.length === 0) {
-        alert("Brak wyników skanu DTC. Uruchom najpierw auto-skan (lub poczekaj na pierwsze wyniki modułów).");
-        return;
-    }
-
-    let text = "";
-    text += "=========================================\n";
-    text += "   GOLF MASTER v50.0 - LOG DIAGNOZY DTC\n";
-    text += `   DATA WYGENEROWANIA: ${new Date().toLocaleString("pl-PL")}\n`;
-    text += "=========================================\n\n";
-
-    text += `Scan ID: ${dtcScanState.scanId ?? "(brak)"}\n`;
-    text += `Status UI: ${dtcScanState.status}\n`;
-    text += `Moduły (ukończone): ${dtcScanState.moduleDone}/${dtcScanState.moduleTotal}\n`;
-    text += `Moduły z DTC: ${dtcScanState.modulesWithDtc} | DTC łącznie: ${dtcScanState.totalDtcs} | Błędy komunikacji: ${dtcScanState.moduleErrors}\n`;
-    if (dtcScanState.startedAt != null) {
-        text += `Rozpoczęto (timestamp ms): ${dtcScanState.startedAt}\n`;
-    }
-    text += "\n--- MODUŁY ---\n\n";
-
-    for (const row of rows) {
-        text += `[${row.index}/${row.total}] ${row.module?.addr ?? "?"} ${row.module?.name ?? ""}\n`;
-        text += `  Protokół: ${row.protocol ?? "N/A"}\n`;
-        text += `  Kanał TX: ${row.txChannelHex != null && row.txChannelHex !== "" ? row.txChannelHex : "—"}\n`;
-        const statusPl =
-            row.status === "ok"
-                ? "ok (DTC wykryte)"
-                : row.status === "no_dtc"
-                  ? "no_dtc (brak kodów, odpowiedź ECU)"
-                  : row.status === "no_data" || row.status === "clean"
-                    ? "no_data (brak uchwyconej odpowiedzi DTC)"
-                    : row.status === "comm_error"
-                      ? "comm_error"
-                      : row.status;
-        text += `  Status: ${statusPl}\n`;
-        text += `  Liczba DTC: ${row.dtcCount ?? 0}\n`;
-        if (row.dtcs && row.dtcs.length) {
-            for (const d of row.dtcs) {
-                const flags = Array.isArray(d.statusFlags) ? d.statusFlags.join(", ") : "";
-                const src = d.source ? ` | ${d.source}` : "";
-                text += `    - ${d.code} | ${d.statusByte ?? ""}${flags ? ` | ${flags}` : ""}${src}\n`;
-            }
-        }
-        if (row.errors && row.errors.length) {
-            text += "  Błędy sesji (próby protokołu):\n";
-            for (const e of row.errors) {
-                text += `    - ${e.protocol}: ${e.code} — ${e.message}\n`;
-            }
-        }
-        text += `  Czas trwania (ms): ${row.durationMs ?? "—"}\n`;
-        if (row.payloadsHex && row.payloadsHex.length) {
-            text += "  Payloady (hex):\n";
-            row.payloadsHex.forEach((p, i) => {
-                text += `    [${i}] ${p}\n`;
-            });
-        }
-        text += "\n";
-    }
-
-    text += "--- JSON (pełne obiekty wierszy) ---\n";
-    text += JSON.stringify(rows, null, 2);
-    text += "\n";
-
-    const blob = new Blob(["\ufeff", text], { type: "text/plain;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    const dateStr = formatLocalFileTimestamp();
-    link.setAttribute("href", url);
-    link.setAttribute("download", `PQ35_DTC_DIAG_${dateStr}.txt`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    updateStatus("LOG DTC ZAPISANY DO PLIKU", "var(--green)");
-}
-
-// ===== js/ui/dtcPanel.js =====
-
-
-function _formatDtcDetail(d) {
-    if (!d || !d.code) return "";
-    const flags = Array.isArray(d.statusFlags) ? d.statusFlags.join(", ") : "";
-    const src = d.source ? ` | ${d.source}` : "";
-    return `${d.code} ${d.statusByte || ""}${flags ? ` (${flags})` : ""}${src}`.trim();
-}
-
-function _dtcDetailsCell(row) {
-    if (row.dtcCount > 0 && row.dtcs && row.dtcs.length) {
-        return row.dtcs.map((d) => _formatDtcDetail(d)).join(" · ");
-    }
-    if (row.errors && row.errors.length) {
-        return row.errors.map((e) => `${e.protocol}:${e.code}`).join(", ");
-    }
-    return "—";
-}
-
-function _statusLabel(status) {
-    if (status === "ok") return "DTC WYKRYTE";
-    if (status === "no_dtc") return "BRAK KODÓW (ODPOWIEDŹ)";
-    if (status === "no_data" || status === "clean") return "BRAK DANYCH ODPOWIEDZI";
-    if (status === "comm_error") return "BRAK KOMUNIKACJI";
-    return status || "N/A";
-}
-
-function _statusClass(status) {
-    if (status === "ok") return "dtc-status-warning";
-    if (status === "no_dtc") return "dtc-status-info";
-    if (status === "no_data" || status === "clean") return "dtc-status-idle";
-    if (status === "comm_error") return "dtc-status-error";
-    return "dtc-status-idle";
-}
-
-function _setSummary(text) {
-    const el = document.getElementById("dtc-scan-summary");
-    if (el) {
-        el.textContent = text;
-    }
-}
-
-function _renderRows() {
-    const tbody = document.getElementById("dtc-scan-table-body");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-
-    const rows = Object.values(dtcScanRegistry).sort((a, b) => a.index - b.index);
-    for (const row of rows) {
-        const tr = document.createElement("tr");
-        const details = _dtcDetailsCell(row);
-        const txCh = row.txChannelHex != null && row.txChannelHex !== ""
-            ? row.txChannelHex
-            : "—";
-
-        tr.innerHTML = `
-            <td>${row.module.addr}</td>
-            <td>${row.module.name}</td>
-            <td>${row.protocol || "N/A"}</td>
-            <td>${txCh}</td>
-            <td class="${_statusClass(row.status)}">${_statusLabel(row.status)}</td>
-            <td>${row.dtcCount ?? 0}</td>
-            <td title="${details}">${details}</td>
-        `;
-        tbody.appendChild(tr);
-    }
-}
-
-function _updateSummaryFromState() {
-    _setSummary(
-        `Scan: ${dtcScanState.status.toUpperCase()} | Moduły: ${dtcScanState.moduleDone}/${dtcScanState.moduleTotal} | ` +
-        `DTC moduły: ${dtcScanState.modulesWithDtc} | DTC łącznie: ${dtcScanState.totalDtcs} | Błędy komunikacji: ${dtcScanState.moduleErrors}`
-    );
-}
-
-function handleDtcScanEvent(event, payload) {
-    if (event === "start") {
-        Object.keys(dtcScanRegistry).forEach((k) => delete dtcScanRegistry[k]);
-        dtcScanState.scanId = payload.scanId || null;
-        dtcScanState.startedAt = payload.startedAt || Date.now();
-        dtcScanState.status = "running";
-        dtcScanState.moduleTotal = payload.moduleTotal || 0;
-        dtcScanState.moduleDone = 0;
-        dtcScanState.moduleErrors = 0;
-        dtcScanState.modulesWithDtc = 0;
-        dtcScanState.totalDtcs = 0;
-        _updateSummaryFromState();
-        _renderRows();
-        return;
-    }
-
-    if (event === "progress") {
-        if (typeof payload.index === "number") {
-            _setSummary(`Scan: RUNNING | Moduł ${payload.index}/${payload.total} | ${payload.module.name} (${payload.protocol})`);
-        }
-        return;
-    }
-
-    if (event === "module_result") {
-        const key = payload.module?.addr || `row_${payload.index}`;
-        dtcScanRegistry[key] = payload;
-        dtcScanState.moduleDone += 1;
-        if (payload.status === "comm_error") dtcScanState.moduleErrors += 1;
-        if ((payload.dtcCount || 0) > 0) dtcScanState.modulesWithDtc += 1;
-        dtcScanState.totalDtcs += payload.dtcCount || 0;
-        _updateSummaryFromState();
-        _renderRows();
-        return;
-    }
-
-    if (event === "complete") {
-        dtcScanState.status = "done";
-        dtcScanState.moduleErrors = payload.moduleErrors || 0;
-        dtcScanState.modulesWithDtc = payload.modulesWithDtc || 0;
-        dtcScanState.totalDtcs = payload.totalDtcs || 0;
-        _updateSummaryFromState();
-        return;
-    }
-
-    if (event === "error") {
-        dtcScanState.status = "error";
-        _setSummary(`Scan: ERROR | ${payload.errorCode || "scan_error"} | ${payload.message || "Brak szczegółów"}`);
-    }
 }
 
 // ===== js/ui/index.js =====
@@ -5934,28 +5699,6 @@ function ttlForError(src, code) {
 }
 
 function parseIncomingData(raw) {
-    if (raw.startsWith("{")) {
-        try {
-            const event = JSON.parse(raw);
-            if (event.type === "dtc_scan") {
-                handleDtcScanEvent(event.event, event.payload || {});
-                if (event.event === "start") {
-                    setDtcScanButtonLoading(true);
-                    updateStatus("SKAN DTC: START", "var(--orange)");
-                } else if (event.event === "complete") {
-                    setDtcScanButtonLoading(false);
-                    updateStatus("AUTO-SKAN ZAKOŃCZONY", "var(--green)");
-                } else if (event.event === "error") {
-                    setDtcScanButtonLoading(false);
-                    updateStatus("BŁĄD SKANU DTC", "var(--red)");
-                }
-                return;
-            }
-        } catch (_err) {
-            // Fallback do klasycznego parsera tekstowego.
-        }
-    }
-
     logTerminal(raw);
 
     if (raw.startsWith("CLR:")) {
@@ -6004,7 +5747,6 @@ function connectWebSocket() {
     };
 
     socket.onclose = () => {
-        setDtcScanButtonLoading(false);
         updateStatus("UTRACO_POŁĄCZENIE Z PYTHONEM", "var(--red)");
         logError("JS", "WS_DISCONNECTED", "Brak połączenia z bridge.py", { ttlMs: MESSAGE_TTL_MS.ERR_WS_DISCONNECTED });
         setTimeout(connectWebSocket, 3000);
@@ -6030,19 +5772,9 @@ document.addEventListener("DOMContentLoaded", () => {
         btnSnapshot.addEventListener("click", generateSnapshot);
     }
 
-    const btnScanAll = document.getElementById("btn-scan-all");
-    if (btnScanAll) {
-        btnScanAll.addEventListener("click", requestFullDtcScan);
-    }
-
     const btnDownloadLogs = document.getElementById("btn-download-logs");
     if (btnDownloadLogs) {
         btnDownloadLogs.addEventListener("click", downloadTerminalLogs);
-    }
-
-    const btnDownloadDtcLog = document.getElementById("btn-download-dtc-log");
-    if (btnDownloadDtcLog) {
-        btnDownloadDtcLog.addEventListener("click", downloadDtcDiagnosisLog);
     }
 });
 

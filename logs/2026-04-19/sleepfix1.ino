@@ -17,13 +17,12 @@ const long NM_ARDUINO_ID = 0x40B;
 const int NEXT_NODE_ID = 0x2B;
 
 // NM — bajt 1 wg id_ramek.txt (mNM_Gateway_I): CmdRing bit8, CmdAlive bit9, CmdLimpHome bit10,
-// SleepInd bit12, SleepAck bit13 → maski w bajcie 1 (SleepAck tylko w naszym TX, gateway go nie wysyła).
+// SleepInd bit12, SleepAck bit13 → maski w bajcie 1:
 const uint8_t NM_CMD_RING = 0x01;
 const uint8_t NM_CMD_ALIVE = 0x02;
 const uint8_t NM_MASK_CMD_LIMP = 0x04;
 const uint8_t NM_MASK_SLEEP = 0x10;
-// Bit SleepAck w odpowiedzi 0x40B (nigdy nie interpretujemy go w ramkach z gateway).
-const uint8_t NM_TX_SLEEP_ACK = 0x20;
+const uint8_t NM_MASK_SLEEP_ACK = 0x20;
 const uint8_t NM_NODE_SELF = 0x0B;
 
 // Odpowiedź NM węzła 0x40B (Node 0x0B): układ bitów bajtu 1 jak w id_ramek_tylko_radio.txt → NWM_Radio
@@ -48,7 +47,7 @@ unsigned long lastSendTime = 0;
 // Ostatni czas ramki Gateway NM do nas (0x42B→0x0B) — tylko to liczy się do ERR:CAN:HANG i kasowania latcha.
 unsigned long lastGwSelfNmMs = 0;
 bool isHanging = false;
-// Tylko watchdog ERR:CAN:HANG (runHealthChecks) — nigdzie indziej nie czytaj; komunikacja zawsze gotowa.
+// Jedna flaga stanu snu: używana równocześnie przez watchdog i politykę NM.
 bool busSleep = true;
 // Przyczyna wybudzenia (bajty 2–4 Alive z 0x42B→0x0B): !=0 ⇒ logiczne „bus wybudzony”.
 bool isBusActive = false;
@@ -118,33 +117,44 @@ inline bool isNmCommandFrame(uint8_t b1) {
   return (b1 & (NM_CMD_RING | NM_CMD_ALIVE | NM_MASK_CMD_LIMP)) != 0;
 }
 
-// Odbiór gateway NM: timer HANG, latch isHanging, stan auto-NM; busSleep wyłącznie pod watchdog HANG.
 void updateSleepSignalsFromGateway(uint8_t b1, const uint8_t *buf, uint8_t len) {
   if (buf[0] != NM_NODE_SELF) return;
 
   lastGwSelfNmMs = millis();
   isHanging = false;
 
-  if ((b1 & NM_MASK_SLEEP) != 0) {
-    Serial.println(F("SYS:CAN:SLEEP_IND"));
+  if ((b1 & NM_MASK_SLEEP_ACK) != 0) {
     busSleep = true;
     setAutoNmState(AUTO_SILENT_LISTEN);
+    CAN0.setMode(MCP_SLEEP);
+    digitalWrite(TJA_EN, LOW);
+    digitalWrite(TJA_STB, LOW);
+    return;
+  }
+
+  if ((b1 & NM_MASK_SLEEP) != 0) {
+    Serial.println(F("SYS:CAN:SLEEP_IND"));
+    setAutoNmState(AUTO_SLEEP_PREP);
     return;
   }
 
   if ((b1 & NM_CMD_ALIVE) != 0) {
-    busSleep = false;
-    setAutoNmState(isBusActive ? AUTO_ACTIVE : AUTO_SLEEP_PREP);
+    bool ignoreIdleAlive = busSleep && !isBusActive && len >= 5 && decodeWakeCombo(buf) == 0;
+    if (!ignoreIdleAlive) {
+      busSleep = false;
+      setAutoNmState(isBusActive ? AUTO_ACTIVE : AUTO_SLEEP_PREP);
+    }
   }
 }
 
 void updateWakeStateFromAlive(uint8_t b1, const uint8_t *buf, uint8_t len) {
   if (buf[0] != NM_NODE_SELF || (b1 & NM_CMD_ALIVE) == 0 || len < 5) return;
-  if ((b1 & NM_MASK_SLEEP) != 0) return;
+  if ((b1 & NM_MASK_SLEEP_ACK) != 0 || (b1 & NM_MASK_SLEEP) != 0) return;
 
   uint32_t wakeCombo = decodeWakeCombo(buf);
   static uint32_t prevWakeCombo = 0;
   if (prevWakeCombo == 0 && wakeCombo != 0) {
+    busSleep = false;
     isBusActive = true;
     setAutoNmState(AUTO_ACTIVE);
   } else if (prevWakeCombo != 0 && wakeCombo == 0) {
@@ -157,7 +167,7 @@ void updateWakeStateFromAlive(uint8_t b1, const uint8_t *buf, uint8_t len) {
 
 uint8_t buildNmReplyByte1(uint8_t gatewayByte1) {
   if ((gatewayByte1 & NM_MASK_SLEEP) != 0) {
-    return NM_CMD_RING | NM_TX_SLEEP_ACK;
+    return NM_CMD_RING | NM_MASK_SLEEP_ACK;
   }
 
   if (gatewayByte1 & NM_MASK_CMD_LIMP) {
@@ -176,7 +186,7 @@ void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len) {
   updateSleepSignalsFromGateway(b1, buf, len);
   updateWakeStateFromAlive(b1, buf, len);
 
-  if (buf[0] == NM_NODE_SELF && isNmCommandFrame(b1)) {
+  if (buf[0] == NM_NODE_SELF && isNmCommandFrame(b1) && !busSleep) {
     uint8_t txB1 = buildNmReplyByte1(b1);
     unsigned char txBuf[6] = {(unsigned char)NEXT_NODE_ID, txB1, 0, 0, 0, 0};
     CAN0.sendMsgBuf(NM_ARDUINO_ID, 0, 6, txBuf);
@@ -278,7 +288,7 @@ void processCanRxLoop() {
 }
 
 void runHealthChecks() {
-  // Watchdog komunikacji (busSleep tylko tutaj — wyciszenie po SleepInd z gateway).
+  // Watchdog komunikacji: sprawdzany w każdej iteracji pętli.
   if (!isHanging && !busSleep && lastGwSelfNmMs != 0
       && (millis() - lastGwSelfNmMs > INTERVAL_HANG_CHECK)) {
     Serial.println(F("ERR:CAN:HANG"));

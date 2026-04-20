@@ -5,9 +5,10 @@ import serial
 import websockets
 
 SERIAL_PORT = os.getenv("GOLF_SERIAL_PORT", "COM7")
-BAUD_RATE = int(os.getenv("GOLF_BAUD_RATE", "115200"))
+BAUD_RATE = int(os.getenv("GOLF_BAUD_RATE", "230400"))
 WS_HOST = os.getenv("GOLF_WS_HOST", "localhost")
 WS_PORT = int(os.getenv("GOLF_WS_PORT", "8765"))
+SERIAL_POLL_SLEEP_S = float(os.getenv("GOLF_SERIAL_POLL_SLEEP_S", "0.001"))
 
 connected_clients = set()
 shutdown_task = None
@@ -26,10 +27,13 @@ async def broadcast(message: str) -> None:
     if not connected_clients:
         return
     disconnected = set()
-    for client in connected_clients:
-        try:
-            await client.send(message)
-        except websockets.exceptions.ConnectionClosed:
+    clients = list(connected_clients)
+    results = await asyncio.gather(
+        *(client.send(message) for client in clients),
+        return_exceptions=True
+    )
+    for client, result in zip(clients, results):
+        if isinstance(result, Exception):
             disconnected.add(client)
     connected_clients.difference_update(disconnected)
 
@@ -57,7 +61,7 @@ async def handle_serial() -> None:
                         line = line_bytes.decode("utf-8", errors="ignore").strip()
                         if line:
                             await broadcast(line)
-                await asyncio.sleep(0.005)
+                await asyncio.sleep(SERIAL_POLL_SLEEP_S)
 
         except (serial.SerialException, FileNotFoundError):
             error_msg = f"ERR:PY:SERIAL_LOST:{SERIAL_PORT}"

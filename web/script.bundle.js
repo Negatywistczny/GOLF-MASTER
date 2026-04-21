@@ -4140,12 +4140,12 @@ function decodeBremseGetriebeData(id, hexData, cardElement) {
 
     let html = ``;
 
-    // --- Światło STOP i Hamulec ---
-    // Bierzemy pod uwagę światło stop, stabilizację przyczepy i hamulec EPB
-    if (fullData.PLS_Bremsleuchte === 1 || fullData.GWB_TSP_aktiv === 1 || fullData.GWB_EPB_Bremslicht === 1) {
-        html += `<div class="ind active-orange full-width">ŚWIATŁO STOP WŁĄCZONE</div>`;
+    // --- Prędkość pojazdu ---
+    const speedDataStale = fullData.GWB_Alt_FzgGeschw === 1 || fullData.GWB_Geschw_Ersatz === 1;
+    if (speedDataStale) {
+        html += `<div class="ind active-orange full-width">PRĘDKOŚĆ: DANE NIEWAŻNE/ZASTĘPCZE</div>`;
     } else {
-        html += `<div class="ind full-width">HAMULEC ZWOLNIONY</div>`;
+        html += `<div class="ind active-blue full-width">PRĘDKOŚĆ: ${fullData.GWB_FzgGeschw.toFixed(2)} km/h</div>`;
     }
 
     // --- ABS / ESP / Nagłe hamowanie ---
@@ -4159,14 +4159,8 @@ function decodeBremseGetriebeData(id, hexData, cardElement) {
         html += `<div class="ind active-orange blink">ESP INTERWENIUJE!</div>`;
     }
 
-    // --- Skrzynia Biegów (Waehlhebel) ---
-    const gearMeta = signalMeta.GWB_Info_Waehlhebel?.states || {};
-    let bieg = gearMeta[fullData.GWB_Info_Waehlhebel] || "NIEZNANY";
-    
-    // Dodajemy informacje o Shift Lock (zablokowany drążek)
-    let shiftLockStr = (fullData.GWB_Shift_Lock === 1) ? " 🔒 (Zablokowany)" : "";
-    
-    html += `<div class="ind active-blue full-width">BIEG: ${bieg}${shiftLockStr}</div>`;
+    // --- Droga / impulsy ABS ---
+    html += `<div class="ind full-width">IMPULSY DROGI: ${fullData.GWB_Wegimpulse} | ZĘBY: ${fullData.GWB_Impulszahl}</div>`;
 
     gridContainer.innerHTML = html;
 }

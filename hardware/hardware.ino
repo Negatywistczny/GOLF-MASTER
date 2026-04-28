@@ -7,6 +7,9 @@ const int CAN_INT_PIN = 2;
 const int TJA_STB = 5;
 const int TJA_EN  = 6;
 const int TJA_ERR = 4;
+const int RELAY_ACC_PIN = 7;
+const int RELAY_ILL_PIN = 8;
+const int RELAY_BACK_PIN = 9;
 
 // --- SERIAL ---
 #define SERIAL_BUF_SIZE 64
@@ -33,12 +36,16 @@ const uint8_t NM_NODE_SELF = 0x0B;
 const unsigned long INTERVAL_RADIO_PUMP = 150;
 const unsigned long INTERVAL_HANG_CHECK = 2000;
 const unsigned long INTERVAL_TJA_ERR_LOG = 5000;
+const unsigned long INTERVAL_RELAY_SILENCE_OFF = 300000;
 
 // Ograniczenie czasu w pętli INT — nie blokuj aktualizacji stanu / timerów.
 const uint8_t MAX_FRAMES_PER_INT_LOOP = 48;
 
 const long CAN_ID_RADIO_STATUS = 0x661;
 const long CAN_ID_SNIFFER_IGNORE_A = 0x531;
+const long CAN_ID_IGNITION_STATUS = 0x2C3;
+const long CAN_ID_DIMMING = 0x635;
+const long CAN_ID_LIGHT_STATUS = 0x531;
 const uint8_t CAN_MAX_DLEN = 8;
 const uint32_t CAN_ID_MASK = 0x1FFFFFFF;
 
@@ -55,6 +62,12 @@ bool busSleep = true;
 // Przyczyna wybudzenia (bajty 2–4 Alive z 0x42B→0x0B): !=0 ⇒ logiczne „bus wybudzony”.
 bool isBusActive = false;
 unsigned long lastErrCheckMs = 0;
+unsigned long lastAnyCanActivityMs = 0;
+bool relayForcedOffBySilence = false;
+
+bool relayAccOn = false;
+bool relayIllOn = false;
+bool relayBackOn = false;
 
 enum AutoNmState : uint8_t {
   AUTO_ACTIVE = 0,
@@ -69,6 +82,8 @@ void setAutoNmState(AutoNmState next);
 void handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len);
 void checkHardwareErrors();
 void processSerial();
+void updateRelaySignalsFromFrame(uint32_t id, const uint8_t *buf, uint8_t len);
+void applyRelayOutputs();
 
 // --- HELPERS ---
 inline uint32_t decodeWakeCombo(const uint8_t *buf) {
@@ -86,6 +101,35 @@ inline uint8_t normalizeCanLen(uint8_t rawLen) {
 void setAutoNmState(AutoNmState next) {
   if (autoNmState == next) return;
   autoNmState = next;
+}
+
+void applyRelayOutputs() {
+  digitalWrite(RELAY_ACC_PIN, relayAccOn ? LOW : HIGH);
+  digitalWrite(RELAY_ILL_PIN, relayIllOn ? LOW : HIGH);
+  digitalWrite(RELAY_BACK_PIN, relayBackOn ? LOW : HIGH);
+}
+
+void updateRelaySignalsFromFrame(uint32_t id, const uint8_t *buf, uint8_t len) {
+  if (len < 1) return;
+
+  if (id == (uint32_t)CAN_ID_IGNITION_STATUS) {
+    relayAccOn = (buf[0] & 0x02) != 0; // ZS1_ZAS_Kl_15
+    applyRelayOutputs();
+    return;
+  }
+
+  if (id == (uint32_t)CAN_ID_DIMMING) {
+    uint8_t displayPercent = buf[0] & 0x7F; // DI1_Display (0..100)
+    bool displayFault = (buf[0] & 0x80) != 0; // DI1_Display_def
+    relayIllOn = (!displayFault && displayPercent > 0);
+    applyRelayOutputs();
+    return;
+  }
+
+  if (id == (uint32_t)CAN_ID_LIGHT_STATUS) {
+    relayBackOn = (buf[0] & 0x20) != 0; // LIA_Rueckfahrlicht
+    applyRelayOutputs();
+  }
 }
 
 // --- LOGIKA DELTA ---
@@ -280,9 +324,12 @@ void processCanRxLoop() {
     if (CAN0.readMsgBuf(&rawRxId, &len, rxBuf) != CAN_OK) {
       break;
     }
+    lastAnyCanActivityMs = millis();
+    relayForcedOffBySilence = false;
     uint32_t rxId = normalizeCanId((uint32_t)rawRxId);
     len = normalizeCanLen(len);
     intFrames++;
+    updateRelaySignalsFromFrame(rxId, rxBuf, len);
     handleGatewayNm(rxId, rxBuf, len);
 
     if (shouldPrintIncomingFrame(rxId, len, rxBuf)) {
@@ -293,6 +340,16 @@ void processCanRxLoop() {
 }
 
 void runHealthChecks() {
+  if (!relayForcedOffBySilence && lastAnyCanActivityMs != 0
+      && (millis() - lastAnyCanActivityMs > INTERVAL_RELAY_SILENCE_OFF)) {
+    relayAccOn = false;
+    relayIllOn = false;
+    relayBackOn = false;
+    applyRelayOutputs();
+    relayForcedOffBySilence = true;
+    Serial.println(F("SYS:RELAYS:FORCED_OFF_BY_SILENCE"));
+  }
+
   // Watchdog komunikacji (busSleep tylko tutaj — wyciszenie po SleepInd z gateway).
   if (!isHanging && !busSleep && lastGwSelfNmMs != 0
       && (millis() - lastGwSelfNmMs > INTERVAL_HANG_CHECK)) {
@@ -323,8 +380,13 @@ void setup() {
   pinMode(TJA_ERR, INPUT_PULLUP);
   pinMode(TJA_STB, OUTPUT);
   pinMode(TJA_EN, OUTPUT);
+  pinMode(RELAY_ACC_PIN, OUTPUT);
+  pinMode(RELAY_ILL_PIN, OUTPUT);
+  pinMode(RELAY_BACK_PIN, OUTPUT);
   digitalWrite(TJA_STB, HIGH);
   digitalWrite(TJA_EN, HIGH);
+  applyRelayOutputs();
+  lastAnyCanActivityMs = millis();
 
   if (CAN0.begin(MCP_ANY, CAN_100KBPS, MCP_8MHZ) == CAN_OK) {
     CAN0.mcp2515_modifyRegister(0x0F, 0x08, 0x08); // MCP_CANCTRL (One-Shot)

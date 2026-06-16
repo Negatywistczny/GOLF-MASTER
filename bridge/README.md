@@ -1,7 +1,7 @@
 # Mostek Python (bridge) — GOLF MASTER
 
 ## Rola
-`bridge.py` łączy Arduino (Serial) z Web UI (WebSocket) i przekazuje:
+`bridge.py` łączy moduł sprzętowy (Serial — Arduino lub ESP32 przez USB; docelowo także port BT ESP32) z Web UI (WebSocket) i przekazuje:
 - ramki CAN (`0x...`),
 - komunikaty systemowe (`SYS:*`) i błędy (`ERR:*`),
 - komendy klienta (`CMD:*`) jako wejście sterujące.

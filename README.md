@@ -10,7 +10,10 @@ System łączy precyzję sprzętową mikrokontrolera z nowoczesnym interfejsem w
 
 Projekt składa się z trzech współpracujących warstw:
 
-1. **Hardware (Arduino + MCP2515 + TJA1055)** — fizyczny mostek wpięty w kable samochodu. Firmware realizuje Auto-NM na podstawie `0x42B` (Gateway): stany `AUTO_ACTIVE` / `AUTO_SLEEP_PREP` / `AUTO_SILENT_LISTEN`, zdarzenia `SYS:CAN:WAKE_*`, `SYS:CAN:SLEEP_IND`, odpowiedzi `0x40B` zależne od tokenu i flag `Cmd*`/`Sleep*`, oraz pompa `0x661` tylko w `NET_ACTIVE`. Szczegóły i ograniczenia obserwowalności logów: [hardware/README.md](hardware/README.md), a zasady walidacji i anty-regresji: [logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md](logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md).
+1. **Hardware (MCP2515 + TJA1055)** — fizyczny mostek wpięty w kable samochodu. Dwa lustrzane szkice w [`hardware/`](hardware/README.md):
+   - **`arduino.ino`** — produkcyjny firmware (Auto-NM na `0x42B`, przekaźniki, pompa `0x661`); połączenie USB Serial.
+   - **`esp32.ino`** — wariant ESP32 z Bluetooth, WiFi i OTA; docelowo ta sama logika CAN, obecnie warstwa łączności.
+   Zasady walidacji i anty-regresji: [logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md](logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md).
 2. **Bridge (Python)** — asynchroniczny serwer zarządzający przepływem danych oraz automatyczne zwalnianie portów.
 3. **Smart UI (Web)** — responsywny dashboard w czasie rzeczywistym. Szczegóły: [web/README.md](web/README.md).
 
@@ -20,7 +23,7 @@ Projekt składa się z trzech współpracujących warstw:
 
 Każdy folder ma dedykowaną dokumentację:
 
-- [hardware](hardware/README.md) — kod Arduino, schematy, konfiguracja transceivera TJA.
+- [hardware](hardware/README.md) — `arduino.ino` (produkcja) i `esp32.ino` (BT/WiFi/OTA), konfiguracja TJA1055.
 - [bridge](bridge/README.md) — Python, WebSocket.
 - [web](web/README.md) — interfejs użytkownika, dekodery, terminal na żywo.
 - [data](data/README.md) — bazy DBC, mapy adresów, opisy sygnałów.

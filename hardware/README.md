@@ -1,41 +1,60 @@
-# Kod Arduino — VAG PQ35 Infotainment CAN — GOLF MASTER
+# Firmware sprzętowy — VAG PQ35 Infotainment CAN — GOLF MASTER
 
-## 1. Komunikacja CAN (NM OSEK)
+Warstwa hardware składa się z **dwóch lustrzanych szkiców** w tym katalogu:
 
-Oprogramowanie realizuje **Network Management (NM)** grupy VAG, sterowane zdarzeniami z `0x42B` (`mNM_Gateway_I`).
-Aktualny firmware (`hardware/hardware.ino`) używa dwóch warstw stanu:
+| Plik | Platforma | Status | Transport do bridge / UI |
+|------|-----------|--------|---------------------------|
+| [`arduino.ino`](arduino.ino) | Arduino (MCP2515 + TJA1055) | **Produkcja** — pełna logika CAN/NM | USB Serial (`230400` baud) |
+| [`esp32.ino`](esp32.ino) | ESP32 (docelowo ten sam MCP2515 + TJA1055) | **W rozwoju** — na razie WiFi, Bluetooth i OTA | USB Serial (`115200`), Bluetooth SPP, docelowo WiFi |
+
+**Zasada utrzymania:** `esp32.ino` ma w miarę możliwości odzwierciedlać zachowanie `arduino.ino` (NM, przekaźniki, format `SYS:*` / `ERR:*` / ramek `0x…`). Różnica platformowa to wyłącznie warstwa łączności (BT, WiFi, OTA) oraz mapowanie pinów ESP32.
+
+---
+
+## Wybór platformy
+
+- **Arduino** — stabilny firmware referencyjny, walidowany na magistrali PQ35. Używaj przy pracy warsztatowej z `bridge/bridge.py` przez kabel USB.
+- **ESP32** — docelowy moduł w aucie: podgląd logów przez Bluetooth (`VAG_ESP32_BT`), bezprzewodowe wgrywanie (OTA po WiFi), mostek USB ↔ BT już działa. Logika CAN/NM z `arduino.ino` będzie przenoszona etapami.
+
+---
+
+## Konfiguracja sprzętowa (wspólna)
+
+Oba warianty zakładają ten sam układ magistrali:
+
+- **TJA1055T** — tryb ciągłej gotowości; piny `STB` i `EN` na stałe w stanie wysokim. Uśpienie transceivera wyłącznie programowo (brak nadawania). Monitorowany pin `TJA_ERR`.
+- **MCP2515** — 100 kbps (Low-Speed VAG). Rejestr `0x0F` z bitem `0x08` włącza tryb **One-Shot** (brak nieskończonej retransmisji przy braku ACK).
+- **Przekaźniki radia (active-low)** — w `arduino.ino`: `D7` = ACC, `D8` = ILL, `D9` = BACK. W `esp32.ino` numery GPIO zostaną zmapowane przy przenoszeniu logiki CAN.
+
+---
+
+## `arduino.ino` — komunikacja CAN (NM OSEK)
+
+Firmware realizuje **Network Management (NM)** grupy VAG, sterowane zdarzeniami z `0x42B` (`mNM_Gateway_I`).
+Używa dwóch warstw stanu:
 
 - **NetState**: `NET_SLEEP`, `NET_ACTIVE`, `NET_GRACE`, `NET_SLEEP_READY`
 - **AutoNmState**: `AUTO_ACTIVE`, `AUTO_SLEEP_PREP`, `AUTO_SILENT_LISTEN`
 
 Wnioski i polityka walidacyjna dla tych stanów są utrzymywane w:
+
 - `logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md`
 - `logs/2026-04-11/NM_STATE_SITUATION_CATALOG.md`
 
 - **Detekcja wake/sleep (logika):**
-  - `SYS:CAN:WAKE_START` / `SYS:CAN:WAKE_END` są wyznaczane z przejść `wakeCombo` (bajty 2-4 w Alive `0x42B` do `0x0B`).
+  - `SYS:CAN:WAKE_START` / `SYS:CAN:WAKE_END` są wyznaczane z przejść `wakeCombo` (bajty 2–4 w Alive `0x42B` do `0x0B`).
   - `SYS:CAN:SLEEP_IND` pojawia się na zboczu `SleepInd` (`0x10` w bajcie 1 `0x42B`).
 - **Odpowiedź NM (`0x40B`):**
   - tylko gdy token jest adresowany do `0x0B`,
-  - typ odpowiedzi zależy od `CmdRing`/`CmdAlive`/`CmdLimpHome`,
+  - typ odpowiedzi zależy od `CmdRing` / `CmdAlive` / `CmdLimpHome`,
   - w fazach `AUTO_*` odpowiedź jest ograniczana zgodnie z polityką snu/recovery.
 - **Pompa `0x661`:**
   - wysyłana tylko w `NET_ACTIVE` (nie po `WAKE_END`).
 - **Watchdog `ERR:CAN:HANG`:**
-  - oparty o brak ramek `0x42B -> 0x0B` przez >2 s,
+  - oparty o brak ramek `0x42B → 0x0B` przez >2 s,
   - zasady legalnego tłumienia alarmu są opisane w `NM_COMMUNICATION_VALIDATION.md`.
 
-## 2. Konfiguracja sprzętowa
-
-- **TJA1055T** — tryb ciągłej gotowości; piny `STB` i `EN` na stałe w stanie wysokim. Uśpienie transceivera wyłącznie programowo (brak nadawania). Monitorowany pin `TJA_ERR`.
-- **MCP2515** — 100 kbps (Low-Speed VAG). Rejestr `0x0F` z bitem `0x08` włącza tryb **One-Shot** (brak nieskończonej retransmisji przy braku ACK).
-- **Przekaźniki radia (active-low)**:
-  - `D7` = `ACC`
-  - `D8` = `ILL`
-  - `D9` = `BACK`
-  - Stan aktywny jest realizowany przez `LOW`, a nieaktywny przez `HIGH`.
-
-## 3. Logika przekaźników
+### Logika przekaźników (`arduino.ino`)
 
 Wyjścia przekaźnikowe są aktualizowane na podstawie ramek CAN:
 
@@ -43,69 +62,83 @@ Wyjścia przekaźnikowe są aktualizowane na podstawie ramek CAN:
 - **ILL (`D8`)** — z `0x635` (`mDimmung`), sygnał `DI1_Display` (bity 0..6 bajtu 0, aktywne gdy `>0`) oraz walidacja `DI1_Display_def` (bit 7; przy błędzie `ILL` wymuszane na OFF).
 - **BACK (`D9`)** — z `0x531` (`mLicht_1_alt`), sygnał `LIA_Rueckfahrlicht` (bit 5 bajtu 0).
 
-W firmware obowiązuje też mechanizm bezpieczeństwa: jeśli nie pojawi się żadna ramka CAN przez 5 minut (`300000 ms`), wszystkie przekaźniki są wyłączane (`SYS:RELAYS:FORCED_OFF_BY_SILENCE`).
+Mechanizm bezpieczeństwa: jeśli nie pojawi się żadna ramka CAN przez 5 minut (`300000 ms`), wszystkie przekaźniki są wyłączane (`SYS:RELAYS:FORCED_OFF_BY_SILENCE`).
 
-## 4. Funkcje programu
+### Funkcje (`arduino.ino`)
 
-### `setup()`
+| Funkcja | Opis |
+|---------|------|
+| `setup()` | Serial `230400`, piny, TJA1055T, MCP2515, przekaźniki. `SYS:HW:READY` lub `ERR:HW:INIT_FAIL`. |
+| `processSerial()` | Polecenia `TX:ID:LEN:PAYLOAD` — dekodowanie HEX i wypchnięcie na CAN. |
+| `handleGatewayNm()` | Ramka `0x42B`: token, `Cmd*`/`Sleep*`, przejścia `WAKE_*` / `SLEEP_IND`, odpowiedź `0x40B`. |
+| `checkHardwareErrors()` | MCP2515 (`ERR:HW:MCP:0x…`), TJA1055T (`ERR:HW:TJA`). |
+| `updateRelaySignalsFromFrame()` | Dekoduje ACC / ILL / BACK z `0x2C3` / `0x635` / `0x531`. |
+| `applyRelayOutputs()` | Active-low na `D7`/`D8`/`D9`. |
+| `loop()` | Bez `delay`: Serial, odbiór CAN, NM, sniffer, watchdog, pompa `0x661`, diagnostyka HW. |
 
-Inicjalizacja Serial (`230400`), piny, TJA1055T, MCP2515, piny przekaźników (`D7`/`D8`/`D9`). Komunikat `SYS:HW:READY` lub pętla z `ERR:HW:INIT_FAIL`.
+### Pominięcia sniffera na Serialu (`arduino.ino`)
 
-### `processSerial()`
+Ramka jest wypisywana tylko wtedy, gdy jej ID **nie** jest na liście poniżej. To **nie** wyłącza odbioru CAN — tylko logowanie na Serial.
 
-Obsługa poleceń `TX:ID:LEN:PAYLOAD` — dekodowanie HEX i wypchnięcie na CAN.
+| ID | Stała w kodzie | Powód pominięcia |
+|----|----------------|------------------|
+| `0x531` | `CAN_ID_SNIFFER_IGNORE_A` | **mLicht_1_alt** — bardzo częsta; bez filtra zalewałaby log. |
+| `0x661` | `CAN_ID_RADIO_STATUS` | Pompa statusu radia — echo własnego TX. |
+| `0x40B` | `NM_ARDUINO_ID` | Własna odpowiedź NM węzła. |
 
-### `handleGatewayNm(uint32_t id, uint8_t *buf, uint8_t len)`
+**`0x42B` (Gateway)** — **nie** jest pomijane: ramki trafiają na Serial przy zmianie payloadu, żeby dashboard mógł pokazywać **mNM_Gateway**.
 
-Ramka `0x42B`: dekoduje token, bity `Cmd*`/`Sleep*`, prowadzi przejścia `WAKE_*` i `SLEEP_IND`, aktualizuje stany Auto-NM oraz decyduje o odpowiedzi `0x40B` (w tym ścieżce recovery przy `CmdLimpHome` po `WAKE_END`).
+---
 
-### `checkHardwareErrors()`
+## `esp32.ino` — łączność bezprzewodowa
 
-- **MCP2515** — `checkError()`, kody `ERR:HW:MCP:0x…`; przy `0x1D` reset rejestrów `0x30`, `0x40`, `0x50`.
-- **TJA1055T** — pin `TJA_ERR` LOW → `ERR:HW:TJA` z throttlingiem (~5 s).
+Obecny szkic to **szkielet transportu**. Nie zawiera jeszcze logiki CAN/NM z `arduino.ino`.
 
-### `updateRelaySignalsFromFrame(uint32_t id, const uint8_t *buf, uint8_t len)`
+### Co działa teraz
 
-Dekoduje sygnały `ACC` / `ILL` / `BACK` z ramek `0x2C3` / `0x635` / `0x531` i aktualizuje stany wyjść przekaźników.
+- **Bluetooth Classic (SPP)** — urządzenie `VAG_ESP32_BT`; mostek dwukierunkowy USB Serial ↔ BT.
+- **WiFi (STA)** — połączenie z siecią z limitem 10 s (brak WiFi nie blokuje startu; system przechodzi w tryb tylko-BT).
+- **Arduino OTA** — po połączeniu WiFi hostname `VAG-Dekoder-OTA`; obsługa w `loop()`.
+- **Heartbeat** — co 5 s na BT (gdy jest klient): `SYS: ESP32 działa. WiFi status: …`
 
-### `applyRelayOutputs()`
+### Konfiguracja przed wgraniem
 
-Wystawia stany na piny `D7`/`D8`/`D9` w logice active-low (`LOW` = przekaźnik aktywny).
+W pliku `esp32.ino` uzupełnij:
 
-### `isDiagFrame(uint32_t id)`
+```cpp
+const char* ssid = "TWOJA_SIEC";
+const char* password = "TWOJE_HASLO";
+```
 
-Filtr statyczny: zakresy `0x200–0x27F`, `0x300` (TP 2.0), `0x700–0x7FF` (UDS/KWP2000).
+Nazwę urządzenia BT i hostname OTA można zmienić w tych samych stałych (`SerialBT.begin`, `ArduinoOTA.setHostname`).
 
-### `isDelta(uint32_t id, uint8_t len, uint8_t *data)`
+### Docelowy kierunek (lustrzanie `arduino.ino`)
 
-Filtr dynamiczny — do 60 śledzonych ID; `true` przy pierwszym wystąpieniu lub zmianie bajtów payloadu.
+1. Przeniesienie obsługi MCP2515, NM, przekaźników i formatu logów.
+2. Wspólny strumień protokołu na **Serial, Bluetooth i (opcjonalnie) WiFi** — ten sam format co w sekcji poniżej.
+3. Zachowanie kompatybilności z `bridge/bridge.py` (USB) oraz możliwość podłączenia bridge przez port szeregowy BT.
 
-### `loop()` — przepływ główny
+---
 
-Bez `delay`: `processSerial()`, odbiór CAN (przerwanie), `handleGatewayNm()`, sniffer (z pominięciem m.in. `0x531`, `0x661`, `0x40B`; **`0x42B` jest logowany**), `hangSuppressed` zależny od stanu NM, watchdog `ERR:CAN:HANG` (>2 s bez ramki `0x42B -> 0x0B` gdy alarm nie jest tłumiony), pompa `0x661` co 150 ms tylko w `NET_ACTIVE`, `checkHardwareErrors()` co 1000 ms.
+## Format wyjścia (wspólny protokół)
 
-### Pominięcia sniffera na Serialu
+Niezależnie od platformy i kanału (USB / BT) firmware emituje ten sam język komunikatów:
 
-W `loop()` ramka jest wypisywana tylko wtedy, gdy jej ID **nie** jest na liście poniżej (warunek w kodzie przed `isDiagFrame` / `isDelta`). To **nie** wyłącza odbioru CAN — tylko logowanie na Serial.
+- **Ramki:** `0x[ID_HEX]: [B1] [B2] …`
+- **System:** `SYS:HW:READY`, `SYS:CAN:SLEEP_IND`, `SYS:CAN:WAKE_START`, `SYS:CAN:WAKE_END`, `SYS:RELAYS:FORCED_OFF_BY_SILENCE`
+- **Błędy:** `ERR:HW:INIT_FAIL`, `ERR:CAN:HANG`, `ERR:HW:TJA`, `ERR:HW:0x[KOD]`
 
-| ID | Stała w kodzie | Powód pominięcia | Web UI |
-|----|----------------|------------------|--------|
-| `0x531` | `CAN_ID_SNIFFER_IGNORE_A` | Ramka komfortu **mLicht_1_alt** — bardzo częsta; bez filtra zalewałaby log. | Zarejestrowana i dekodowana (`LIA_*`), jeśli dane trafią z mostka / symulatora / innego źródła. |
-| `0x661` | `CAN_ID_RADIO_STATUS` | **Pompa statusu radia** — co 150 ms w `NET_ACTIVE`; w logu byłoby głównie echo własnego TX. | Brak dedykowanego dekodera w `frameRegistry` (ramka pochodzi z firmware, nie z obserwacji magistrali). |
-| `0x40B` | `NM_ARDUINO_ID` | **Odpowiedź NM węzła Arduino** (Ring / Alive) — własna ramka wysyłana przez `handleGatewayNm`; pominięcie utrzymuje czytelność sniffera. | Brak wpisu w `frameRegistry` (logika NM jest po stronie `0x42B` — **mNM_Gateway**). |
+Słownik w całym ekosystemie: [`MESSAGES.md`](../MESSAGES.md).
 
-**`0x42B` (Gateway)** — **nie** jest na liście pominięć: ramki trafiają na Serial (przy zmianie payloadu / diag), żeby **dashboard / aplikacja web** mogły pokazywać **mNM_Gateway**. Dodatkowo przy krawędzi `wakeCombo` wypisywane są **`SYS:CAN:WAKE_START`** / **`SYS:CAN:WAKE_END`** oraz przy uśpieniu **`SYS:CAN:SLEEP_IND`**.
+---
 
-W szkicach testowych (`hardware/test/…`) bywają osobne formaty logu `0x42B` (np. Faza 4 — rozbudowany tekst); **Faza 4 po poprawce** trzyma okno aktywności tak jak produkcja (`lastAliveB2` tylko z Alive, nie z Ring). Firmware produkcyjny używa standardowego formatu `0x[ID]: …` jak dla innych ramek.
-
-## 5. Powiązane dokumenty (aktualne)
+## Powiązane dokumenty
 
 - Walidacja i reguły decyzyjne: `logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md`
 - Katalog sytuacji i wzorców ramek: `logs/2026-04-11/NM_STATE_SITUATION_CATALOG.md`
-- Brief badawczy dla LLM: `GEMINI_PRO_DEEP_RESEARCH_BRIEF.md`
+- Opis magistrali PQ35: `data/Arduino CAN VW Golf Plus PQ35.md`
+- Mostek Python: [`bridge/README.md`](../bridge/README.md)
 
-## 6. Format wyjścia (Serial)
+### Uwaga historyczna
 
-- **Ramki:** `0x[ID_HEX]: [B1] [B2] …`
-- **System:** `SYS:HW:READY`, `SYS:CAN:SLEEP_IND`, `SYS:CAN:WAKE_START`, `SYS:CAN:WAKE_END`, `SYS:RELAYS:FORCED_OFF_BY_SILENCE` (krawędzie `wakeCombo`; ramka `0x42B` i tak pojawia się w strumieniu sniffera, gdy payload się zmienia)
-- **Błędy:** `ERR:HW:INIT_FAIL`, `ERR:CAN:HANG`, `ERR:HW:TJA`, `ERR:HW:0x[KOD]`
+Starsze dokumenty i snapshoty w `logs/2026-04-11/` odwołują się do ścieżki `hardware/hardware.ino`. Od podziału na dwa szkice odpowiednikiem produkcyjnym jest **`hardware/arduino.ino`**.

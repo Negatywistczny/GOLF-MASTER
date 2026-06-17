@@ -108,6 +108,7 @@ function onDeviceDisconnected() {
     cleanupConnectionState();
     updateConnectButton(false, false);
     updateStatus("UTRACONO POŁĄCZENIE BLE UART", "var(--red)");
+    logTerminal("ERR:JS:BT_DISCONNECTED");
     logError("JS", "BT_DISCONNECTED", "BLE UART został rozłączony", {
         ttlMs: MESSAGE_TTL_MS.ERR_BT_DISCONNECTED
     });
@@ -143,6 +144,7 @@ async function ensureConnected() {
 
 export async function connectBleTerminal() {
     if (!navigator.bluetooth) {
+        logTerminal("ERR:JS:BT_UNSUPPORTED");
         logError("JS", "BT_UNSUPPORTED", "Przeglądarka nie obsługuje Web Bluetooth API");
         updateStatus("BRAK OBSŁUGI BLE W PRZEGLĄDARCE", "var(--red)");
         return false;
@@ -152,6 +154,12 @@ export async function connectBleTerminal() {
     try {
         isConnecting = true;
         updateConnectButton(false, true);
+        updateStatus("ŁĄCZENIE Z BLE UART...", "var(--accent)");
+        logTerminal("SYS:JS:BT_CONNECT_START");
+        logSystem("JS", "BT_CONNECT_START", "Rozpoczynam łączenie z ESP32 BLE UART", {
+            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT
+        });
+        clearMessage("JS", "BT_CONNECT_FAIL");
         await ensureConnected();
 
         updateStatus("POŁĄCZONO Z BLE UART", "var(--green)");
@@ -164,6 +172,16 @@ export async function connectBleTerminal() {
         updateConnectButton(true, false);
         return true;
     } catch (error) {
+        if (error?.name === "NotFoundError") {
+            logTerminal("SYS:JS:BT_CONNECT_CANCELLED");
+            logSystem("JS", "BT_CONNECT_CANCELLED", "Anulowano wybór urządzenia BLE UART", {
+                ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT
+            });
+            updateStatus("ANULOWANO WYBÓR URZĄDZENIA BLE", "var(--orange)");
+            updateConnectButton(false, false);
+            return false;
+        }
+        logTerminal("ERR:JS:BT_CONNECT_FAIL");
         logError("JS", "BT_CONNECT_FAIL", error?.message || "Nie udało się połączyć z BLE UART");
         updateStatus("BŁĄD POŁĄCZENIA BLE UART", "var(--red)");
         updateConnectButton(false, false);
@@ -175,6 +193,11 @@ export async function connectBleTerminal() {
 
 export function disconnectBleTerminal() {
     if (device?.gatt?.connected) {
+        logTerminal("SYS:JS:BT_DISCONNECT");
+        logSystem("JS", "BT_DISCONNECT", "Ręczne rozłączenie BLE UART", {
+            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT
+        });
+        updateStatus("ROZŁĄCZANIE BLE UART...", "var(--orange)");
         device.gatt.disconnect();
     } else {
         cleanupConnectionState();

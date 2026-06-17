@@ -12,7 +12,9 @@ ENTRY = ROOT / "js" / "app" / "main.js"
 OUTPUT = ROOT / "script.bundle.js"
 JS_ROOT = ROOT / "js"
 
-EXPORT_DECL_RE = re.compile(r"^\s*export\s+(?=(const|let|var|function|class)\b)")
+EXPORT_DECL_RE = re.compile(
+    r"^\s*export\s+(?=((const|let|var|function|class)\b|async\s+function\b))"
+)
 
 
 def normalize_import_path(current_file: Path, rel_path: str) -> Path:

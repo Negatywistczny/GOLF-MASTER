@@ -45,7 +45,10 @@ Moduły: `app/main.js`, `app/bootstrap.js`, `app/transport/btTerminal.js`, `ui/i
 
 ### Logi połączenia
 
+- **`SYS:JS:BT_CONNECT_START`** — rozpoczęcie procedury łączenia BLE UART.
+- **`SYS:JS:BT_CONNECT_CANCELLED`** — anulowano wybór urządzenia BLE w pickerze.
 - **`SYS:JS:BT_CONNECTED`** — połączenie z urządzeniem BLE UART.
+- **`SYS:JS:BT_DISCONNECT`** — ręczne rozłączenie sesji BLE UART.
 - **`ERR:JS:BT_DISCONNECTED`** — utrata połączenia BLE.
 - **`ERR:JS:BT_CONNECT_FAIL`** — błąd inicjalizacji sesji BLE.
 - **`ERR:JS:BT_UNSUPPORTED`** — brak wsparcia Web Bluetooth API w przeglądarce.

@@ -8,14 +8,17 @@ echo "========================================="
 echo "     GOLF MASTER - LOCAL OFFLINE START"
 echo "========================================="
 echo
-echo "Tryb aktywny: WEB + BLE UART (bez Python bridge)"
+echo "Tryb aktywny: WEB + BLE UART"
 
 if [[ -x ".venv/bin/python" ]]; then
   PYTHON_BIN=".venv/bin/python"
 elif command -v python3 >/dev/null 2>&1; then
   PYTHON_BIN="python3"
-else
+elif command -v python >/dev/null 2>&1; then
   PYTHON_BIN="python"
+else
+  echo "Blad: nie znaleziono interpretera Python (python3/python)." >&2
+  exit 1
 fi
 
 echo

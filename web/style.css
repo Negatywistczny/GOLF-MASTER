@@ -412,6 +412,27 @@ td { padding: 8px; border-bottom: 1px solid var(--border); }
 }
 
 /* --- PRZYCISK SNAPSHOT --- */
+.btn-bt {
+    background: #21522b;
+    color: var(--text-inverse);
+    border: 1px solid var(--green);
+}
+
+.btn-bt:hover {
+    background: #2f6f3b;
+    box-shadow: 0 0 10px rgba(67, 181, 129, 0.45);
+}
+
+.btn-bt.btn-bt-connected {
+    background: #5e1f24;
+    border-color: #d25660;
+}
+
+.btn-bt.btn-bt-connected:hover {
+    background: #7e2930;
+    box-shadow: 0 0 10px rgba(210, 86, 96, 0.45);
+}
+
 .btn-snap {
     background: var(--accent-dark);
     color: var(--text-inverse);

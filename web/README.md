@@ -1,7 +1,7 @@
 # Dokumentacja Smart UI (Web) — GOLF MASTER
 
 ## 1. Rola modułu
-Folder `web` zawiera frontend typu SPA (Vanilla JS + WebSocket) do wizualizacji ramek CAN i eksportu danych.
+Folder `web` zawiera frontend typu SPA (Vanilla JS + BLE UART) do wizualizacji ramek CAN i eksportu danych.
 
 ## 2. Architektura kodu (moduły z bundlowaniem offline)
 Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwera używany jest wygenerowany bundle:
@@ -9,8 +9,8 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 - `index.html` — punkt startowy UI, ładuje `script.bundle.js` (działa z `file://`).
 - `style.css` — wygląd (layout, kolory, komponenty, modal).
 - `js/app/main.js` — punkt wejścia bundlera (importuje `js/app/bootstrap.js`).
-- `js/app/bootstrap.js` — inicjalizacja UI po `DOMContentLoaded`, podpięcie przycisków, start WebSocket.
-- `js/app/transport/ws.js` — warstwa transportu WebSocket (`connectWebSocket`, parser SYS/ERR/CAN, stała `WS_URL`).
+- `js/app/bootstrap.js` — inicjalizacja UI po `DOMContentLoaded`, podpięcie przycisków, start obsługi BLE.
+- `js/app/transport/btTerminal.js` — warstwa transportu BLE UART (`connectBleTerminal`, parser SYS/ERR/CAN, obsługa przycisku `POŁĄCZ BT`).
 - `js/ui/index.js` — fasada publicznego API UI (re-export modułów z `js/ui/*.js`).
 - `js/state/` — metadane i stan: `signalMeta.js`, `runtimeState.js`, barrel `index.js` (preferowany jeden import zamiast osobnych ścieżek do obu plików; szczegóły w sekcji 2.1).
 - `js/shared/canUtils.js` — funkcje narzędziowe CAN (`extractCANSignal`, cache BigInt, formatowanie wartości).
@@ -43,7 +43,7 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 
 ### 2.1. Układ katalogu `js/`
 
-- `app/` — wejście (`main.js`), bootstrap DOM, transport WebSocket (`transport/ws.js`).
+- `app/` — wejście (`main.js`), bootstrap DOM, transport BLE UART (`transport/btTerminal.js`).
 - `ui/` — dashboard (`core`, `statusLogs`, `actions`, `modal`), `index.js` jako API, `modalColors/` — kolory wartości w modalu.
 - `state/` — `signalMeta.js` (dane), `runtimeState.js` (cache ramek, socket, terminal, BigInt), `index.js` (re-export obu; w nowym kodzie importuj stąd).
 - `can/` — `frameRegistry.js`, `decoders/` (dekodery per strefa: `drive`, `comfort`, `media`, `system`).
@@ -59,9 +59,10 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 
 ## 4. Uruchomienie lokalne (bez serwera HTTP)
 
-1. Uruchom warstwę bridge (`bridge/bridge.py` lub `bridge/test_simulation.py`) i upewnij się, że nasłuchuje na `ws://localhost:8765`.
+1. Uruchom firmware ESP32 z aktywnym BLE UART (`hardware/esp32.ino`).
 2. Otwórz `web/index.html` bezpośrednio (double-click, adres `file://...`).
-3. Sprawdź pasek statusu LIVE — po połączeniu powinien zmienić kolor na zielony.
+3. Kliknij `POŁĄCZ BT` i wybierz urządzenie BLE.
+4. Sprawdź pasek statusu LIVE — po połączeniu powinien zmienić kolor na zielony.
 4. Po zmianach w modułach `web/js/**/*.js` przebuduj bundle:
    - `python3 web/bundle_tool.py build`
    - Opcjonalnie: `python3 web/bundle_tool.py check` (kod wyjścia `1` = trzeba przebudować).
@@ -73,10 +74,10 @@ Frontend jest rozwijany modularnie (ES6), a do uruchamiania lokalnego bez serwer
 - Odśwież stronę (`Ctrl+F5`).
 - Oczekiwany wynik: brak błędów typu `Failed to load module script`, `CORS`, `Cannot use import statement...`.
 
-### B. Połączenie WebSocket
-- W konsoli brak błędów `WebSocket` / `WS_ERROR`.
-- W UI pojawia się status połączenia (`POŁĄCZONO Z PYTHONEM`).
-- Po wyłączeniu bridge status przechodzi na błąd i po chwili następuje ponowne połączenie (ok. 3 s).
+### B. Połączenie BLE UART
+- W konsoli brak błędów `BT_CONNECT_FAIL` / `BT_UNSUPPORTED`.
+- W UI pojawia się status połączenia (`POŁĄCZONO Z BLE UART`).
+- Po rozłączeniu urządzenia status przechodzi na błąd `BT_DISCONNECTED`.
 
 ### C. Interakcje dashboardu
 - Klik `📸 SNAPSHOT`:

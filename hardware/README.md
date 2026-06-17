@@ -1,20 +1,20 @@
 # Firmware sprzętowy — VAG PQ35 Infotainment CAN — GOLF MASTER
 
-Warstwa hardware składa się z **dwóch lustrzanych szkiców** w tym katalogu:
+Warstwa hardware ma aktywny firmware ESP32, a starszy wariant Arduino został przeniesiony do archiwum:
 
-| Plik | Platforma | Status | Transport do bridge / UI |
+| Plik | Platforma | Status | Transport do UI |
 |------|-----------|--------|---------------------------|
-| [`arduino.ino`](arduino.ino) | Arduino (MCP2515 + TJA1055) | **Produkcja** — pełna logika CAN/NM | USB Serial (`230400` baud) |
-| [`esp32.ino`](esp32.ino) | ESP32 (docelowo ten sam MCP2515 + TJA1055) | **W rozwoju** — na razie WiFi, Bluetooth i OTA | USB Serial (`115200`), Bluetooth SPP, docelowo WiFi |
+| [`esp32.ino`](esp32.ino) | ESP32 + TWAI | **Produkcja** — CAN/NM + przekaźniki + light sleep + OTA | BLE UART + WiFi OTA |
+| [`../archiwum/hardware/arduino.ino`](../archiwum/hardware/arduino.ino) | Arduino (MCP2515 + TJA1055) | **Archiwum** — stary firmware referencyjny | USB Serial (`230400` baud) |
 
-**Zasada utrzymania:** `esp32.ino` ma w miarę możliwości odzwierciedlać zachowanie `arduino.ino` (NM, przekaźniki, format `SYS:*` / `ERR:*` / ramek `0x…`). Różnica platformowa to wyłącznie warstwa łączności (BT, WiFi, OTA) oraz mapowanie pinów ESP32.
+**Zasada utrzymania:** aktywny rozwój dotyczy tylko `esp32.ino`; Arduino i dawny bridge są utrzymywane wyłącznie historycznie w `archiwum/`.
 
 ---
 
 ## Wybór platformy
 
-- **Arduino** — stabilny firmware referencyjny, walidowany na magistrali PQ35. Używaj przy pracy warsztatowej z `bridge/bridge.py` przez kabel USB.
-- **ESP32** — docelowy moduł w aucie: podgląd logów przez Bluetooth (`VAG_ESP32_BT`), bezprzewodowe wgrywanie (OTA po WiFi), mostek USB ↔ BT już działa. Logika CAN/NM z `arduino.ino` będzie przenoszona etapami.
+- **ESP32** — aktywna ścieżka projektu: TWAI 100 kbps, obsługa NM, przekaźniki, light sleep, BLE UART (`VAG_ESP32_BT`) i OTA (`VAG-Dekoder-OTA`).
+- **Arduino** — stary firmware referencyjny przeniesiony do `archiwum/hardware/arduino.ino` (bez aktywnego wsparcia).
 
 ---
 
@@ -90,16 +90,16 @@ Ramka jest wypisywana tylko wtedy, gdy jej ID **nie** jest na liście poniżej. 
 
 ---
 
-## `esp32.ino` — łączność bezprzewodowa
+## `esp32.ino` — firmware aktywny
 
-Obecny szkic to **szkielet transportu**. Nie zawiera jeszcze logiki CAN/NM z `arduino.ino`.
+Aktualny szkic zawiera pełną logikę CAN/NM (TWAI) oraz warstwę łączności BLE UART + OTA.
 
 ### Co działa teraz
 
-- **Bluetooth Classic (SPP)** — urządzenie `VAG_ESP32_BT`; mostek dwukierunkowy USB Serial ↔ BT.
-- **WiFi (STA)** — połączenie z siecią z limitem 10 s (brak WiFi nie blokuje startu; system przechodzi w tryb tylko-BT).
-- **Arduino OTA** — po połączeniu WiFi hostname `VAG-Dekoder-OTA`; obsługa w `loop()`.
-- **Heartbeat** — co 5 s na BT (gdy jest klient): `SYS: ESP32 działa. WiFi status: …`
+- **BLE UART** — urządzenie `VAG_ESP32_BT` (NUS-like: service `6E400001-...`, RX `...0002`, TX `...0003`).
+- **WiFi (STA)** — połączenie z limitem czasu; brak WiFi nie blokuje pracy CAN/BLE.
+- **Arduino OTA** — po połączeniu WiFi hostname `VAG-Dekoder-OTA`; komunikaty `SYS:OTA:*` / `ERR:OTA:*`.
+- **Light sleep** — wejście po `SYS:CAN:SLEEP_IND`, wybudzanie stanem niskim na `TWAI_RX_PIN`.
 
 ### Konfiguracja przed wgraniem
 
@@ -110,13 +110,11 @@ const char* ssid = "TWOJA_SIEC";
 const char* password = "TWOJE_HASLO";
 ```
 
-Nazwę urządzenia BT i hostname OTA można zmienić w tych samych stałych (`SerialBT.begin`, `ArduinoOTA.setHostname`).
+Nazwę BLE (`SerialBT.begin`) i hostname OTA (`ArduinoOTA.setHostname`) można zmienić bez wpływu na logikę CAN.
 
-### Docelowy kierunek (lustrzanie `arduino.ino`)
+### Tryb archiwalny
 
-1. Przeniesienie obsługi MCP2515, NM, przekaźników i formatu logów.
-2. Wspólny strumień protokołu na **Serial, Bluetooth i (opcjonalnie) WiFi** — ten sam format co w sekcji poniżej.
-3. Zachowanie kompatybilności z `bridge/bridge.py` (USB) oraz możliwość podłączenia bridge przez port szeregowy BT.
+Stary tor `Arduino -> bridge.py -> WebSocket -> UI` został wycofany i przeniesiony do `archiwum/`.
 
 ---
 
@@ -137,8 +135,8 @@ Słownik w całym ekosystemie: [`MESSAGES.md`](../MESSAGES.md).
 - Walidacja i reguły decyzyjne: `logs/2026-04-11/NM_COMMUNICATION_VALIDATION.md`
 - Katalog sytuacji i wzorców ramek: `logs/2026-04-11/NM_STATE_SITUATION_CATALOG.md`
 - Opis magistrali PQ35: `data/Arduino CAN VW Golf Plus PQ35.md`
-- Mostek Python: [`bridge/README.md`](../bridge/README.md)
+- Archiwalne komponenty: [`../archiwum/README.md`](../archiwum/README.md)
 
 ### Uwaga historyczna
 
-Starsze dokumenty i snapshoty w `logs/2026-04-11/` odwołują się do ścieżki `hardware/hardware.ino`. Od podziału na dwa szkice odpowiednikiem produkcyjnym jest **`hardware/arduino.ino`**.
+Starsze dokumenty i snapshoty w `logs/2026-04-11/` odwołują się do ścieżki `hardware/hardware.ino` / `hardware/arduino.ino`; aktualnie oba warianty są archiwalne.

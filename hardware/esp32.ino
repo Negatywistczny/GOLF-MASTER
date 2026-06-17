@@ -2,9 +2,13 @@
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-#include "BluetoothSerial.h"
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
 #include "driver/twai.h"
 #include "esp_sleep.h"
+#include <stdarg.h>
 
 // --- UZUPEŁNIJ DANE SWOJEGO WIFI (LUB HOTSPOTU Z TELEFONU) ---
 const char *ssid = "Krytyczny_Sukces_5G";
@@ -51,7 +55,215 @@ const uint32_t CAN_ID_LIGHT_STATUS = 0x531;
 const uint8_t CAN_MAX_DLEN = 8;
 const uint32_t CAN_ID_MASK = 0x1FFFFFFF;
 
-BluetoothSerial SerialBT;
+class BleUart {
+public:
+  bool begin(const char *deviceName) {
+    BLEDevice::init(deviceName);
+
+    server_ = BLEDevice::createServer();
+    server_->setCallbacks(new ServerCallbacks(this));
+
+    BLEService *service = server_->createService(kServiceUuid);
+
+    txChar_ = service->createCharacteristic(
+        kTxUuid, BLECharacteristic::PROPERTY_NOTIFY);
+    txChar_->addDescriptor(new BLE2902());
+
+    rxChar_ = service->createCharacteristic(
+        kRxUuid,
+        BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
+    rxChar_->setCallbacks(new RxCallbacks(this));
+
+    service->start();
+
+    BLEAdvertising *advertising = BLEDevice::getAdvertising();
+    advertising->addServiceUUID(kServiceUuid);
+    advertising->setScanResponse(true);
+    advertising->setMinPreferred(0x06);
+    advertising->setMinPreferred(0x12);
+    BLEDevice::startAdvertising();
+    return true;
+  }
+
+  void setTimeout(unsigned long timeoutMs) { timeoutMs_ = timeoutMs; }
+
+  bool hasClient() const { return clientConnected_; }
+
+  int available() const {
+    if (rxHead_ >= rxTail_) {
+      return (int)(rxHead_ - rxTail_);
+    }
+    return (int)(kRxBufferSize - rxTail_ + rxHead_);
+  }
+
+  int read() {
+    if (rxHead_ == rxTail_) return -1;
+    uint8_t out = rxBuffer_[rxTail_];
+    rxTail_ = (rxTail_ + 1) % kRxBufferSize;
+    return out;
+  }
+
+  size_t readBytesUntil(char terminator, char *buffer, size_t length) {
+    if (length == 0 || buffer == nullptr) return 0;
+
+    size_t count = 0;
+    unsigned long lastDataMs = millis();
+    while (count < length) {
+      int c = read();
+      if (c < 0) {
+        if (millis() - lastDataMs >= timeoutMs_) break;
+        delay(1);
+        continue;
+      }
+      lastDataMs = millis();
+      if ((char)c == terminator) break;
+      buffer[count++] = (char)c;
+    }
+    return count;
+  }
+
+  size_t write(uint8_t data) { return write(&data, 1); }
+
+  size_t write(const uint8_t *data, size_t len) {
+    if (data == nullptr || len == 0) return 0;
+    if (!clientConnected_ || txChar_ == nullptr) return 0;
+
+    size_t sent = 0;
+    while (sent < len) {
+      size_t chunk = (len - sent > kMaxNotifyChunk) ? kMaxNotifyChunk : (len - sent);
+      txChar_->setValue(data + sent, chunk);
+      txChar_->notify();
+      sent += chunk;
+      delay(2);
+    }
+    return len;
+  }
+
+  size_t print(const char *value) {
+    if (value == nullptr) return 0;
+    return write((const uint8_t *)value, strlen(value));
+  }
+
+  size_t print(const String &value) {
+    return write((const uint8_t *)value.c_str(), value.length());
+  }
+
+  size_t print(unsigned char value, int base = DEC) {
+    return print((unsigned long)value, base);
+  }
+
+  size_t print(int value, int base = DEC) {
+    if (base == DEC && value < 0) {
+      size_t n = write((uint8_t)'-');
+      return n + print((unsigned long)(-value), DEC);
+    }
+    return print((unsigned long)value, base);
+  }
+
+  size_t print(unsigned int value, int base = DEC) {
+    return print((unsigned long)value, base);
+  }
+
+  size_t print(unsigned long value, int base = DEC) {
+    char buffer[33];
+    ultoa(value, buffer, base);
+    if (base == HEX) {
+      for (char *p = buffer; *p; ++p) {
+        *p = (char)toupper(*p);
+      }
+    }
+    return print(buffer);
+  }
+
+  size_t println() { return print("\r\n"); }
+
+  size_t println(const char *value) {
+    size_t n = print(value);
+    n += println();
+    return n;
+  }
+
+  size_t println(const String &value) {
+    size_t n = print(value);
+    n += println();
+    return n;
+  }
+
+  int printf(const char *fmt, ...) {
+    char buffer[256];
+    va_list args;
+    va_start(args, fmt);
+    int written = vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+    if (written <= 0) return written;
+    size_t toSend = (written >= (int)sizeof(buffer)) ? sizeof(buffer) - 1 : (size_t)written;
+    write((const uint8_t *)buffer, toSend);
+    return written;
+  }
+
+  void flush() {
+    delay(10);
+  }
+
+private:
+  static constexpr const char *kServiceUuid = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
+  static constexpr const char *kRxUuid = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
+  static constexpr const char *kTxUuid = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";
+  static constexpr size_t kRxBufferSize = 512;
+  static constexpr size_t kMaxNotifyChunk = 20;
+
+  class ServerCallbacks : public BLEServerCallbacks {
+  public:
+    explicit ServerCallbacks(BleUart *owner) : owner_(owner) {}
+
+    void onConnect(BLEServer *server) override {
+      (void)server;
+      owner_->clientConnected_ = true;
+    }
+
+    void onDisconnect(BLEServer *server) override {
+      owner_->clientConnected_ = false;
+      BLEDevice::startAdvertising();
+      (void)server;
+    }
+
+  private:
+    BleUart *owner_;
+  };
+
+  class RxCallbacks : public BLECharacteristicCallbacks {
+  public:
+    explicit RxCallbacks(BleUart *owner) : owner_(owner) {}
+
+    void onWrite(BLECharacteristic *characteristic) override {
+      String value = characteristic->getValue();
+      owner_->enqueueRx((const uint8_t *)value.c_str(), value.length());
+    }
+
+  private:
+    BleUart *owner_;
+  };
+
+  void enqueueRx(const uint8_t *data, size_t len) {
+    for (size_t i = 0; i < len; i++) {
+      size_t next = (rxHead_ + 1) % kRxBufferSize;
+      if (next == rxTail_) break;
+      rxBuffer_[rxHead_] = data[i];
+      rxHead_ = next;
+    }
+  }
+
+  BLEServer *server_ = nullptr;
+  BLECharacteristic *txChar_ = nullptr;
+  BLECharacteristic *rxChar_ = nullptr;
+  bool clientConnected_ = false;
+  unsigned long timeoutMs_ = 25;
+  uint8_t rxBuffer_[kRxBufferSize] = {0};
+  size_t rxHead_ = 0;
+  size_t rxTail_ = 0;
+};
+
+BleUart SerialBT;
 
 // --- STAN (NM / watchdog / wake) ---
 unsigned long lastSendTime = 0;
@@ -282,7 +494,7 @@ void checkHardwareErrors() {
   }
 }
 
-// --- ODBIERANIE Z BLUETOOTH (TX na CAN) ---
+// --- ODBIERANIE Z BLE UART (TX na CAN) ---
 void processSerial() {
   if (SerialBT.available() <= 0) return;
 
@@ -443,7 +655,7 @@ void setup() {
   Serial.println("System startuje...");
 
   SerialBT.begin("VAG_ESP32_BT");
-  Serial.println("Bluetooth gotowy jako: VAG_ESP32_BT");
+  Serial.println("BLE UART gotowy jako: VAG_ESP32_BT");
 
   pinMode(TJA_ERR, INPUT_PULLUP);
   pinMode(TJA_STB, OUTPUT);
@@ -480,7 +692,7 @@ void setup() {
     ArduinoOTA.begin();
     Serial.println("Serwer OTA gotowy.");
   } else {
-    Serial.println("Nie znaleziono WiFi. System dziala w trybie tylko-Bluetooth.");
+    Serial.println("Nie znaleziono WiFi. System dziala w trybie tylko-BLE UART.");
   }
 
   if (initTwai()) {

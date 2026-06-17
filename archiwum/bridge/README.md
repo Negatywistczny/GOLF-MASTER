@@ -1,4 +1,6 @@
-# Mostek Python (bridge) — GOLF MASTER
+# Mostek Python (bridge) — GOLF MASTER [ARCHIWUM]
+
+> Ten moduł jest wycofany z aktywnego użycia. Aktualny tor danych działa przez BLE UART.
 
 ## Rola
 `bridge.py` łączy moduł sprzętowy (Serial — Arduino lub ESP32 przez USB; docelowo także port BT ESP32) z Web UI (WebSocket) i przekazuje:
@@ -14,9 +16,9 @@
 
 ## Uruchomienie
 ```bash
-pip install -r requirements.txt
-python bridge/bridge.py
+pip install -r archiwum/bridge/requirements.txt
+python archiwum/bridge/bridge.py
 ```
 
 ## Symulator
-`bridge/test_simulation.py` emituje ramki z osi czasu (`can_drive_timeline.txt`) do tego samego endpointu WebSocket.
+`archiwum/bridge/test_simulation.py` emituje ramki z osi czasu (`can_drive_timeline.txt`) do endpointu WebSocket (tryb historyczny).

@@ -1,4 +1,4 @@
-import { connectWebSocket } from "./transport/ws.js";
+import { initBtTerminalControls } from "./transport/btTerminal.js";
 import {
     setupModal,
     startClock,
@@ -8,7 +8,7 @@ import {
 } from "../ui/index.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    connectWebSocket();
+    initBtTerminalControls();
     startClock();
     startMessageRegistryTicker();
     setupModal();

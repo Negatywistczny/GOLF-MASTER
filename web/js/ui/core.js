@@ -7,6 +7,7 @@ import {
 import { canDictionary, decoderRouter } from "../can/frameRegistry.js";
 import { parseHexToBigInt } from "../shared/canUtils.js";
 import { openModal, notifyModalFrameUpdated } from "./modal.js";
+import { markCanActivity, updateRelayFromCan } from "./esp32Runtime.js";
 
 // WebKit: własny deskryptor `innerHTML` jest na HTMLElement, nie na Element.
 const _innerHTMLDesc =
@@ -148,6 +149,9 @@ function handleCANFrame(id, data) {
         card = createDynamicCard(idKey);
         activeCards[idKey] = card;
     }
+
+    markCanActivity();
+    updateRelayFromCan(idKey, data);
 
     /* Błysk przy każdym odebraniu ramki; kolejne w czasie trwania animacji ją nie przerywają. */
     flashCardFrameUpdate(card);

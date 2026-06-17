@@ -10,6 +10,8 @@
 #include "esp_sleep.h"
 #include <stdarg.h>
 
+#define FW_BUILD_ID "2026-06-17-p0"
+
 // --- UZUPEŁNIJ DANE SWOJEGO WIFI (LUB HOTSPOTU Z TELEFONU) ---
 const char *ssid = "Krytyczny_Sukces_5G";
 const char *password = "resocjalizacja123";
@@ -272,6 +274,7 @@ unsigned long lastErrCheckMs = 0;
 unsigned long lastAnyCanActivityMs = 0;
 twai_state_t lastTwaiState = TWAI_STATE_STOPPED;
 bool twaiRecoveryPending = false;
+bool otaInProgress = false;
 
 bool relayAccOn = false;
 bool relayIllOn = false;
@@ -417,9 +420,11 @@ void updateWakeStateFromAlive(uint8_t b1, const uint8_t *buf, uint8_t len) {
   uint32_t wakeCombo = decodeWakeCombo(buf);
   static uint32_t prevWakeCombo = 0;
   if (prevWakeCombo == 0 && wakeCombo != 0) {
+    SerialBT.println("SYS:CAN:WAKE_START");
     isBusActive = true;
     setAutoNmState(AUTO_ACTIVE);
   } else if (prevWakeCombo != 0 && wakeCombo == 0) {
+    SerialBT.println("SYS:CAN:WAKE_END");
     isBusActive = false;
     setAutoNmState(AUTO_SLEEP_PREP);
   }
@@ -474,7 +479,10 @@ void checkHardwareErrors() {
     if (status.state != lastTwaiState) {
       lastTwaiState = status.state;
       if (status.state == TWAI_STATE_BUS_OFF) {
-        SerialBT.println("ERR:HW:TWAI:BUS_OFF");
+        SerialBT.printf(
+            "ERR:HW:TWAI:BUS_OFF:TEC=%u:REC=%u:BUS=%lu:RXQ=%lu:TXQ=%lu\n",
+            status.tx_error_counter, status.rx_error_counter, status.bus_error_count,
+            status.msgs_to_rx, status.msgs_to_tx);
       } else if (status.state == TWAI_STATE_RECOVERING) {
         SerialBT.println("SYS:HW:TWAI:RECOVERING");
       } else if (status.state == TWAI_STATE_RUNNING) {
@@ -600,6 +608,7 @@ void processCanRxLoop() {
 }
 
 void processCanIdleShutdown() {
+  if (otaInProgress) return;
   if (lastAnyCanActivityMs == 0) return;
   if (millis() - lastAnyCanActivityMs <= INTERVAL_CAN_IDLE_SHUTDOWN) return;
 
@@ -655,6 +664,7 @@ void pumpRadioIfActive() {
 }
 
 void wejdzWTrybLekkiegoSnu() {
+  if (otaInProgress) return;
   // Przekaźniki active-low: OFF = HIGH — odcięcie zasilania radia przed snem.
   relayAccOn = false;
   relayIllOn = false;
@@ -732,9 +742,17 @@ void setup() {
     Serial.println(WiFi.localIP());
 
     ArduinoOTA.setHostname("VAG-Dekoder-OTA");
-    ArduinoOTA.onStart([]() { SerialBT.println("SYS:OTA:START"); });
-    ArduinoOTA.onEnd([]() { SerialBT.println("SYS:OTA:END"); });
+    ArduinoOTA.onStart([]() {
+      otaInProgress = true;
+      WiFi.setSleep(false);
+      SerialBT.println("SYS:OTA:START");
+    });
+    ArduinoOTA.onEnd([]() {
+      otaInProgress = false;
+      SerialBT.println("SYS:OTA:END");
+    });
     ArduinoOTA.onError([](ota_error_t error) {
+      otaInProgress = false;
       SerialBT.printf("ERR:OTA:0x%X\n", error);
     });
     ArduinoOTA.begin();
@@ -746,6 +764,7 @@ void setup() {
   if (initTwai()) {
     isTwaiReady = true;
     SerialBT.println("SYS:HW:READY");
+    SerialBT.printf("SYS:FW:BUILD_ID:%s\n", FW_BUILD_ID);
     SerialBT.println("SYS:CAN:NM_MODE_AUTO");
     setAutoNmState(AUTO_SILENT_LISTEN);
   } else {

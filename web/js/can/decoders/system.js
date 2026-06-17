@@ -233,6 +233,19 @@ export function decodeNMGatewayIData(id, hexData, cardElement) {
 
     let html = ``;
 
+    const hexParts = hexData.trim().split(/\s+/).filter(Boolean);
+    const wakeCombo = hexParts.length >= 5
+        ? (parseInt(hexParts[2], 16) | (parseInt(hexParts[3], 16) << 8) | (parseInt(hexParts[4], 16) << 16)) >>> 0
+        : 0;
+    const wakeComboLabel = wakeCombo === 0 ? "0x000000" : `0x${wakeCombo.toString(16).toUpperCase().padStart(6, "0")}`;
+
+    html += `<div class="nm-lamp-row full-width">`;
+    html += `<div class="ind nm-lamp ${rawData.NMGW_I_CmdRing === 1 ? "active-blue" : ""}">RING ${rawData.NMGW_I_CmdRing === 1 ? "ON" : "off"}</div>`;
+    html += `<div class="ind nm-lamp ${rawData.NMGW_I_CmdAlive === 1 ? "active-green" : ""}">ALIVE ${rawData.NMGW_I_CmdAlive === 1 ? "ON" : "off"}</div>`;
+    html += `<div class="ind nm-lamp ${rawData.NMGW_I_SleepInd === 1 ? "active-orange" : ""}">SLEEP ${rawData.NMGW_I_SleepInd === 1 ? "ON" : "off"}</div>`;
+    html += `<div class="ind nm-lamp ${wakeCombo !== 0 ? "active-blue" : ""}">WAKE ${wakeComboLabel}</div>`;
+    html += `</div>`;
+
     // --- Stan Magistrali (Uśpienie / Wybudzenie) ---
     const busModeClass = fullData.NMGW_I_SUMMARY_BUS_MODE === "ŻĄDANIE UŚPIENIA" ? "active-orange" : "active-blue";
     html += `<div class="ind ${busModeClass} full-width">MAGISTRALA: ${fullData.NMGW_I_SUMMARY_BUS_MODE}</div>`;

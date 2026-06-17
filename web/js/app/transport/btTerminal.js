@@ -6,6 +6,11 @@ import {
     logTerminal,
     updateStatus
 } from "../../ui/index.js";
+import { updateEsp32RuntimeFromMessage } from "../../ui/esp32Runtime.js";
+import {
+    catalogEntryFor,
+    resolveFirmwareMessageKey
+} from "../messageCatalog.js";
 
 const BLE_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 const BLE_RX_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
@@ -44,6 +49,48 @@ function ttlForError(src, code) {
     return MESSAGE_TTL_MS.ERR_DEFAULT;
 }
 
+function toneForCatalogEntry(entry, kind) {
+    if (entry?.tone) return entry.tone;
+    return kind === "ERR" ? "error" : "system";
+}
+
+function buildDescription(entry, details, fallback) {
+    if (!entry) return details || fallback;
+    if (details && entry.key !== "FW:BUILD_ID") {
+        return `${entry.desc} — ${details}`;
+    }
+    if (details && entry.key === "FW:BUILD_ID") {
+        return `${entry.desc}: ${details}`;
+    }
+    return entry.desc || fallback;
+}
+
+function handleFirmwareMessage(kind, raw) {
+    const parts = raw.split(":");
+    const { key, details } = resolveFirmwareMessageKey(parts.slice(1));
+    const entry = catalogEntryFor(key);
+    const tone = toneForCatalogEntry(entry, kind);
+    const src = key.includes(":") ? key.split(":")[0] : parts[1] || "UNK";
+    const code = key.includes(":") ? key.split(":").slice(1).join(":") : key;
+    const desc = buildDescription(
+        entry ? { ...entry, key } : null,
+        details,
+        kind === "ERR" ? `Wykryto błąd: ${key}` : `Komunikat: ${key}`
+    );
+    const ttlMs = entry?.ttlMs !== undefined
+        ? entry.ttlMs
+        : (kind === "ERR" ? ttlForError(src, code) : MESSAGE_TTL_MS.SYS_DEFAULT);
+
+    if (kind === "ERR") {
+        logError(src, code, desc, { ttlMs, tone });
+    } else {
+        logSystem(src, code, desc, { ttlMs, tone });
+    }
+
+    updateEsp32RuntimeFromMessage(kind, key, details);
+    updateStatus(`${key}${details ? ` (${details})` : ""}`, tone === "error" ? "var(--red)" : "var(--accent)");
+}
+
 function parseIncomingData(raw) {
     if (!raw) return;
     logTerminal(raw);
@@ -55,18 +102,12 @@ function parseIncomingData(raw) {
     }
 
     if (raw.startsWith("ERR:")) {
-        const { src, code, details } = parseTagged(raw, "ERR");
-        const ttlMs = ttlForError(src, code);
-        const desc = details || `Wykryto błąd warstwy ${src}`;
-        logError(src, code, desc, { ttlMs });
+        handleFirmwareMessage("ERR", raw);
         return;
     }
 
     if (raw.startsWith("SYS:")) {
-        const { src, code, details } = parseTagged(raw, "SYS");
-        const desc = details || `Komunikat systemowy ${src}`;
-        logSystem(src, code, desc, { ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT });
-        updateStatus(`${src}: ${code}`, "var(--accent)");
+        handleFirmwareMessage("SYS", raw);
         return;
     }
 
@@ -110,7 +151,8 @@ function onDeviceDisconnected() {
     updateStatus("UTRACONO POŁĄCZENIE BLE UART", "var(--red)");
     logTerminal("ERR:JS:BT_DISCONNECTED");
     logError("JS", "BT_DISCONNECTED", "BLE UART został rozłączony", {
-        ttlMs: MESSAGE_TTL_MS.ERR_BT_DISCONNECTED
+        ttlMs: MESSAGE_TTL_MS.ERR_BT_DISCONNECTED,
+        tone: "error"
     });
 }
 
@@ -145,7 +187,7 @@ async function ensureConnected() {
 export async function connectBleTerminal() {
     if (!navigator.bluetooth) {
         logTerminal("ERR:JS:BT_UNSUPPORTED");
-        logError("JS", "BT_UNSUPPORTED", "Przeglądarka nie obsługuje Web Bluetooth API");
+        logError("JS", "BT_UNSUPPORTED", "Przeglądarka nie obsługuje Web Bluetooth API", { tone: "error" });
         updateStatus("BRAK OBSŁUGI BLE W PRZEGLĄDARCE", "var(--red)");
         return false;
     }
@@ -157,7 +199,8 @@ export async function connectBleTerminal() {
         updateStatus("ŁĄCZENIE Z BLE UART...", "var(--accent)");
         logTerminal("SYS:JS:BT_CONNECT_START");
         logSystem("JS", "BT_CONNECT_START", "Rozpoczynam łączenie z ESP32 BLE UART", {
-            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT
+            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT,
+            tone: "info"
         });
         clearMessage("JS", "BT_CONNECT_FAIL");
         await ensureConnected();
@@ -165,7 +208,8 @@ export async function connectBleTerminal() {
         updateStatus("POŁĄCZONO Z BLE UART", "var(--green)");
         logTerminal("SYS:JS:BT_CONNECTED");
         logSystem("JS", "BT_CONNECTED", "Połączono z ESP32 BLE UART", {
-            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT
+            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT,
+            tone: "info"
         });
         clearMessage("JS", "BT_DISCONNECTED");
         clearMessage("JS", "BT_CONNECT_FAIL");
@@ -175,14 +219,15 @@ export async function connectBleTerminal() {
         if (error?.name === "NotFoundError") {
             logTerminal("SYS:JS:BT_CONNECT_CANCELLED");
             logSystem("JS", "BT_CONNECT_CANCELLED", "Anulowano wybór urządzenia BLE UART", {
-                ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT
+                ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT,
+                tone: "warn"
             });
             updateStatus("ANULOWANO WYBÓR URZĄDZENIA BLE", "var(--orange)");
             updateConnectButton(false, false);
             return false;
         }
         logTerminal("ERR:JS:BT_CONNECT_FAIL");
-        logError("JS", "BT_CONNECT_FAIL", error?.message || "Nie udało się połączyć z BLE UART");
+        logError("JS", "BT_CONNECT_FAIL", error?.message || "Nie udało się połączyć z BLE UART", { tone: "error" });
         updateStatus("BŁĄD POŁĄCZENIA BLE UART", "var(--red)");
         updateConnectButton(false, false);
         return false;
@@ -195,7 +240,8 @@ export function disconnectBleTerminal() {
     if (device?.gatt?.connected) {
         logTerminal("SYS:JS:BT_DISCONNECT");
         logSystem("JS", "BT_DISCONNECT", "Ręczne rozłączenie BLE UART", {
-            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT
+            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT,
+            tone: "info"
         });
         updateStatus("ROZŁĄCZANIE BLE UART...", "var(--orange)");
         device.gatt.disconnect();

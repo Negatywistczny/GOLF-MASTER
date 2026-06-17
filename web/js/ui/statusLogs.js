@@ -16,9 +16,26 @@ function formatAge(ms) {
     return remain === 0 ? `${minutes}m temu` : `${minutes}m ${remain}s temu`;
 }
 
-function rowClassFor(kind, src) {
+function rowClassFor(kind, toneOrSrc, options = {}) {
+    if (options.rowClass) return options.rowClass;
+    const tone = options.tone || toneOrSrc;
+    if (tone === "error") return "msg-row-error";
+    if (tone === "warn") return "msg-row-warn";
+    if (tone === "info") return "msg-row-info";
     if (kind === "SYS") return "msg-row-system";
     return "msg-row-error";
+}
+
+function terminalClassForLine(msg) {
+    if (msg.startsWith("ERR:")) return "term-line-err";
+    if (msg.startsWith("SYS:OTA:") || msg.startsWith("SYS:HW:LIGHT_SLEEP") || msg.startsWith("SYS:CAN:IDLE")) {
+        return "term-line-warn";
+    }
+    if (msg.startsWith("SYS:FW:") || msg.startsWith("SYS:HW:TWAI:RUNNING") || msg.startsWith("SYS:CAN:WAKE")) {
+        return "term-line-info";
+    }
+    if (msg.startsWith("SYS:")) return "term-line-sys";
+    return "";
 }
 
 function setRowState(entry, now) {
@@ -39,20 +56,23 @@ function upsertMessage(kind, src, code, desc, options = {}) {
     const ttlMs = Object.prototype.hasOwnProperty.call(options, "ttlMs")
         ? options.ttlMs
         : (kind === "SYS" ? 5000 : 15000);
+    const tone = options.tone || (kind === "SYS" ? "system" : "error");
 
     if (errorRegistry[key]) {
         const existing = errorRegistry[key];
         existing.lastSeenMs = now;
         existing.desc = normalizedDesc || existing.desc;
+        existing.tone = tone;
         if (Object.prototype.hasOwnProperty.call(options, "ttlMs")) {
             existing.ttlMs = ttlMs;
         }
         existing.row.cells[2].textContent = existing.desc;
+        existing.row.className = rowClassFor(kind, tone, { ...options, tone });
         tableBody.prepend(existing.row); // Powrót komunikatu = skok na górę.
         setRowState(existing, now);
     } else {
         const row = tableBody.insertRow(0); // Nowe wpisy na górze.
-        row.className = rowClassFor(kind, normalizedSrc);
+        row.className = rowClassFor(kind, tone, { ...options, tone });
         row.innerHTML = `
             <td>${normalizedCode}</td>
             <td>${normalizedSrc}</td>
@@ -64,6 +84,7 @@ function upsertMessage(kind, src, code, desc, options = {}) {
             src: normalizedSrc,
             code: normalizedCode,
             desc: normalizedDesc,
+            tone,
             row,
             lastSeenMs: now,
             ttlMs
@@ -114,6 +135,8 @@ function logTerminal(msg) {
     }
 
     const line = document.createElement("div");
+    const toneClass = terminalClassForLine(msg);
+    if (toneClass) line.className = toneClass;
     const now = new Date();
     const timeStr = `${now.toLocaleTimeString()}.${now.getMilliseconds().toString().padStart(3, "0")}`;
 

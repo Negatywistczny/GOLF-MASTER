@@ -21,6 +21,7 @@
     --orange-dark: #5e3a00;
     --red: #ff4757;
     --red-dark: #4a0e0e;
+    --info: var(--accent);
     --info-dark: #0a3d62;
     --border-color: var(--border); /* alias for JS inline styles */
     --space-sm: 8px;
@@ -252,6 +253,26 @@ h1 {
 .ind.active-red    { background: var(--red-dark); }
 .ind.full-width    { min-width: 100%; }
 
+.nm-lamp-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.ind.nm-lamp {
+    flex: 1 1 calc(50% - 4px);
+    min-width: calc(50% - 4px);
+    font-size: 0.72em;
+    padding: 4px 6px;
+    text-align: center;
+}
+
+.runtime-card .grid {
+    gap: 4px;
+}
+
 /* --- PANEL DIAGNOSTYCZNY --- */
 #diag-panel {
     margin-top: 40px;
@@ -268,6 +289,8 @@ th { text-align: left; color: var(--text-dim); padding: 8px; border-bottom: 1px 
 td { padding: 8px; border-bottom: 1px solid var(--border); }
 
 .msg-row-system { color: var(--green); }
+.msg-row-info { color: var(--info); }
+.msg-row-warn { color: var(--orange); }
 .msg-row-error { color: var(--red); }
 
 #error-table-body tr {
@@ -289,6 +312,11 @@ td { padding: 8px; border-bottom: 1px solid var(--border); }
     padding: 10px;
     line-height: 1.4;
 }
+
+#term-stream .term-line-sys { color: var(--green); }
+#term-stream .term-line-info { color: var(--info); }
+#term-stream .term-line-warn { color: var(--orange); }
+#term-stream .term-line-err { color: var(--red); }
 
 /* --- PANEL DOLNY (PRZEKAŹNIKI) --- */
 .relay-grid {

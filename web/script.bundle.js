@@ -2835,6 +2835,19 @@ function decodeNMGatewayIData(id, hexData, cardElement) {
 
     let html = ``;
 
+    const hexParts = hexData.trim().split(/\s+/).filter(Boolean);
+    const wakeCombo = hexParts.length >= 5
+        ? (parseInt(hexParts[2], 16) | (parseInt(hexParts[3], 16) << 8) | (parseInt(hexParts[4], 16) << 16)) >>> 0
+        : 0;
+    const wakeComboLabel = wakeCombo === 0 ? "0x000000" : `0x${wakeCombo.toString(16).toUpperCase().padStart(6, "0")}`;
+
+    html += `<div class="nm-lamp-row full-width">`;
+    html += `<div class="ind nm-lamp ${rawData.NMGW_I_CmdRing === 1 ? "active-blue" : ""}">RING ${rawData.NMGW_I_CmdRing === 1 ? "ON" : "off"}</div>`;
+    html += `<div class="ind nm-lamp ${rawData.NMGW_I_CmdAlive === 1 ? "active-green" : ""}">ALIVE ${rawData.NMGW_I_CmdAlive === 1 ? "ON" : "off"}</div>`;
+    html += `<div class="ind nm-lamp ${rawData.NMGW_I_SleepInd === 1 ? "active-orange" : ""}">SLEEP ${rawData.NMGW_I_SleepInd === 1 ? "ON" : "off"}</div>`;
+    html += `<div class="ind nm-lamp ${wakeCombo !== 0 ? "active-blue" : ""}">WAKE ${wakeComboLabel}</div>`;
+    html += `</div>`;
+
     // --- Stan Magistrali (Uśpienie / Wybudzenie) ---
     const busModeClass = fullData.NMGW_I_SUMMARY_BUS_MODE === "ŻĄDANIE UŚPIENIA" ? "active-orange" : "active-blue";
     html += `<div class="ind ${busModeClass} full-width">MAGISTRALA: ${fullData.NMGW_I_SUMMARY_BUS_MODE}</div>`;
@@ -5270,7 +5283,162 @@ function notifyModalFrameUpdated(frameId) {
     renderModalContent(activeModalFrameIdRaw);
 }
 
+// ===== js/ui/esp32Runtime.js =====
+const RUNTIME_CARD_ID = "esp32-runtime-card";
+
+const runtimeState = {
+    twaiState: "—",
+    busSleepHint: "—",
+    lastCanActivityMs: 0,
+    buildId: "—",
+    relays: { acc: "—", ill: "—", back: "—" }
+};
+
+let runtimeTickerStarted = false;
+
+function formatAge(ms) {
+    if (!ms || ms <= 0) return "brak ramek";
+    const seconds = Math.floor(ms / 1000);
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remain = seconds % 60;
+    return remain === 0 ? `${minutes}m` : `${minutes}m ${remain}s`;
+}
+
+function relayClass(state) {
+    if (state === "ON") return "active-green";
+    if (state === "OFF") return "";
+    return "";
+}
+
+function renderRuntimePanel() {
+    const card = document.getElementById(RUNTIME_CARD_ID);
+    if (!card) return;
+
+    const grid = card.querySelector(".grid");
+    if (!grid) return;
+
+    const ageMs = runtimeState.lastCanActivityMs
+        ? Date.now() - runtimeState.lastCanActivityMs
+        : 0;
+
+    grid.innerHTML = `
+        <div class="ind active-blue full-width">TWAI: ${runtimeState.twaiState}</div>
+        <div class="ind full-width">BUS: ${runtimeState.busSleepHint}</div>
+        <div class="ind full-width">CAN: ${formatAge(ageMs)} temu</div>
+        <div class="ind ${relayClass(runtimeState.relays.acc)}">ACC ${runtimeState.relays.acc}</div>
+        <div class="ind ${relayClass(runtimeState.relays.ill)}">ILL ${runtimeState.relays.ill}</div>
+        <div class="ind ${relayClass(runtimeState.relays.back)}">BACK ${runtimeState.relays.back}</div>
+        <div class="ind full-width">BUILD: ${runtimeState.buildId}</div>
+    `;
+}
+
+function markCanActivity() {
+    runtimeState.lastCanActivityMs = Date.now();
+    if (runtimeState.busSleepHint === "LIGHT_SLEEP" || runtimeState.busSleepHint === "IDLE") {
+        runtimeState.busSleepHint = "AKTYWNA";
+    }
+    renderRuntimePanel();
+}
+
+function updateRelayFromCan(id, hexData) {
+    const parts = String(hexData || "").trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return;
+
+    const b0 = parseInt(parts[0], 16);
+    if (Number.isNaN(b0)) return;
+
+    if (id === "0x2C3" && (b0 & 0x02) !== 0) {
+        runtimeState.relays.acc = "ON";
+    } else if (id === "0x635") {
+        const displayPercent = b0 & 0x7f;
+        const displayFault = (b0 & 0x80) !== 0;
+        runtimeState.relays.ill = (!displayFault && displayPercent > 0) ? "ON" : "OFF";
+    } else if (id === "0x531" && (b0 & 0x20) !== 0) {
+        runtimeState.relays.back = "ON";
+    }
+    renderRuntimePanel();
+}
+
+function updateEsp32RuntimeFromMessage(kind, messageKey, details) {
+    switch (messageKey) {
+        case "HW:TWAI:RECOVERING":
+            runtimeState.twaiState = "RECOVERING";
+            break;
+        case "HW:TWAI:RUNNING":
+            runtimeState.twaiState = "RUNNING";
+            break;
+        case "HW:TWAI:BUS_OFF":
+            runtimeState.twaiState = "BUS_OFF";
+            break;
+        case "CAN:WAKE_START":
+            runtimeState.busSleepHint = "WAKE_ACTIVE";
+            break;
+        case "CAN:WAKE_END":
+            runtimeState.busSleepHint = "WAKE_END";
+            break;
+        case "CAN:SLEEP_IND":
+            runtimeState.busSleepHint = "SLEEP_IND";
+            break;
+        case "CAN:IDLE_SHUTDOWN":
+            runtimeState.busSleepHint = "IDLE";
+            runtimeState.relays = { acc: "OFF", ill: "OFF", back: "OFF" };
+            break;
+        case "HW:LIGHT_SLEEP_ENTER":
+            runtimeState.busSleepHint = "LIGHT_SLEEP";
+            runtimeState.relays = { acc: "OFF", ill: "OFF", back: "OFF" };
+            break;
+        case "HW:LIGHT_SLEEP_WAKE":
+            runtimeState.busSleepHint = "AWAKE";
+            runtimeState.lastCanActivityMs = Date.now();
+            break;
+        case "RELAY_ILL:OFF_BY_CAN_IDLE":
+            runtimeState.relays.ill = "OFF";
+            break;
+        case "RELAYS:FORCED_OFF_BY_SILENCE":
+            runtimeState.relays = { acc: "OFF", ill: "OFF", back: "OFF" };
+            break;
+        case "FW:BUILD_ID":
+            runtimeState.buildId = details || "—";
+            break;
+        case "CAN:NM_MODE_AUTO":
+            runtimeState.busSleepHint = runtimeState.busSleepHint === "—" ? "NM_AUTO" : runtimeState.busSleepHint;
+            break;
+        default:
+            if (kind === "ERR" && messageKey.startsWith("HW:TWAI:")) {
+                runtimeState.twaiState = details || messageKey.split(":").pop();
+            }
+            break;
+    }
+    renderRuntimePanel();
+}
+
+function startRuntimeTicker() {
+    if (runtimeTickerStarted) return;
+    runtimeTickerStarted = true;
+    setInterval(renderRuntimePanel, 1000);
+}
+
+function initEsp32RuntimePanel() {
+    const container = document.getElementById("grid-system");
+    if (!container || document.getElementById(RUNTIME_CARD_ID)) return;
+
+    const card = document.createElement("div");
+    card.className = "card runtime-card";
+    card.id = RUNTIME_CARD_ID;
+    card.innerHTML = `
+        <div class="id-label">ESP32</div>
+        <h2>ESP32 RUNTIME</h2>
+        <span class="val hidden-val" data-decoded="true">—</span>
+        <div class="grid"></div>
+    `;
+    container.prepend(card);
+    renderRuntimePanel();
+    startRuntimeTicker();
+}
+
 // ===== js/ui/core.js =====
+
 
 
 
@@ -5417,6 +5585,9 @@ function handleCANFrame(id, data) {
         activeCards[idKey] = card;
     }
 
+    markCanActivity();
+    updateRelayFromCan(idKey, data);
+
     /* Błysk przy każdym odebraniu ramki; kolejne w czasie trwania animacji ją nie przerywają. */
     flashCardFrameUpdate(card);
 
@@ -5442,9 +5613,26 @@ function formatAge(ms) {
     return remain === 0 ? `${minutes}m temu` : `${minutes}m ${remain}s temu`;
 }
 
-function rowClassFor(kind, src) {
+function rowClassFor(kind, toneOrSrc, options = {}) {
+    if (options.rowClass) return options.rowClass;
+    const tone = options.tone || toneOrSrc;
+    if (tone === "error") return "msg-row-error";
+    if (tone === "warn") return "msg-row-warn";
+    if (tone === "info") return "msg-row-info";
     if (kind === "SYS") return "msg-row-system";
     return "msg-row-error";
+}
+
+function terminalClassForLine(msg) {
+    if (msg.startsWith("ERR:")) return "term-line-err";
+    if (msg.startsWith("SYS:OTA:") || msg.startsWith("SYS:HW:LIGHT_SLEEP") || msg.startsWith("SYS:CAN:IDLE")) {
+        return "term-line-warn";
+    }
+    if (msg.startsWith("SYS:FW:") || msg.startsWith("SYS:HW:TWAI:RUNNING") || msg.startsWith("SYS:CAN:WAKE")) {
+        return "term-line-info";
+    }
+    if (msg.startsWith("SYS:")) return "term-line-sys";
+    return "";
 }
 
 function setRowState(entry, now) {
@@ -5465,20 +5653,23 @@ function upsertMessage(kind, src, code, desc, options = {}) {
     const ttlMs = Object.prototype.hasOwnProperty.call(options, "ttlMs")
         ? options.ttlMs
         : (kind === "SYS" ? 5000 : 15000);
+    const tone = options.tone || (kind === "SYS" ? "system" : "error");
 
     if (errorRegistry[key]) {
         const existing = errorRegistry[key];
         existing.lastSeenMs = now;
         existing.desc = normalizedDesc || existing.desc;
+        existing.tone = tone;
         if (Object.prototype.hasOwnProperty.call(options, "ttlMs")) {
             existing.ttlMs = ttlMs;
         }
         existing.row.cells[2].textContent = existing.desc;
+        existing.row.className = rowClassFor(kind, tone, { ...options, tone });
         tableBody.prepend(existing.row); // Powrót komunikatu = skok na górę.
         setRowState(existing, now);
     } else {
         const row = tableBody.insertRow(0); // Nowe wpisy na górze.
-        row.className = rowClassFor(kind, normalizedSrc);
+        row.className = rowClassFor(kind, tone, { ...options, tone });
         row.innerHTML = `
             <td>${normalizedCode}</td>
             <td>${normalizedSrc}</td>
@@ -5490,6 +5681,7 @@ function upsertMessage(kind, src, code, desc, options = {}) {
             src: normalizedSrc,
             code: normalizedCode,
             desc: normalizedDesc,
+            tone,
             row,
             lastSeenMs: now,
             ttlMs
@@ -5540,6 +5732,8 @@ function logTerminal(msg) {
     }
 
     const line = document.createElement("div");
+    const toneClass = terminalClassForLine(msg);
+    if (toneClass) line.className = toneClass;
     const now = new Date();
     const timeStr = `${now.toLocaleTimeString()}.${now.getMilliseconds().toString().padStart(3, "0")}`;
 
@@ -5662,7 +5856,142 @@ function downloadTerminalLogs() {
 // ===== js/ui/index.js =====
 
 
+// ===== js/app/messageCatalog.js =====
+/** Firmware SYS/ERR messages — descriptions, UI tone, TTL overrides. */
+const MESSAGE_CATALOG = Object.freeze({
+    "HW:READY": {
+        desc: "Inicjalizacja TWAI zakończona — ESP32 gotowe",
+        tone: "info",
+        ttlMs: 8000
+    },
+    "FW:BUILD_ID": {
+        desc: "Identyfikator buildu firmware",
+        tone: "info",
+        ttlMs: null
+    },
+    "CAN:NM_MODE_AUTO": {
+        desc: "Auto-NM: stany AUTO_ACTIVE / SLEEP_PREP / SILENT_LISTEN",
+        tone: "info",
+        ttlMs: null
+    },
+    "CAN:SLEEP_IND": {
+        desc: "Gateway 0x42B — SleepInd (bit 0x10)",
+        tone: "warn",
+        ttlMs: 15000
+    },
+    "CAN:WAKE_START": {
+        desc: "wakeCombo 0→≠0 w Alive do 0x0B",
+        tone: "info",
+        ttlMs: 10000
+    },
+    "CAN:WAKE_END": {
+        desc: "wakeCombo ≠0→0 — koniec sygnalizacji wake",
+        tone: "warn",
+        ttlMs: 10000
+    },
+    "CAN:IDLE_SHUTDOWN": {
+        desc: "10 s ciszy CAN — idle shutdown + light sleep",
+        tone: "warn",
+        ttlMs: 20000
+    },
+    "HW:LIGHT_SLEEP_ENTER": {
+        desc: "Wejście w light sleep (GPIO wake na TWAI_RX)",
+        tone: "warn",
+        ttlMs: 15000
+    },
+    "HW:LIGHT_SLEEP_WAKE": {
+        desc: "Wybudzenie z light sleep",
+        tone: "info",
+        ttlMs: 10000
+    },
+    "HW:TWAI:RECOVERING": {
+        desc: "TWAI recovery po BUS_OFF",
+        tone: "warn",
+        ttlMs: 10000
+    },
+    "HW:TWAI:RUNNING": {
+        desc: "Sterownik TWAI w stanie RUNNING",
+        tone: "info",
+        ttlMs: 8000
+    },
+    "RELAY_ILL:OFF_BY_CAN_IDLE": {
+        desc: "ILL wyłączone po 2 s ciszy CAN",
+        tone: "info",
+        ttlMs: 8000
+    },
+    "RELAYS:FORCED_OFF_BY_SILENCE": {
+        desc: "Wszystkie przekaźniki OFF po 5 min ciszy CAN",
+        tone: "warn",
+        ttlMs: 20000
+    },
+    "OTA:START": {
+        desc: "Rozpoczęto upload OTA — sleep zablokowany",
+        tone: "info",
+        ttlMs: 60000
+    },
+    "OTA:END": {
+        desc: "Upload OTA zakończony",
+        tone: "info",
+        ttlMs: 15000
+    },
+    "HW:TWAI:BUS_OFF": {
+        desc: "Kontroler TWAI w BUS_OFF (liczniki TEC/REC w szczegółach)",
+        tone: "error",
+        ttlMs: 30000
+    },
+    "HW:TWAI:RECOVERY_START_FAIL": {
+        desc: "Nie udało się uruchomić recovery TWAI",
+        tone: "error",
+        ttlMs: 30000
+    },
+    "HW:TWAI:RESTART_FAIL": {
+        desc: "twai_start() po recovery nie powiódł się",
+        tone: "error",
+        ttlMs: 30000
+    },
+    "HW:INIT_FAIL": {
+        desc: "Błąd instalacji / startu sterownika TWAI",
+        tone: "error",
+        ttlMs: null
+    },
+    "HW:TJA": {
+        desc: "Błąd transceivera TJA1055T (pin ERR)",
+        tone: "error",
+        ttlMs: 30000
+    },
+    "CAN:HANG": {
+        desc: "Brak ramek 0x42B→0x0B >2 s przy aktywnej magistrali",
+        tone: "error",
+        ttlMs: 60000
+    },
+    "OTA": {
+        desc: "Błąd uploadu OTA",
+        tone: "error",
+        ttlMs: 30000
+    }
+});
+
+const SORTED_KEYS = Object.keys(MESSAGE_CATALOG).sort((a, b) => b.length - a.length);
+
+function resolveFirmwareMessageKey(restParts) {
+    const joined = restParts.join(":");
+    for (const key of SORTED_KEYS) {
+        if (joined === key) return { key, details: "" };
+        if (joined.startsWith(`${key}:`)) {
+            return { key, details: joined.slice(key.length + 1) };
+        }
+    }
+    const fallbackKey = restParts.slice(0, 2).join(":");
+    return { key: fallbackKey, details: restParts.slice(2).join(":") };
+}
+
+function catalogEntryFor(key) {
+    return MESSAGE_CATALOG[key] || null;
+}
+
 // ===== js/app/transport/btTerminal.js =====
+
+
 
 
 const BLE_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
@@ -5702,6 +6031,48 @@ function ttlForError(src, code) {
     return MESSAGE_TTL_MS.ERR_DEFAULT;
 }
 
+function toneForCatalogEntry(entry, kind) {
+    if (entry?.tone) return entry.tone;
+    return kind === "ERR" ? "error" : "system";
+}
+
+function buildDescription(entry, details, fallback) {
+    if (!entry) return details || fallback;
+    if (details && entry.key !== "FW:BUILD_ID") {
+        return `${entry.desc} — ${details}`;
+    }
+    if (details && entry.key === "FW:BUILD_ID") {
+        return `${entry.desc}: ${details}`;
+    }
+    return entry.desc || fallback;
+}
+
+function handleFirmwareMessage(kind, raw) {
+    const parts = raw.split(":");
+    const { key, details } = resolveFirmwareMessageKey(parts.slice(1));
+    const entry = catalogEntryFor(key);
+    const tone = toneForCatalogEntry(entry, kind);
+    const src = key.includes(":") ? key.split(":")[0] : parts[1] || "UNK";
+    const code = key.includes(":") ? key.split(":").slice(1).join(":") : key;
+    const desc = buildDescription(
+        entry ? { ...entry, key } : null,
+        details,
+        kind === "ERR" ? `Wykryto błąd: ${key}` : `Komunikat: ${key}`
+    );
+    const ttlMs = entry?.ttlMs !== undefined
+        ? entry.ttlMs
+        : (kind === "ERR" ? ttlForError(src, code) : MESSAGE_TTL_MS.SYS_DEFAULT);
+
+    if (kind === "ERR") {
+        logError(src, code, desc, { ttlMs, tone });
+    } else {
+        logSystem(src, code, desc, { ttlMs, tone });
+    }
+
+    updateEsp32RuntimeFromMessage(kind, key, details);
+    updateStatus(`${key}${details ? ` (${details})` : ""}`, tone === "error" ? "var(--red)" : "var(--accent)");
+}
+
 function parseIncomingData(raw) {
     if (!raw) return;
     logTerminal(raw);
@@ -5713,18 +6084,12 @@ function parseIncomingData(raw) {
     }
 
     if (raw.startsWith("ERR:")) {
-        const { src, code, details } = parseTagged(raw, "ERR");
-        const ttlMs = ttlForError(src, code);
-        const desc = details || `Wykryto błąd warstwy ${src}`;
-        logError(src, code, desc, { ttlMs });
+        handleFirmwareMessage("ERR", raw);
         return;
     }
 
     if (raw.startsWith("SYS:")) {
-        const { src, code, details } = parseTagged(raw, "SYS");
-        const desc = details || `Komunikat systemowy ${src}`;
-        logSystem(src, code, desc, { ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT });
-        updateStatus(`${src}: ${code}`, "var(--accent)");
+        handleFirmwareMessage("SYS", raw);
         return;
     }
 
@@ -5768,7 +6133,8 @@ function onDeviceDisconnected() {
     updateStatus("UTRACONO POŁĄCZENIE BLE UART", "var(--red)");
     logTerminal("ERR:JS:BT_DISCONNECTED");
     logError("JS", "BT_DISCONNECTED", "BLE UART został rozłączony", {
-        ttlMs: MESSAGE_TTL_MS.ERR_BT_DISCONNECTED
+        ttlMs: MESSAGE_TTL_MS.ERR_BT_DISCONNECTED,
+        tone: "error"
     });
 }
 
@@ -5803,7 +6169,7 @@ async function ensureConnected() {
 async function connectBleTerminal() {
     if (!navigator.bluetooth) {
         logTerminal("ERR:JS:BT_UNSUPPORTED");
-        logError("JS", "BT_UNSUPPORTED", "Przeglądarka nie obsługuje Web Bluetooth API");
+        logError("JS", "BT_UNSUPPORTED", "Przeglądarka nie obsługuje Web Bluetooth API", { tone: "error" });
         updateStatus("BRAK OBSŁUGI BLE W PRZEGLĄDARCE", "var(--red)");
         return false;
     }
@@ -5815,7 +6181,8 @@ async function connectBleTerminal() {
         updateStatus("ŁĄCZENIE Z BLE UART...", "var(--accent)");
         logTerminal("SYS:JS:BT_CONNECT_START");
         logSystem("JS", "BT_CONNECT_START", "Rozpoczynam łączenie z ESP32 BLE UART", {
-            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT
+            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT,
+            tone: "info"
         });
         clearMessage("JS", "BT_CONNECT_FAIL");
         await ensureConnected();
@@ -5823,7 +6190,8 @@ async function connectBleTerminal() {
         updateStatus("POŁĄCZONO Z BLE UART", "var(--green)");
         logTerminal("SYS:JS:BT_CONNECTED");
         logSystem("JS", "BT_CONNECTED", "Połączono z ESP32 BLE UART", {
-            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT
+            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT,
+            tone: "info"
         });
         clearMessage("JS", "BT_DISCONNECTED");
         clearMessage("JS", "BT_CONNECT_FAIL");
@@ -5833,14 +6201,15 @@ async function connectBleTerminal() {
         if (error?.name === "NotFoundError") {
             logTerminal("SYS:JS:BT_CONNECT_CANCELLED");
             logSystem("JS", "BT_CONNECT_CANCELLED", "Anulowano wybór urządzenia BLE UART", {
-                ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT
+                ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT,
+                tone: "warn"
             });
             updateStatus("ANULOWANO WYBÓR URZĄDZENIA BLE", "var(--orange)");
             updateConnectButton(false, false);
             return false;
         }
         logTerminal("ERR:JS:BT_CONNECT_FAIL");
-        logError("JS", "BT_CONNECT_FAIL", error?.message || "Nie udało się połączyć z BLE UART");
+        logError("JS", "BT_CONNECT_FAIL", error?.message || "Nie udało się połączyć z BLE UART", { tone: "error" });
         updateStatus("BŁĄD POŁĄCZENIA BLE UART", "var(--red)");
         updateConnectButton(false, false);
         return false;
@@ -5853,7 +6222,8 @@ function disconnectBleTerminal() {
     if (device?.gatt?.connected) {
         logTerminal("SYS:JS:BT_DISCONNECT");
         logSystem("JS", "BT_DISCONNECT", "Ręczne rozłączenie BLE UART", {
-            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT
+            ttlMs: MESSAGE_TTL_MS.SYS_DEFAULT,
+            tone: "info"
         });
         updateStatus("ROZŁĄCZANIE BLE UART...", "var(--orange)");
         device.gatt.disconnect();
@@ -5892,6 +6262,7 @@ function initBtTerminalControls() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    initEsp32RuntimePanel();
     initBtTerminalControls();
     startClock();
     startMessageRegistryTicker();

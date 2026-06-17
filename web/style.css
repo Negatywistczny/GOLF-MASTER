@@ -354,6 +354,16 @@ td { padding: 8px; border-bottom: 1px solid var(--border); }
         grid-template-columns: 1fr;
         gap: 0;
     }
+
+    /* Na telefonach tabele kolumn układają się jedna pod drugą.
+       Ukryj drugi nagłówek, aby nie dublować "PARAMETR / WARTOŚĆ" w środku okna. */
+    .modal-col + .modal-col .m-table thead {
+        display: none;
+    }
+
+    .modal-col + .modal-col .m-table {
+        margin-top: 0;
+    }
 }
 
 .close-btn {

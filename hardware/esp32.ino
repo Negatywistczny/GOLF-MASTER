@@ -43,6 +43,8 @@ const uint8_t NM_NODE_SELF = 0x0B;
 const unsigned long INTERVAL_RADIO_PUMP = 150;
 const unsigned long INTERVAL_HANG_CHECK = 2000;
 const unsigned long INTERVAL_TJA_ERR_LOG = 5000;
+const unsigned long INTERVAL_ILL_IDLE_OFF = 2000;
+const unsigned long INTERVAL_CAN_IDLE_SHUTDOWN = 10000;
 const unsigned long INTERVAL_RELAY_SILENCE_OFF = 300000;
 const unsigned long INTERVAL_HW_CHECK = 1000;
 const uint8_t MAX_FRAMES_PER_RX_LOOP = 48;
@@ -60,19 +62,19 @@ public:
   bool begin(const char *deviceName) {
     BLEDevice::init(deviceName);
 
-    server_ = BLEDevice::createServer();
-    server_->setCallbacks(new ServerCallbacks(this));
+    BLEServer *server = BLEDevice::createServer();
+    server->setCallbacks(new ServerCallbacks(this));
 
-    BLEService *service = server_->createService(kServiceUuid);
+    BLEService *service = server->createService(kServiceUuid);
 
     txChar_ = service->createCharacteristic(
         kTxUuid, BLECharacteristic::PROPERTY_NOTIFY);
     txChar_->addDescriptor(new BLE2902());
 
-    rxChar_ = service->createCharacteristic(
+    BLECharacteristic *rxChar = service->createCharacteristic(
         kRxUuid,
         BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
-    rxChar_->setCallbacks(new RxCallbacks(this));
+    rxChar->setCallbacks(new RxCallbacks(this));
 
     service->start();
 
@@ -84,10 +86,6 @@ public:
     BLEDevice::startAdvertising();
     return true;
   }
-
-  void setTimeout(unsigned long timeoutMs) { timeoutMs_ = timeoutMs; }
-
-  bool hasClient() const { return clientConnected_; }
 
   int available() const {
     if (rxHead_ >= rxTail_) {
@@ -253,9 +251,7 @@ private:
     }
   }
 
-  BLEServer *server_ = nullptr;
   BLECharacteristic *txChar_ = nullptr;
-  BLECharacteristic *rxChar_ = nullptr;
   bool clientConnected_ = false;
   unsigned long timeoutMs_ = 25;
   uint8_t rxBuffer_[kRxBufferSize] = {0};
@@ -274,8 +270,8 @@ bool isBusActive = false;
 bool isTwaiReady = false;
 unsigned long lastErrCheckMs = 0;
 unsigned long lastAnyCanActivityMs = 0;
-bool relayForcedOffBySilence = false;
 twai_state_t lastTwaiState = TWAI_STATE_STOPPED;
+bool twaiRecoveryPending = false;
 
 bool relayAccOn = false;
 bool relayIllOn = false;
@@ -297,6 +293,7 @@ void processSerial();
 void updateRelaySignalsFromFrame(uint32_t id, const uint8_t *buf, uint8_t len);
 void applyRelayOutputs();
 void wejdzWTrybLekkiegoSnu();
+void processCanIdleShutdown();
 bool sendCanFrame(uint32_t id, uint8_t len, const uint8_t *data);
 bool initTwai();
 
@@ -328,8 +325,11 @@ void updateRelaySignalsFromFrame(uint32_t id, const uint8_t *buf, uint8_t len) {
   if (len < 1) return;
 
   if (id == CAN_ID_IGNITION_STATUS) {
-    relayAccOn = (buf[0] & 0x02) != 0; // ZS1_ZAS_Kl_15
-    applyRelayOutputs();
+    // Włączenie ACC natychmiast; wyłączenie dopiero po INTERVAL_CAN_IDLE_SHUTDOWN bez ramek CAN.
+    if ((buf[0] & 0x02) != 0) {
+      relayAccOn = true;
+      applyRelayOutputs();
+    }
     return;
   }
 
@@ -400,9 +400,7 @@ void updateSleepSignalsFromGateway(uint8_t b1, const uint8_t *buf) {
 
   if ((b1 & NM_MASK_SLEEP) != 0) {
     SerialBT.println("SYS:CAN:SLEEP_IND");
-    busSleep = true;
     setAutoNmState(AUTO_SILENT_LISTEN);
-    wejdzWTrybLekkiegoSnu();
     return;
   }
 
@@ -472,15 +470,37 @@ bool sendCanFrame(uint32_t id, uint8_t len, const uint8_t *data) {
 // --- DIAGNOSTYKA BŁĘDÓW HW ---
 void checkHardwareErrors() {
   twai_status_info_t status = {};
-  if (twai_get_status_info(&status) == ESP_OK && status.state != lastTwaiState) {
-    lastTwaiState = status.state;
-    if (status.state == TWAI_STATE_BUS_OFF) {
-      SerialBT.println("ERR:HW:TWAI:BUS_OFF");
-      twai_initiate_recovery();
-    } else if (status.state == TWAI_STATE_RECOVERING) {
-      SerialBT.println("SYS:HW:TWAI:RECOVERING");
+  if (twai_get_status_info(&status) == ESP_OK) {
+    if (status.state != lastTwaiState) {
+      lastTwaiState = status.state;
+      if (status.state == TWAI_STATE_BUS_OFF) {
+        SerialBT.println("ERR:HW:TWAI:BUS_OFF");
+      } else if (status.state == TWAI_STATE_RECOVERING) {
+        SerialBT.println("SYS:HW:TWAI:RECOVERING");
+      } else if (status.state == TWAI_STATE_RUNNING) {
+        SerialBT.println("SYS:HW:TWAI:RUNNING");
+      }
+    }
+
+    if (status.state == TWAI_STATE_BUS_OFF && !twaiRecoveryPending) {
+      if (twai_initiate_recovery() == ESP_OK) {
+        twaiRecoveryPending = true;
+      } else {
+        SerialBT.println("ERR:HW:TWAI:RECOVERY_START_FAIL");
+      }
+    }
+
+    // Po recovery driver przechodzi do STOPPED i wymaga ponownego twai_start().
+    if (status.state == TWAI_STATE_STOPPED && twaiRecoveryPending) {
+      if (twai_start() == ESP_OK) {
+        twaiRecoveryPending = false;
+        lastTwaiState = TWAI_STATE_RUNNING;
+        SerialBT.println("SYS:HW:TWAI:RUNNING");
+      } else {
+        SerialBT.println("ERR:HW:TWAI:RESTART_FAIL");
+      }
     } else if (status.state == TWAI_STATE_RUNNING) {
-      SerialBT.println("SYS:HW:TWAI:RUNNING");
+      twaiRecoveryPending = false;
     }
   }
 
@@ -565,7 +585,7 @@ void processCanRxLoop() {
     memcpy(rxBuf, rxMsg.data, len);
 
     lastAnyCanActivityMs = millis();
-    relayForcedOffBySilence = false;
+    busSleep = false;
 
     uint32_t rxId = normalizeCanId(rxMsg.identifier);
     updateRelaySignalsFromFrame(rxId, rxBuf, len);
@@ -579,18 +599,42 @@ void processCanRxLoop() {
   }
 }
 
+void processCanIdleShutdown() {
+  if (lastAnyCanActivityMs == 0) return;
+  if (millis() - lastAnyCanActivityMs <= INTERVAL_CAN_IDLE_SHUTDOWN) return;
+
+  busSleep = true;
+  setAutoNmState(AUTO_SILENT_LISTEN);
+  SerialBT.println("SYS:CAN:IDLE_SHUTDOWN");
+  wejdzWTrybLekkiegoSnu();
+}
+
+void processIllIdleOff() {
+  if (lastAnyCanActivityMs == 0) return;
+  if (millis() - lastAnyCanActivityMs <= INTERVAL_ILL_IDLE_OFF) return;
+  if (!relayIllOn) return;
+
+  relayIllOn = false;
+  applyRelayOutputs();
+  SerialBT.println("SYS:RELAY_ILL:OFF_BY_CAN_IDLE");
+}
+
 void runHealthChecks() {
-  if (!relayForcedOffBySilence && lastAnyCanActivityMs != 0 &&
-      (millis() - lastAnyCanActivityMs > INTERVAL_RELAY_SILENCE_OFF)) {
+  processIllIdleOff();
+  processCanIdleShutdown();
+
+  if (lastAnyCanActivityMs != 0 &&
+      (millis() - lastAnyCanActivityMs > INTERVAL_RELAY_SILENCE_OFF) &&
+      (relayAccOn || relayIllOn || relayBackOn)) {
     relayAccOn = false;
     relayIllOn = false;
     relayBackOn = false;
     applyRelayOutputs();
-    relayForcedOffBySilence = true;
     SerialBT.println("SYS:RELAYS:FORCED_OFF_BY_SILENCE");
   }
 
-  if (!isHanging && !busSleep && lastGwSelfNmMs != 0 &&
+  if (!isHanging && !busSleep && !twaiRecoveryPending &&
+      lastTwaiState == TWAI_STATE_RUNNING && lastGwSelfNmMs != 0 &&
       (millis() - lastGwSelfNmMs > INTERVAL_HANG_CHECK)) {
     SerialBT.println("ERR:CAN:HANG");
     isHanging = true;
@@ -626,6 +670,10 @@ void wejdzWTrybLekkiegoSnu() {
   esp_light_sleep_start();
 
   gpio_wakeup_disable((gpio_num_t)TWAI_RX_PIN);
+
+  // Po wybudzeniu restartuj 10 s okno bezczynności CAN.
+  // Dzięki temu pojedynczy impuls wake nie zostawia firmware stale aktywnego.
+  lastAnyCanActivityMs = millis();
 
   SerialBT.println("SYS:HW:LIGHT_SLEEP_WAKE");
 }
@@ -705,7 +753,6 @@ void setup() {
     SerialBT.println("ERR:HW:INIT_FAIL");
   }
 
-  gpio_wakeup_enable((gpio_num_t)TWAI_RX_PIN, GPIO_INTR_LOW_LEVEL);
 }
 
 void loop() {

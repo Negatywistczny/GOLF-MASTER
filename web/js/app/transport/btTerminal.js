@@ -6,7 +6,6 @@ import {
     logTerminal,
     updateStatus
 } from "../../ui/index.js";
-import { updateEsp32RuntimeFromMessage } from "../../ui/esp32Runtime.js";
 import {
     catalogEntryFor,
     resolveFirmwareMessageKey
@@ -87,7 +86,6 @@ function handleFirmwareMessage(kind, raw) {
         logSystem(src, code, desc, { ttlMs, tone });
     }
 
-    updateEsp32RuntimeFromMessage(kind, key, details);
     updateStatus(`${key}${details ? ` (${details})` : ""}`, tone === "error" ? "var(--red)" : "var(--accent)");
 }
 

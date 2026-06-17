@@ -17,8 +17,6 @@ Komunikaty na BLE UART (`VAG_ESP32_BT`) i USB Serial (115200).
 | **`SYS:FW:BUILD_ID:<id>`** | Identyfikator buildu firmware (np. `2026-06-17-p0`). Emitowany zaraz po `SYS:HW:READY`. |
 | **`SYS:CAN:NM_MODE_AUTO`** | Auto-NM aktywne: stany `AUTO_ACTIVE` / `AUTO_SLEEP_PREP` / `AUTO_SILENT_LISTEN`. |
 | **`SYS:CAN:SLEEP_IND`** | Gateway (`0x42B`) ustawił `SleepInd` (bajt 1, bit `0x10`). |
-| **`SYS:CAN:WAKE_START`** | W Alive do `0x0B` pole `wakeCombo` (bajty 2–4) przeszło z zera na wartość niezerową. |
-| **`SYS:CAN:WAKE_END`** | `wakeCombo` wróciło do zera. |
 | **`SYS:CAN:IDLE_SHUTDOWN`** | 10 s ciszy CAN — przejście w idle shutdown i light sleep. |
 | **`SYS:HW:LIGHT_SLEEP_ENTER`** | Wejście w light sleep (wakeup na `TWAI_RX_PIN`). |
 | **`SYS:HW:LIGHT_SLEEP_WAKE`** | Wybudzenie z light sleep. |
@@ -34,7 +32,7 @@ Komunikaty na BLE UART (`VAG_ESP32_BT`) i USB Serial (115200).
 | Komunikat | Opis |
 |-----------|------|
 | **`ERR:HW:INIT_FAIL`** | Błąd instalacji / startu sterownika TWAI. |
-| **`ERR:CAN:HANG`** | Brak ramek `0x42B → 0x0B` >2 s przy oczekiwanej aktywności magistrali. |
+| **`ERR:CAN:HANG`** | Brak ramek `0x42B → 0x0B` >2 s w stanie `AUTO_ACTIVE` (nie podczas legalnej procedury snu). |
 | **`ERR:HW:TJA`** | Błąd transceivera TJA1055T (pin `TJA_ERR` w LOW). |
 | **`ERR:HW:TWAI:BUS_OFF:TEC=…:REC=…:BUS=…:RXQ=…:TXQ=…`** | Kontroler TWAI w `BUS_OFF` z licznikami `twai_status_info_t`. |
 | **`ERR:HW:TWAI:RECOVERY_START_FAIL`** | `twai_initiate_recovery()` nie powiódł się. |
@@ -73,7 +71,7 @@ Komunikaty historyczne (przeniesione do `archiwum/bridge/`).
 
 ## 3. Warstwa interfejsu (Web)
 
-Moduły: `app/main.js`, `app/bootstrap.js`, `app/transport/btTerminal.js`, `app/messageCatalog.js`, `ui/esp32Runtime.js`, `ui/statusLogs.js`; bundle: `script.bundle.js`.
+Moduły: `app/main.js`, `app/bootstrap.js`, `app/transport/btTerminal.js`, `app/messageCatalog.js`, `ui/statusLogs.js`; bundle: `script.bundle.js`.
 
 ### Logi połączenia
 

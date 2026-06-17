@@ -4,12 +4,10 @@ import {
     startClock,
     startMessageRegistryTicker,
     generateSnapshot,
-    downloadTerminalLogs,
-    initEsp32RuntimePanel
+    downloadTerminalLogs
 } from "../ui/index.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    initEsp32RuntimePanel();
     initBtTerminalControls();
     startClock();
     startMessageRegistryTicker();

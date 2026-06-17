@@ -10,7 +10,7 @@
 #include "esp_sleep.h"
 #include <stdarg.h>
 
-#define FW_BUILD_ID "2026-06-17-p0"
+#define FW_BUILD_ID "2026-06-17-p1"
 
 // --- UZUPEŁNIJ DANE SWOJEGO WIFI (LUB HOTSPOTU Z TELEFONU) ---
 const char *ssid = "Krytyczny_Sukces_5G";
@@ -420,11 +420,9 @@ void updateWakeStateFromAlive(uint8_t b1, const uint8_t *buf, uint8_t len) {
   uint32_t wakeCombo = decodeWakeCombo(buf);
   static uint32_t prevWakeCombo = 0;
   if (prevWakeCombo == 0 && wakeCombo != 0) {
-    SerialBT.println("SYS:CAN:WAKE_START");
     isBusActive = true;
     setAutoNmState(AUTO_ACTIVE);
   } else if (prevWakeCombo != 0 && wakeCombo == 0) {
-    SerialBT.println("SYS:CAN:WAKE_END");
     isBusActive = false;
     setAutoNmState(AUTO_SLEEP_PREP);
   }
@@ -642,7 +640,8 @@ void runHealthChecks() {
     SerialBT.println("SYS:RELAYS:FORCED_OFF_BY_SILENCE");
   }
 
-  if (!isHanging && !busSleep && !twaiRecoveryPending &&
+  // HANG tylko gdy oczekujemy aktywnej magistrali (AUTO_ACTIVE). Cisza po WAKE_END / SLEEP_IND jest legalna.
+  if (!isHanging && autoNmState == AUTO_ACTIVE && !twaiRecoveryPending &&
       lastTwaiState == TWAI_STATE_RUNNING && lastGwSelfNmMs != 0 &&
       (millis() - lastGwSelfNmMs > INTERVAL_HANG_CHECK)) {
     SerialBT.println("ERR:CAN:HANG");

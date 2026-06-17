@@ -20,16 +20,6 @@ export const MESSAGE_CATALOG = Object.freeze({
         tone: "warn",
         ttlMs: 15000
     },
-    "CAN:WAKE_START": {
-        desc: "wakeCombo 0→≠0 w Alive do 0x0B",
-        tone: "info",
-        ttlMs: 10000
-    },
-    "CAN:WAKE_END": {
-        desc: "wakeCombo ≠0→0 — koniec sygnalizacji wake",
-        tone: "warn",
-        ttlMs: 10000
-    },
     "CAN:IDLE_SHUTDOWN": {
         desc: "10 s ciszy CAN — idle shutdown + light sleep",
         tone: "warn",
@@ -101,7 +91,7 @@ export const MESSAGE_CATALOG = Object.freeze({
         ttlMs: 30000
     },
     "CAN:HANG": {
-        desc: "Brak ramek 0x42B→0x0B >2 s przy aktywnej magistrali",
+        desc: "Brak ramek 0x42B→0x0B >2 s w stanie AUTO_ACTIVE (nie podczas legalnego snu)",
         tone: "error",
         ttlMs: 60000
     },

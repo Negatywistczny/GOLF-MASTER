@@ -269,10 +269,6 @@ h1 {
     text-align: center;
 }
 
-.runtime-card .grid {
-    gap: 4px;
-}
-
 /* --- PANEL DIAGNOSTYCZNY --- */
 #diag-panel {
     margin-top: 40px;

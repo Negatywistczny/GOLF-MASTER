@@ -101,8 +101,9 @@ Aktualny szkic zawiera pełną logikę CAN/NM (TWAI) oraz warstwę łączności 
 - **Arduino OTA** — po połączeniu WiFi hostname `VAG-Dekoder-OTA`; komunikaty `SYS:OTA:*` / `ERR:OTA:*`. Podczas OTA (`otaInProgress`) blokowane są light sleep i idle shutdown CAN; WiFi modem sleep wyłączony na czas uploadu.
 - **Light sleep** — wejście po `SYS:CAN:IDLE_SHUTDOWN` (10 s ciszy CAN), wybudzanie stanem niskim na `TWAI_RX_PIN`. Nie uruchamia się podczas OTA.
 - **BUILD_ID** — przy starcie po `SYS:HW:READY` emitowany jest `SYS:FW:BUILD_ID:<data-git>` (makro `FW_BUILD_ID` w kodzie).
-- **Wake NM** — przejścia `wakeCombo` w Alive `0x42B` emitują `SYS:CAN:WAKE_START` / `SYS:CAN:WAKE_END`.
+- **Wake NM** — przejścia `wakeCombo` w Alive `0x42B` ustawiają wewnętrznie `AUTO_ACTIVE` / `AUTO_SLEEP_PREP` (bez osobnych komunikatów SYS).
 - **BUS_OFF** — `ERR:HW:TWAI:BUS_OFF:TEC=…:REC=…:BUS=…:RXQ=…:TXQ=…` z licznikami `twai_status_info_t`.
+- **HANG** — `ERR:CAN:HANG` tylko w stanie `AUTO_ACTIVE` (cisza po `SLEEP_IND` / `AUTO_SLEEP_PREP` nie jest błędem).
 
 ### Konfiguracja przed wgraniem
 
@@ -126,7 +127,7 @@ Stary tor `Arduino -> bridge.py -> WebSocket -> UI` został wycofany i przeniesi
 Niezależnie od platformy i kanału (USB / BT) firmware emituje ten sam język komunikatów:
 
 - **Ramki:** `0x[ID_HEX]: [B1] [B2] …`
-- **System:** `SYS:HW:READY`, `SYS:FW:BUILD_ID`, `SYS:CAN:SLEEP_IND`, `SYS:CAN:WAKE_START`, `SYS:CAN:WAKE_END`, `SYS:CAN:IDLE_SHUTDOWN`, `SYS:HW:LIGHT_SLEEP_ENTER/WAKE`, `SYS:HW:TWAI:RECOVERING/RUNNING`, `SYS:RELAY_ILL:OFF_BY_CAN_IDLE`, `SYS:RELAYS:FORCED_OFF_BY_SILENCE`, `SYS:OTA:START/END`
+- **System:** `SYS:HW:READY`, `SYS:FW:BUILD_ID`, `SYS:CAN:SLEEP_IND`, `SYS:CAN:IDLE_SHUTDOWN`, `SYS:HW:LIGHT_SLEEP_ENTER/WAKE`, `SYS:HW:TWAI:RECOVERING/RUNNING`, `SYS:RELAY_ILL:OFF_BY_CAN_IDLE`, `SYS:RELAYS:FORCED_OFF_BY_SILENCE`, `SYS:OTA:START/END`
 - **Błędy:** `ERR:HW:INIT_FAIL`, `ERR:CAN:HANG`, `ERR:HW:TJA`, `ERR:HW:TWAI:BUS_OFF:TEC=…`, `ERR:HW:TWAI:RECOVERY_*`, `ERR:OTA:0x…`
 
 Słownik w całym ekosystemie: [`MESSAGES.md`](../MESSAGES.md).

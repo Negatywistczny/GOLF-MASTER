@@ -10,7 +10,7 @@
 #include "esp_sleep.h"
 #include <stdarg.h>
 
-#define FW_BUILD_ID "2026-06-17-p2"
+#define FW_BUILD_ID "2026-06-17-p3"
 
 // --- UZUPEŁNIJ DANE SWOJEGO WIFI (LUB HOTSPOTU Z TELEFONU) ---
 const char *ssid = "Krytyczny_Sukces_5G";
@@ -568,15 +568,20 @@ inline bool shouldPrintIncomingFrame(uint32_t rxId, uint8_t len, const uint8_t *
 
 void printIncomingFrame(uint32_t rxId, uint8_t len, const uint8_t *rxBuf) {
   uint8_t safeLen = normalizeCanLen(len);
-  SerialBT.print("0x");
-  SerialBT.print(rxId, HEX);
-  SerialBT.print(":");
-  for (uint8_t i = 0; i < safeLen; i++) {
-    if (rxBuf[i] < 0x10) SerialBT.print("0");
-    SerialBT.print(rxBuf[i], HEX);
-    if (i < safeLen - 1) SerialBT.print(" ");
+  char line[96] = {0};
+  int pos = snprintf(line, sizeof(line), "0x%lX:", (unsigned long)rxId);
+  if (pos < 0) return;
+
+  for (uint8_t i = 0; i < safeLen && pos < (int)sizeof(line) - 4; i++) {
+    int n = snprintf(line + pos, sizeof(line) - (size_t)pos, (i < safeLen - 1) ? "%02X " : "%02X", rxBuf[i]);
+    if (n < 0) return;
+    pos += n;
   }
-  SerialBT.println();
+
+  if (pos < (int)sizeof(line) - 1) {
+    line[pos++] = '\n';
+  }
+  SerialBT.write((const uint8_t *)line, (size_t)pos);
 }
 
 void processCanRxLoop() {

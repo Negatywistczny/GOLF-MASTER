@@ -25,7 +25,8 @@ const MESSAGE_TTL_MS = {
 
 const CONNECT_BUTTON_ID = "btn-bt-connect";
 const textDecoder = new TextDecoder("utf-8");
-const CAN_LINE_RE = /^0x[0-9A-F]+:([0-9A-F]{2}(?: [0-9A-F]{2})*)?$/i;
+// Generic CAN frame line: 0xID: followed by 0..8 bytes.
+const CAN_LINE_RE = /^0x[0-9A-F]+:(?:[0-9A-F]{2}(?: [0-9A-F]{2}){0,7})?$/i;
 
 let device = null;
 let server = null;

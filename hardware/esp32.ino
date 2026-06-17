@@ -10,7 +10,7 @@
 #include "esp_sleep.h"
 #include <stdarg.h>
 
-#define FW_BUILD_ID "2026-06-17-p1"
+#define FW_BUILD_ID "2026-06-17-p2"
 
 // --- UZUPEŁNIJ DANE SWOJEGO WIFI (LUB HOTSPOTU Z TELEFONU) ---
 const char *ssid = "Krytyczny_Sukces_5G";
@@ -63,6 +63,7 @@ class BleUart {
 public:
   bool begin(const char *deviceName) {
     BLEDevice::init(deviceName);
+    BLEDevice::setMTU(517);
 
     BLEServer *server = BLEDevice::createServer();
     server->setCallbacks(new ServerCallbacks(this));
@@ -128,13 +129,17 @@ public:
     if (data == nullptr || len == 0) return 0;
     if (!clientConnected_ || txChar_ == nullptr) return 0;
 
+    size_t mtu = BLEDevice::getMTU();
+    size_t maxChunk = (mtu > 3) ? mtu - 3 : kMinNotifyChunk;
+    if (maxChunk > kMaxNotifyChunk) maxChunk = kMaxNotifyChunk;
+
     size_t sent = 0;
     while (sent < len) {
-      size_t chunk = (len - sent > kMaxNotifyChunk) ? kMaxNotifyChunk : (len - sent);
+      size_t chunk = (len - sent > maxChunk) ? maxChunk : (len - sent);
       txChar_->setValue(data + sent, chunk);
       txChar_->notify();
       sent += chunk;
-      delay(2);
+      delay(1);
     }
     return len;
   }
@@ -210,7 +215,8 @@ private:
   static constexpr const char *kRxUuid = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
   static constexpr const char *kTxUuid = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";
   static constexpr size_t kRxBufferSize = 512;
-  static constexpr size_t kMaxNotifyChunk = 20;
+  static constexpr size_t kMinNotifyChunk = 20;
+  static constexpr size_t kMaxNotifyChunk = 244;
 
   class ServerCallbacks : public BLEServerCallbacks {
   public:
@@ -219,6 +225,7 @@ private:
     void onConnect(BLEServer *server) override {
       (void)server;
       owner_->clientConnected_ = true;
+      BLEDevice::setMTU(517);
     }
 
     void onDisconnect(BLEServer *server) override {

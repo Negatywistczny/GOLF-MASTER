@@ -5838,6 +5838,7 @@ const MESSAGE_TTL_MS = {
 
 const CONNECT_BUTTON_ID = "btn-bt-connect";
 const textDecoder = new TextDecoder("utf-8");
+const CAN_LINE_RE = /^0x[0-9A-F]+:([0-9A-F]{2}(?: [0-9A-F]{2})*)?$/i;
 
 let device = null;
 let server = null;
@@ -5902,8 +5903,20 @@ function handleFirmwareMessage(kind, raw) {
     updateStatus(`${key}${details ? ` (${details})` : ""}`, tone === "error" ? "var(--red)" : "var(--accent)");
 }
 
+function isValidCanLine(raw) {
+    if (!CAN_LINE_RE.test(raw)) return false;
+    return (raw.match(/0x[0-9A-F]+/gi) || []).length === 1;
+}
+
+function isRecognizedLine(raw) {
+    if (raw.startsWith("SYS:") || raw.startsWith("ERR:") || raw.startsWith("CLR:")) {
+        return true;
+    }
+    return isValidCanLine(raw);
+}
+
 function parseIncomingData(raw) {
-    if (!raw) return;
+    if (!raw || !isRecognizedLine(raw)) return;
     logTerminal(raw);
 
     if (raw.startsWith("CLR:")) {
@@ -5922,9 +5935,9 @@ function parseIncomingData(raw) {
         return;
     }
 
-    if (raw.includes(":")) {
-        const [idHex, dataHex] = raw.split(":");
-        handleCANFrame(idHex, dataHex);
+    if (isValidCanLine(raw)) {
+        const colonIdx = raw.indexOf(":");
+        handleCANFrame(raw.slice(0, colonIdx), raw.slice(colonIdx + 1));
     }
 }
 
@@ -5970,7 +5983,7 @@ function onDeviceDisconnected() {
 function onTxNotification(event) {
     const value = event?.target?.value;
     if (!value) return;
-    const chunk = textDecoder.decode(value.buffer, { stream: true });
+    const chunk = textDecoder.decode(value, { stream: true });
     lineBuffer += chunk;
 
     const lines = lineBuffer.split(/\r?\n/);
